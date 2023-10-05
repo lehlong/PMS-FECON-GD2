@@ -1,0 +1,160 @@
+﻿@model SMO.Service.PS.Models.Report.ProjectDetailDataCost.ProjectDetailDataCostModel
+
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var formId = Guid.NewGuid().ToString();
+    var lstOrg = SMOUtilities.GetAllCompanies();
+    var projects = SMOUtilities.GetAllProjects();
+    var contracts = SMOUtilities.GetAllContracts(isSignedWithCustomer: true);
+}
+<div id='@viewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("ProjectDetailDataBoqReport", null, FormDataUtils.GetAjaxOptions(viewId), new { @id = formId }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">description</i> XUẤT DỮ LIỆU CHI TIẾT DỰ ÁN (BOQ)</a></li>
+                <li role="presentation" style="float: right; color: black">
+                    <a onclick="@string.Format("Forms.Close('{0}');", viewId)">
+                        <strong>
+                            <i class="material-icons">close</i>
+                        </strong>
+                    </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="page-function p-t-10">
+                        <div class="page-function-button m-r-20" style="display: flex">
+                            @Html.MyButton("cmdSave", "Xem báo cáo", $"$('#parameter').css('display','none');Forms.SubmitForm('{formId}')", "Alt+N", "done_all")
+                            @Html.MyButton("cmdSave", "Xuất Excel", $"ExportDataExcel()", "Alt+N", "file_download")
+                            @Html.MyButton("expand_more", "", "$('.parameter').css('display','block');$('#expand_less').toggle();$('#expand_more').toggle();", "Alt+N", "expand_more")
+                            @Html.MyButton("expand_less", "", "$('.parameter').css('display','none');$('#expand_less').toggle();$('#expand_more').toggle();", "Alt+N", "expand_less")
+                        </div>
+
+                    </div>
+
+                    <div class="page-search-advance row m-b-0" id="parameter">
+                        <div class="col-md-3 col-xs-12 m-b-0">
+                            <label>Công ty phụ trách</label>
+                            <select name="@Html.NameFor(m => m.CompanyId)" id="dllCompany" data-val="true"
+                                    data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany(this);" data-hide-disabled="true"
+                                    class="selectpicker show-tick dropdown form-control" multiple data-max-options="1">
+                                @foreach (var company in lstOrg.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
+                                {
+                                    var selected = "";
+                                    if (company.PKID == Model.CompanyId)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected value="@company.PKID">
+                                        @company.NAME
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-group">
+
+                                @Html.ValidationMessageFor(m => m.CompanyId)
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-xs-12 m-b-0">
+                            <label class="required">Dự án</label>
+                            <select name="@Html.NameFor(m => m.ProjectId)" id="dllProject" data-val="true" data-val-required="Dự án bắt buộc nhập"
+                                    data-live-search="true" data-show-subtext="true" onchange="OnChangeProject(this)" data-hide-disabled="true"
+                                    class="selectpicker show-tick dropdown form-control">
+                                <option selected="selected" value=""> - </option>
+
+                                @foreach (var project in projects.OrderBy(x => x.NAME))
+                                {
+                                    var selected = "";
+                                    if (project.ID == Model.ProjectId)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected value="@project.ID" data-company="@project.DON_VI" data-subtext="@($"{project.CODE}")">
+                                        @project.NAME
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-group">
+
+                                @Html.ValidationMessageFor(m => m.ProjectId)
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-xs-12 m-b-0">
+                            <label>Số Hợp đồng/Phụ lục</label>
+                            <select name="@Html.NameFor(m => m.ContractId)" id="dllContract" data-val="true" data-hide-disabled="true"
+                                    data-live-search="true" data-show-subtext="true"
+                                    class="selectpicker show-tick dropdown form-control">
+                                <option value="">-</option>
+                                @foreach (var contract in contracts.OrderBy(x => x.CONTRACT_NUMBER))
+                                {
+                                    <option value="@contract.ID" data-subtext="@contract.CONTRACT_NUMBER" data-project="@contract.PROJECT_ID">
+                                        @contract.NAME
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+<script type="text/javascript">
+        function OnChangeCompany(e) {
+            var companyCode = $("#@viewId #dllCompany").find(':selected').val();
+            if (e) {
+                $("#@viewId #dllProject").val("@Guid.Empty");
+                $("#@viewId #dllContract").val("@Guid.Empty");
+            }
+
+            $("#@viewId #dllProject option").removeAttr('disabled');
+            $("#@viewId #dllContract option").attr('disabled', 'disabled');
+
+            $("#@viewId #dllProject option").each(function () {
+                if ($(this).data('company') != companyCode) {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+            $("#@viewId #dllProject").selectpicker('refresh');
+    }
+    function OnChangeProject(e) {
+        var projectId = $("#@viewId #dllProject").find(':selected').val();
+        if (e) {
+            $("#@viewId #dllContract").val("@Guid.Empty");
+        }
+        $("#@viewId #dllContract option").removeAttr('disabled');
+        $("#@viewId #dllContract option").each(function () {
+            if ($(this).data('project') != projectId && $(this).val()) {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+        $("#@viewId #dllContract").selectpicker('refresh');
+    }
+    $(function () {
+        Forms.CompleteUI();
+        Forms.SubmitByEnter("@formId");
+        @if (Model.ProjectId != Guid.Empty)
+        {
+            <text>
+            OnChangeCompany();
+            OnChangeProject();
+        </text>
+        }
+        $('.parameter').css('display', 'none');
+        $('#expand_less').css('display', 'none');
+    });
+        function ExportDataExcel() {
+            try {
+                ExportExcel()
+            } catch (e) {
+                alert("Cần nhấn xem báo cáo trước khi xuất.")
+            }
+        }
+</script>
+</div>

@@ -1,0 +1,86 @@
+﻿@model SMO.Service.MD.StoreService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("ListMaterialForAdd", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.CODE)
+            <div class="card">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons">clear_all</i> THÊM MỚI MẶT HÀNG VÀO KHO</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdSelect", "Thêm vào kho", "AddMaterialToStore();", "Alt+N", "add")
+                            </div>
+                            <div class="input-group page-function-search">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjMaterial.CODE, new { placeholder = "Tìm theo mã hoặc tên", @class = "align-center", @data_val = false })
+                                </div>
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                    <i class="material-icons">refresh</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        }
+
+        <script type="text/javascript">
+            function AddMaterialToStore() {
+                var lstSelected = '';
+                $('.chkItemMaterialForAdd').each(function () {
+                    if (this.checked) {
+                        lstSelected += $(this).attr('modelId') + ',';
+                    }
+                });
+                if (lstSelected == '') {
+                    alert("Bạn hãy chọn ít nhất một mặt hàng!");
+                    return;
+                }
+
+                lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+                var ajaxParams = {
+                    url: "@Url.Action("AddMaterialToStore")",
+                    type: 'POST',
+                    dataType : 'json',
+                    data: { lstMaterial: lstSelected, storeCode: '@Model.ObjDetail.CODE' }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+
+            function SubmitListMaterialForAdd() {
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                SubmitListMaterialForAdd();
+                Forms.CompleteUI();
+                Forms.SubmitByEnter("@Model.FormId");
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>

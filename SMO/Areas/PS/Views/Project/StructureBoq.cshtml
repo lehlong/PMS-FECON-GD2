@@ -1,0 +1,61 @@
+﻿@model IList<SMO.Service.PS.Models.ProjectStructureBoqModel>
+@using Newtonsoft.Json;
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var gridId = Guid.NewGuid().ToString();
+
+}
+<style>
+    .right-content {
+         z-index: 22
+    }
+</style>
+    <div style="height: calc(100vh - 135px)" id="@viewId">
+        <div class="p-t-10" style="height: 100%; width: 100%" id="@gridId"></div>
+    </div>
+<script type="text/javascript">
+    function viewDetail(structureId) {
+        Forms.LoadAjaxRight(`PS/ProjectStruct/Edit?id=${structureId}`);
+    }
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(Model));
+        const gridData = _.map(rawData, (x) => (
+            {
+                ...x,
+                START_DATE: moment(x.START_DATE).toDate(),
+                FINISH_DATE: moment(x.FINISH_DATE).toDate(),
+                id: x.ProjectStructId,
+                parent: x.Parent
+            }))
+    const columns = [
+        {
+            id: "TEXT", header: [{ text: "Hạng mục công việc" }],
+            template: (value, task) => {
+                return `<a href="#" onclick="viewDetail('${task.ProjectStructId}')">${value}</i>`
+            },
+            htmlEnable: true,
+        },
+        { id: "TYPE", header: [{ text: "Loại đối tượng" }] , width: 150},
+            
+        //{ id: "CODE", header: [{ text: "MÃ" }] },
+        { id: "UNIT_NAME", header: [{ text: "Đơn vị tính" }], width: 150  },
+        { id: "CONTRACT_VALUE", header: [{ text: "Khối lượng hợp đồng" }], type: "number", format: "#,#", width: 250 },
+        { id: "START_DATE", header: [{ text: "Ngày bắt đầu" }], type: "date", format: "%d/%m/%Y", width: 150 },
+        { id: "FINISH_DATE", header: [{ text: "Ngày kết thúc" }], type: "date", format: "%d/%m/%Y", width: 150 },
+    ]
+
+    const grid = new dhx.TreeGrid("@gridId", {
+            columns,
+            autoWidth: true,
+            autoHeight: true,
+            //leftSplit: 7,
+            //adjust: true,
+            resizable: true,
+        data: gridData,
+        rootParent: '@(Model.FirstOrDefault()?.ProjectStructureId.ToString())'
+        });
+    grid.events.on("cellDblClick", function (row) {
+        const id = row.ProjectStructId;
+        Forms.LoadGanttAjaxRight(`PS/ProjectStruct/Edit?id=${id}`);
+        });
+</script>
+

@@ -1,0 +1,47 @@
+﻿@model SMO.Service.MD.PoService
+@{ 
+    var frmFormCode = "frmPoIndex";
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th>PO_NUMBER</th>
+                <th>PO_ITEM</th>
+                <th>PO_TYPE</th>
+                <th>PO_ORG</th>
+                <th>PO_GROUP</th>
+                <th>PO_DATE</th>
+                <th>MATERIAL_CODE</th>
+                <th>PLANT_CODE</th>
+                <th>QUANITY</th>
+                <th>UNIT_CODE</th>
+                <th>PO_LOCK</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                <tr>
+                    <td>@item.PO_NUMBER</td>
+                    <td>@item.PO_ITEM</td>
+                    <td>@item.PO_TYPE</td>
+                    <td>@item.PO_ORG</td>
+                    <td>@item.PO_GROUP</td>
+                    <td>@item.PO_DATE.ToString("dd/MM/yyyy")</td>
+                    <td>@item.MATERIAL_CODE</td>
+                    <td>@item.PLANT_CODE</td>
+                    <td>@item.QUANITY</td>
+                    <td>@item.UNIT_CODE</td>
+                    <td>@item.PO_LOCK</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

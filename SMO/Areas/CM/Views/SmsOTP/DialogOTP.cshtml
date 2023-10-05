@@ -1,0 +1,198 @@
+﻿@model SMO.Service.CM.SmsOTPService
+@using SMO.Repository.Implement.PO
+@using SMO.Core.Entities
+
+@{ 
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var userService = new SMO.Service.AD.UserService();
+    userService.Get(ProfileUtilities.User.USER_NAME);
+    var lstPOCode = Model.ListPoSelected.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries).ToList();
+}
+
+
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("VerifyOTP", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ModulType)
+            @Html.HiddenFor(m => m.ListPoSelected)
+            @Html.HiddenFor(m => m.IsDetail)
+            @Html.HiddenFor(m => m.ViewIDDetail)
+            <div class="card">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons">clear_all</i> NHẬP MÃ OTP ĐỂ XÁC THỰC</a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content align-center">
+                        @if (string.IsNullOrWhiteSpace(userService.ObjDetail.PHONE))
+                        {
+                            <h4 class="col-red">
+                                Tài khoản của bạn chưa được thiết lập số điện thoại. Vui lòng liên hệ với ban quản trị hệ thống SMO!
+                            </h4>
+                        }
+                        else
+                        {
+                            <h4 class="col-teal">
+                                Hệ thống SMO đã gửi tới số điện thoại <span class="col-red">@userService.ObjDetail.PHONE</span> một mã xác thực 6 chữ số.<br />
+                                Mã OTP có hiệu lực trong vòng <span class="col-red">2</span> phút.
+                            </h4>
+
+                            <span class="col-blue-grey">
+                                Vui lòng kiểm tra tin nhắn, và nhập vào ô dưới để xác thực việc gửi đơn hàng.
+                            </span>
+                            <div class="p-t-20">
+                                <div class="col-red p-b-10" id="divErrorOTP"></div>
+                                @Html.MyTextBoxFor(m => m.OTP_CODE, new { @id = "txtOTP", placeholder = "MÃ OTP", maxlength = "6", @style = "font-size:18px; font-weight: bold; text-align: center; display: inline; width: 200px; border-radius:0;" })
+                            </div>
+                            <div class="p-t-20">
+                                <span id="cmdXacThuc" onclick="@string.Format("Forms.SubmitForm('{0}');", @Model.FormId)" title="" class="waves-effect btn-default btn col-indigo btn-border"><i class="material-icons">done_all</i><span>XÁC THỰC</span></span>
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                <span id="cmdGuiLaiMa" onclick="CreateNewOTP();" title="" class="waves-effect btn-default btn col-red btn-border"><i class="material-icons">refresh</i><span>GỬI LẠI MÃ</span></span>
+                            </div>
+                        }
+
+                        <h5 class="col-blue-grey m-t-30">TỔNG ĐƠN HÀNG ĐÃ CHỌN : @lstPOCode.Count() ĐƠN</h5>
+                        @if (Model.ModulType == ModulType.DCCH)
+                        {
+                            var repo = Model.UnitOfWork.Repository<DCCHRepo>();
+                            var lstPO = repo.GetInfoListPOSent(lstPOCode);
+                            var lstDetail = new List<T_PO_DCCH_DETAIL>();
+                            foreach (var item in lstPO)
+                            {
+                                lstDetail.AddRange(item.ListDetail);
+                            }
+                            var lstLookup = lstDetail.ToLookup(x => x.Material);
+
+                            foreach (var lookup in lstLookup)
+                            {
+                                <div>@lookup.Key.TEXT: @lookup.Sum(x => x.QUANTITY) @lookup.First().UNIT_CODE</div>
+                            }
+                        }
+
+                        @if (Model.ModulType == ModulType.DCNB)
+                        {
+                            var repo = Model.UnitOfWork.Repository<DCNBRepo>();
+                            var lstPO = repo.GetInfoListPOSent(lstPOCode);
+                            var lstDetail = new List<T_PO_DCNB_DETAIL>();
+                            foreach (var item in lstPO)
+                            {
+                                lstDetail.AddRange(item.ListDetail);
+                            }
+                            var lstLookup = lstDetail.ToLookup(x => x.Material);
+
+                            foreach (var lookup in lstLookup)
+                            {
+                                <div>@lookup.Key.TEXT: @lookup.Sum(x => x.QUANTITY) @lookup.First().UNIT_CODE</div>
+                            }
+                        }
+
+                        @if (Model.ModulType == ModulType.MHGL)
+                        {
+                            var repo = Model.UnitOfWork.Repository<MHGLRepo>();
+                            var lstPO = repo.GetInfoListPOSent(lstPOCode);
+                            var lstDetail = new List<T_PO_MHGL_DETAIL>();
+                            foreach (var item in lstPO)
+                            {
+                                lstDetail.AddRange(item.ListDetail);
+                            }
+                            var lstLookup = lstDetail.ToLookup(x => x.Material);
+
+                            foreach (var lookup in lstLookup)
+                            {
+                                <div>@lookup.Key.TEXT: @lookup.Sum(x => x.QUANTITY) @lookup.First().UNIT_CODE</div>
+                            }
+                        }
+
+                        @if (Model.ModulType == ModulType.XBND)
+                        {
+                            var repo = Model.UnitOfWork.Repository<XBNDRepo>();
+                            var lstPO = repo.GetInfoListPOSent(lstPOCode);
+                            var lstDetail = new List<T_PO_XBND_DETAIL>();
+                            foreach (var item in lstPO)
+                            {
+                                lstDetail.AddRange(item.ListDetail);
+                            }
+                            var lstLookup = lstDetail.ToLookup(x => x.Material);
+
+                            foreach (var lookup in lstLookup)
+                            {
+                                <div>@lookup.Key.TEXT: @lookup.Sum(x => x.QUANTITY) @lookup.First().UNIT_CODE</div>
+                            }
+                        }
+
+                        @if (Model.ModulType == ModulType.XBTX)
+                        {
+                            var repo = Model.UnitOfWork.Repository<XBTXRepo>();
+                            var lstPO = repo.GetInfoListPOSent(lstPOCode);
+                            var lstDetail = new List<T_PO_XBTX_DETAIL>();
+                            foreach (var item in lstPO)
+                            {
+                                lstDetail.AddRange(item.ListDetail);
+                            }
+                            var lstLookup = lstDetail.ToLookup(x => x.Material);
+
+                            foreach (var lookup in lstLookup)
+                            {
+                                <div>@lookup.Key.TEXT: @lookup.Sum(x => x.QUANTITY) @lookup.First().UNIT_CODE</div>
+                            }
+                        }
+
+                        @if (Model.ModulType == ModulType.XTHG)
+                        {
+                            var repo = Model.UnitOfWork.Repository<XTHGRepo>();
+                            var lstPO = repo.GetInfoListPOSent(lstPOCode);
+                            var lstDetail = new List<T_PO_XTHG_DETAIL>();
+                            foreach (var item in lstPO)
+                            {
+                                lstDetail.AddRange(item.ListDetail);
+                            }
+                            var lstLookup = lstDetail.ToLookup(x => x.Material);
+
+                            foreach (var lookup in lstLookup)
+                            {
+                                <div>@lookup.Key.TEXT: @lookup.Sum(x => x.QUANTITY) @lookup.First().UNIT_CODE</div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            function CreateNewOTP() {
+                if (confirm("Bạn muốn gửi một mã OTP mới?")) {
+                    $("#divErrorOTP").html("");
+                    $("#txtOTP").val("");
+                    var urlOTP = "@Url.Action("CreateOTP", "SmsOTP", new { @area = "CM", modulType = ModulType.MHGL})";
+                    var ajaxParams = {
+                        url: urlOTP,
+                        type: "POST",
+                        dataType: "json",
+                        success: function (response) {
+                            if (response == "YES") {
+                                alert("Một mã OTP mới đã được gửi tới số điện thoại của bạn. Vui lòng kiểm tra tin nhắn!");
+                            } else {
+                                console.log(response);
+                                alert("Quá trình Tạo mã SMS OTP bị lỗi. Vui lòng thử lại.");
+                            }
+                            Forms.HideLoading();
+                        }
+                    };
+                    Forms.Ajax(ajaxParams);
+                }
+            }
+            $(function () {
+                Forms.CompleteUI();
+            });
+        </script>
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>

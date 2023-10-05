@@ -1,0 +1,52 @@
+﻿@model SMO.Service.PS.ProjectResourceService
+
+
+<div class="table-responsive" style="overflow-x: unset">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Tên đăng nhập</th>
+                <th>Họ và tên</th>
+                <th>Chức danh</th>
+                <th>Phòng ban</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Vai trò dự án</th>
+                <th>Loại nhân sự</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Model.ObjList.Count; i++)
+            {
+                var item = Model.ObjList[i];
+                @Html.HiddenFor(x => x.ObjList[i].ID)
+                @Html.HiddenFor(x => x.ObjList[i].PROJECT_ID)
+                @Html.HiddenFor(x => x.ObjList[i].USER_NAME)
+                <tr>
+                    <td>
+                        @item.USER_NAME
+                    </td>
+                    <td>
+                        @(item.User?.FULL_NAME)
+                    </td>
+                    <td>@(item.User?.Title?.NAME)</td>
+                    <td>@(item.User?.Organize?.NAME)</td>
+                    <td>@(item.User?.PHONE)</td>
+                    <td>@(item.User?.EMAIL)</td>
+                    <td>@(item.ProjectRole?.NAME)</td>
+                    <td>@(item.ProjectUserType?.NAME)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>

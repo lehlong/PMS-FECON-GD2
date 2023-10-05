@@ -1,0 +1,54 @@
+﻿@model SMO.Service.PS.ProjectResourceService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    var project = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT>().FirstOrDefault(x => x.ID == Model.ObjDetail.PROJECT_ID);
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>@project.CODE - @project.NAME.ToUpper() - DANH SÁCH NHÂN SỰ </b></span> 
+            <span class="title-nav">
+                DANH SÁCH DỰ ÁN - NHÂN SỰ DỰ ÁN
+            </span>
+        </div>
+        <div class="title-close" id="close-resource" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}')", @Model.ViewId); goToGeneralInformationTab();"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                <li role="presentation" id="li-resource-fecon"><a href="#resource-fecon" onclick="onClickResourceFecon();" data-toggle="tab">NHÂN SỰ FECON</a></li>
+                <li role="presentation" id="li-resource-vendor"><a href="#resource-vendor" onclick="onClickResourceVendor();" data-toggle="tab">CÁC BÊN LIÊN QUAN</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade" id="resource-fecon">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="resource-vendor">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+                $("#@Model.ViewId #ulNavTabs li").removeClass("active");
+                if ("@ViewBag.ModulName" == "NhanSuVendor") {
+                    $("#@Model.ViewId #li-resource-vendor a").click();
+                } else {
+                    $("#@Model.ViewId #li-resource-fecon a").click();
+                }
+            });
+
+            function onClickResourceFecon() {
+                $('#@Model.ViewId #resource-fecon').html("");
+                Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexFecon",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID }))', htmlTarget: '#@Model.ViewId #resource-fecon' });
+            }
+            function onClickResourceVendor() {
+                $('#@Model.ViewId #resource-vendor').html("");
+                Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexVendor",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID }))', htmlTarget: '#@Model.ViewId #resource-vendor' });
+            }
+        </script>
+    </div>
+</div>
+

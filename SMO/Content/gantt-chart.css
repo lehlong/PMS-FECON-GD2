@@ -1,0 +1,201 @@
+﻿.weekend {
+    background: #F0DFE5 !important;
+}
+
+.gantt-demo-header {
+    border-top: 1px solid #cecece;
+    border-left: 1px solid #cecece;
+    border-right: 1px solid #cecece;
+}
+
+.gantt-controls {
+    background-color: #f5f5f5;
+    font-size: 14px;
+    list-style-type: none;
+    margin: 0;
+    overflow: visible;
+    padding: 0;
+    text-align: left;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.gantt-menu-item {
+    display: inline-block;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    position: relative;
+    overflow: visible;
+    /*padding:0 10px;*/
+}
+
+.gantt-menu-item-right {
+    float: right;
+}
+
+.gantt-menu-item span {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.gantt-menu-item a {
+    display: block;
+    cursor: pointer;
+    color: #3d3d3d;
+    text-align: center;
+    line-height: 40px;
+    padding: 0 10px;
+    text-decoration: none;
+}
+
+    .gantt-menu-item a:hover {
+        background-color: #e2e2e2;
+    }
+
+.gantt-controls .gantt-controls {
+    display: none;
+}
+
+.gantt-menu-item:hover .gantt-controls {
+    display: block;
+    left: 0;
+    padding: 5px 0;
+    position: absolute;
+    top: 41px;
+    z-index: 1;
+}
+
+.gantt-menu-item .menu-item-active {
+    background-color: #dadada !important;
+}
+
+.gantt-menu-item .menu-item-disabled {
+    color: #818181 !important;
+    pointer-events: none;
+}
+
+.gantt-menu-item:hover .gantt-controls li {
+    width: 100%;
+}
+
+.gantt-menu-item:hover .gantt-controls a {
+    white-space: nowrap;
+    text-align: left;
+}
+
+.gantt-menu-item:hover .gantt-controls::before {
+    position: absolute;
+    top: -7px;
+    width: 100%;
+    content: " ";
+    height: 10px;
+    background: transparent;
+    left: 0;
+    z-index: 1;
+}
+
+.gantt-menu-item-last {
+    border-right: 1px solid #cecece;
+}
+
+/*check list*/
+.tab-content .tab-pane .td-actions {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+/*.table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+    padding: 12px 8px;
+    vertical-align: top;
+    border-color: #ddd;
+}*/
+
+.table > tbody > tr:hover {
+    background-color: #e0e0e0;
+}
+
+/*.table th, .table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}*/
+
+.text-right {
+    text-align: right !important;
+}
+
+.table .td-actions .btn {
+    margin: 0px;
+    padding: 5px;
+}
+
+.table .td-actions .btn {
+    margin: 0px;
+    padding: 5px;
+}
+
+.btn.btn-primary.btn-link {
+    background-color: transparent !important;
+    color: #9c27b0;
+    box-shadow: none;
+}
+
+.btn:not(:disabled):not(.disabled) {
+    cursor: pointer;
+}
+
+.btn.btn-sm, .btn-group-sm > .btn, .btn-group-sm .btn {
+    padding: 0.40625rem 1.25rem;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+.btn.btn-danger.btn-link {
+    background-color: transparent !important;
+    color: #f44336;
+    box-shadow: none;
+}
+
+.file-row .table, #task-list-table .table {
+    margin-bottom: 0;
+}
+
+    .file-row .table tr td, #task-list-table .table tr td {
+        padding: 0;
+        border: none;
+    }
+
+    .file-row .table > thead > tr > th,
+    .file-row .table > tbody > tr > th,
+    .file-row .table > tfoot > tr > th,
+    .file-row .table > thead > tr > td,
+    .file-row .table > tbody > tr > td,
+    .file-row .table > tfoot > tr > td,
+    #task-list-table .table > thead > tr > th,
+    #task-list-table .table > tbody > tr > th,
+    #task-list-table .table > tfoot > tr > th,
+    #task-list-table .table > thead > tr > td,
+    #task-list-table .table > tbody > tr > td,
+    #task-list-table .table > tfoot > tr > td {
+        padding: 0;
+    }
+
+#task-list-table {
+    margin-bottom: 10px;
+}
+
+    #task-list-table .checklist-row:last-child {
+        padding-bottom: 10px;
+    }
+
+#check-list-container {
+    margin-bottom: 20px;
+}
+
+/*@media(min-width: 992px) {
+}*/

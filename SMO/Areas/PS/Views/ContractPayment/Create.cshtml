@@ -1,0 +1,158 @@
+﻿@model SMO.Service.PS.ContractPaymentService
+@using SMO.Core.Entities.PS
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">payment</i> TẠO MỚI ĐỢT THANH TOÁN </a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function p-t-10">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                        @Html.MyButton("cmdSave", "Tạo mới đợt thanh toán", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                    </div>
+                </div>
+                @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.ObjDetail.CONTRACT_ID)
+                    @Html.HiddenFor(m => m.ViewId)
+                    @Html.HiddenFor(m => m.ObjDetail.REFERENCE_FILE_ID)
+                    <div class="row" style="margin-top:20px;">
+                        <div class="col-lg-3"></div>
+                        <div class="col-lg-6">
+
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Diễn giải</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.EXPLAIN, new { @maxlength = 50, @placeholder = "Không quá 50 ký tự" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.EXPLAIN)
+                            </div>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Số hóa đơn</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.BILL_NUMBER)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.BILL_NUMBER)
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Ngày</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.PAYMENT_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.PAYMENT_DATE)
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Giá trị hóa đơn</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INVOICE_VALUE, new
+                               {
+                                   @class = "mask-number",
+                                   @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                               })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.INVOICE_VALUE)
+                            </div>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Số tiền thanh toán</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT, new
+                               {
+                                   @class = "mask-number",
+                                   @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                   onchange = "CalValue();"
+                               })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT)
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Số tiền tạm ứng</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT_ADVANCE, new
+                               {
+                                   @class = "mask-number",
+                                   @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                   onchange = "CalValue();"
+                               })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT_ADVANCE)
+                            </div>
+                            <div class="form-group">
+                                <div class="form-line mask-number">
+                                    <label>Tổng số tiền đã thanh toán</label>
+                                    <input class="form-control disabled mask-number"
+                                           style="text-align: right" id="total-payment"
+                                           data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true"
+                                           readonly value="@(Model.ObjDetail.AMOUNT + Model.ObjDetail.AMOUNT_ADVANCE)" />
+                                </div>
+                            </div>
+
+
+                            <label>Trạng thái thanh toán</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.STATUS, SelectListUtilities.GetPaymentStatus(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                @Html.ValidationMessageFor(m => m.ObjDetail.STATUS)
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Nội dung</label>
+                                    @Html.MyTextAreaFor(m => m.ObjDetail.CONTENTS)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CONTENTS)
+                            </div>
+
+                        </div>
+                    </div>
+                }
+                <hr style="margin:0;" />
+
+                <div class="p-t-10 row">
+                    <div class="title-header"> <i class="material-icons">attachment</i> <span class="title-name">FILE ĐÍNH KÈM</span> </div>
+                    <div class="col-lg-3"></div>
+                    <div class="col-lg-6">
+                        <span class="waves-effect btn-default btn btn-border" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new { @area = "CM", referenceId = Model.ObjDetail.REFERENCE_FILE_ID }))"
+                              style="width: 100%; padding: 6px 10px 15px 10px !important;">
+                            <i class="material-icons col-orange" style="font-size: 24px; top: 6px;">cloud_upload</i><span>Thêm file đính kèm</span>
+                        </span>
+                        @if (Model.ObjDetail.REFERENCE_FILE_ID != null)
+                        {
+                            Html.RenderAction("ListFiles", "ReferenceFile", new { @area = "CM", referenceId = Model.ObjDetail.REFERENCE_FILE_ID });
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            $(".mask-number").inputmask({ "removeMaskOnSubmit": true });
+            $(".mask-number").focus(function () {
+                $(this).select();
+            });
+            Forms.CompleteUI();
+        });
+
+        function CalValue() {
+            var amount = Inputmask.unmask($("#ObjDetail_AMOUNT").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            var amountAdvance = Inputmask.unmask($("#ObjDetail_AMOUNT_ADVANCE").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            var totalPayment = Number(amount) + Number(amountAdvance);
+            if (!isNaN(totalPayment)) {
+                $("#total-payment").val(totalPayment);
+            }
+        }
+    </script>
+</div>

@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{02FEC8F7-5984-48ED-9D60-8808829629BE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SMO.Core</RootNamespace>
+    <AssemblyName>SMO.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\SolutionDll\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpSapRfc, Version=2.0.10.0, Culture=neutral, PublicKeyToken=3a74d6eebd98cdfe, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\SolutionDll\SharpSapRfc.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\BaseEntity.cs" />
+    <Compile Include="Common\BaseProjectPlanEntity.cs" />
+    <Compile Include="Common\BaseProjectVolumeEntity.cs" />
+    <Compile Include="Common\BasePSEntity.cs" />
+    <Compile Include="Common\IEntity.cs" />
+    <Compile Include="Entities\AD\T_AD_CONNECTION.cs" />
+    <Compile Include="Entities\AD\T_AD_FORM.cs" />
+    <Compile Include="Entities\AD\T_AD_FORM_OBJECT.cs" />
+    <Compile Include="Entities\AD\T_AD_HOSO.cs" />
+    <Compile Include="Entities\AD\T_AD_LANGUAGE.cs" />
+    <Compile Include="Entities\AD\T_AD_MENU.cs" />
+    <Compile Include="Entities\AD\T_AD_MESSAGE.cs" />
+    <Compile Include="Entities\AD\T_AD_ORGANIZE.cs" />
+    <Compile Include="Entities\AD\T_AD_PROJECT_RIGHT.cs" />
+    <Compile Include="Entities\AD\T_AD_RIGHT.cs" />
+    <Compile Include="Entities\AD\T_AD_ROLE.cs" />
+    <Compile Include="Entities\AD\T_AD_ROLE_DETAIL.cs" />
+    <Compile Include="Entities\AD\T_AD_SYSTEM_CONFIG.cs" />
+    <Compile Include="Entities\AD\T_AD_USER.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_CUSTOMER.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_GROUP.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_GROUP_ROLE.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_HISTORY.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_RIGHT.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_ROLE.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_USER_GROUP.cs" />
+    <Compile Include="Entities\AD\T_AD_USER_VENDOR.cs" />
+    <Compile Include="Entities\CF\T_CF_DCCH.cs" />
+    <Compile Include="Entities\CF\T_CF_DCNB.cs" />
+    <Compile Include="Entities\CF\T_CF_MHGL.cs" />
+    <Compile Include="Entities\CF\T_CF_MODUL.cs" />
+    <Compile Include="Entities\CF\T_CF_STORE_MATERIAL.cs" />
+    <Compile Include="Entities\CF\T_CF_TEMPLATE_NOTIFY.cs" />
+    <Compile Include="Entities\CF\T_CF_TEMPLATE_NOTIFY_SUM.cs" />
+    <Compile Include="Entities\CF\T_CF_TEMPLATE_TRANSFER.cs" />
+    <Compile Include="Entities\CF\T_CF_XBND.cs" />
+    <Compile Include="Entities\CF\T_CF_XBTX.cs" />
+    <Compile Include="Entities\CF\T_CF_XTHG.cs" />
+    <Compile Include="Entities\CM\T_CM_COMMENT.cs" />
+    <Compile Include="Entities\CM\T_CM_EMAIL.cs" />
+    <Compile Include="Entities\CM\T_CM_FILE_UPLOAD.cs" />
+    <Compile Include="Entities\CM\T_CM_HISTORY_SMO_API.cs" />
+    <Compile Include="Entities\CM\T_CM_MA_TRA_CUU.cs" />
+    <Compile Include="Entities\CM\T_CM_NOTIFY.cs" />
+    <Compile Include="Entities\CM\T_CM_REFERENCE_FILE.cs" />
+    <Compile Include="Entities\CM\T_CM_REFERENCE_LINK.cs" />
+    <Compile Include="Entities\CM\T_CM_SMS.cs" />
+    <Compile Include="Entities\CM\T_CM_SMS_HISTORY.cs" />
+    <Compile Include="Entities\CM\T_CM_SMS_OTP.cs" />
+    <Compile Include="Entities\MD\T_MD_AREA.cs" />
+    <Compile Include="Entities\MD\T_MD_BATCH.cs" />
+    <Compile Include="Entities\MD\T_MD_CONDITION.cs" />
+    <Compile Include="Entities\MD\T_MD_CONTRACT.cs" />
+    <Compile Include="Entities\MD\T_MD_CONTRACT_STATUS.cs" />
+    <Compile Include="Entities\MD\T_MD_CONTRACT_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_COUNTRY.cs" />
+    <Compile Include="Entities\MD\T_MD_CRITERIA.cs" />
+    <Compile Include="Entities\MD\T_MD_CURRENCY.cs" />
+    <Compile Include="Entities\MD\T_MD_CUSTOMER.cs" />
+    <Compile Include="Entities\MD\T_MD_CUSTOMER_OLD.cs" />
+    <Compile Include="Entities\MD\T_MD_CUSTOMER_TRANSFERED.cs" />
+    <Compile Include="Entities\MD\T_MD_DC.cs" />
+    <Compile Include="Entities\MD\T_MD_DICTIONARY.cs" />
+    <Compile Include="Entities\MD\T_MD_DISCHARD.cs" />
+    <Compile Include="Entities\MD\T_MD_DIVISION.cs" />
+    <Compile Include="Entities\MD\T_MD_DOMAIN.cs" />
+    <Compile Include="Entities\MD\T_MD_MATERIAL.cs" />
+    <Compile Include="Entities\MD\T_MD_NUMBER_RANGE.cs" />
+    <Compile Include="Entities\MD\T_MD_PAYMENT_STATUS.cs" />
+    <Compile Include="Entities\MD\T_MD_PAYMENT_TERM.cs" />
+    <Compile Include="Entities\MD\T_MD_PO.cs" />
+    <Compile Include="Entities\MD\T_MD_POTYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT_LEVEL.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT_PROFILE.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT_ROLE.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT_ROLE_RIGHT.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT_TIME_PERIOD.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_PROJECT_USER_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_PUR_GROUP.cs" />
+    <Compile Include="Entities\MD\T_MD_ROUTE.cs" />
+    <Compile Include="Entities\MD\T_MD_SALEOFFICE.cs" />
+    <Compile Include="Entities\MD\T_MD_SHPOINT.cs" />
+    <Compile Include="Entities\MD\T_MD_SHTYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_SLOCCH.cs" />
+    <Compile Include="Entities\MD\T_MD_SOTYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_STORE.cs" />
+    <Compile Include="Entities\MD\T_MD_TIME_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_TITLE.cs" />
+    <Compile Include="Entities\MD\T_MD_TRANSMODE.cs" />
+    <Compile Include="Entities\MD\T_MD_TRANSUNIT.cs" />
+    <Compile Include="Entities\MD\T_MD_UNIT.cs" />
+    <Compile Include="Entities\MD\T_MD_UNIT_OLD.cs" />
+    <Compile Include="Entities\MD\T_MD_VEHICLE.cs" />
+    <Compile Include="Entities\MD\T_MD_VEHICLE_COMPARTMENT.cs" />
+    <Compile Include="Entities\MD\T_MD_VENDOR.cs" />
+    <Compile Include="Entities\MD\T_MD_VENDOR_OLD.cs" />
+    <Compile Include="Entities\MD\T_MD_VENDOR_VEHICLE.cs" />
+    <Compile Include="Entities\PS\Enum.cs" />
+    <Compile Include="Entities\PS\T_PS_COMMENT.cs" />
+    <Compile Include="Entities\PS\T_PS_ACTIVITY.cs" />
+    <Compile Include="Entities\PS\T_PS_BOQ.cs" />
+    <Compile Include="Entities\PS\T_PS_CONFIG_HIDE_COLUMN.cs" />
+    <Compile Include="Entities\PS\T_PS_CONTRACT.cs" />
+    <Compile Include="Entities\PS\T_PS_CONTRACT_DETAIL.cs" />
+    <Compile Include="Entities\PS\T_PS_CONTRACT_FILE.cs" />
+    <Compile Include="Entities\PS\T_PS_CONTRACT_PAYMENT.cs" />
+    <Compile Include="Entities\PS\T_PS_GEN_CODE_HISTORY.cs" />
+    <Compile Include="Entities\PS\T_PS_PLAN_COST.cs" />
+    <Compile Include="Entities\PS\T_PS_PLAN_PROGRESS.cs" />
+    <Compile Include="Entities\PS\T_PS_PLAN_PROGRESS_HISTORY.cs" />
+    <Compile Include="Entities\PS\T_PS_PLAN_QUANTITY.cs" />
+    <Compile Include="Entities\PS\T_PS_PLAN_VOLUME_DESIGN.cs" />
+    <Compile Include="Entities\PS\T_PS_PROGRESS_HISTORY.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_SAP.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_USER_RIGHT.cs" />
+    <Compile Include="Entities\PS\T_PS_REFERENCE.cs" />
+    <Compile Include="Entities\PS\T_PS_RESOURCE.cs" />
+    <Compile Include="Entities\PS\T_PS_RESOURCE_OTHER.cs" />
+    <Compile Include="Entities\PS\T_PS_SL_DT.cs" />
+    <Compile Include="Entities\PS\T_PS_TASK.cs" />
+    <Compile Include="Entities\PS\T_PS_TASK_CHECK_LIST.cs" />
+    <Compile Include="Entities\PS\T_PS_TIME.cs" />
+    <Compile Include="Entities\PS\T_PS_VOLUME_ACCEPT.cs" />
+    <Compile Include="Entities\PS\T_PS_VOLUME_ACCEPT_DETAIL.cs" />
+    <Compile Include="Entities\PS\T_PS_VOLUME_PROGRESS_HISTORY.cs" />
+    <Compile Include="Entities\PS\T_PS_VOLUME_WORK.cs" />
+    <Compile Include="Entities\PS\T_PS_VOLUME_WORK_DETAIL.cs" />
+    <Compile Include="Entities\PS\T_PS_WBS.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

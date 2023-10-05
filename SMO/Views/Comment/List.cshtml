@@ -1,0 +1,26 @@
+﻿@model SMO.Service.CM.CommentService
+
+@foreach (var item in Model.ObjList)
+{
+    <div class="row-comment">
+        <label>@item.USER_CREATE.FULL_NAME</label> <span class="comment-time"> @item.CREATE_DATE.Value.ToString("dd/MM/yyyy HH:mm:ss")</span><br />
+        <span class="comment-content">@item.CONTENTS</span>
+    </div>
+
+    @*<div>
+        <b>@item.CONTENTS</b>
+        <i> @item.CREATE_DATE</i>
+        <i> @item.USER_CREATE.FULL_NAME</i>
+    </div>*@
+}
+
+
+
+
+
+
+
+
+
+
+

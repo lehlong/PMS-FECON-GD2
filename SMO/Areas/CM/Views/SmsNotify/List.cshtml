@@ -1,0 +1,73 @@
+﻿@model SMO.Service.CM.SmsNotifyService
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th class="align-center">Mã đơn hàng</th>
+                <th>Nghiệp vụ</th>
+                <th class="align-center">Trạng thái</th>
+                <th>Gửi tới</th>
+                <th class="align-center">Ngày tạo</th>
+                <th class="align-center">Số lần thử</th>
+                <th>Nội dung</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Detail", item.MODUL_TYPE, new {area = "PO", id = item.PO_CODE }));
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItem" + item.PKID)"></label>
+                    </td>
+                    <td class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@item.PO_CODE</a>
+                    </td>
+                    <td>@ModulType.GetText(item.MODUL_TYPE)</td>
+                    <td class="align-center">
+                        @if (item.IS_SEND)
+                        {
+                            <span class="col-blue">Thành công</span>
+                        }
+                        else
+                        {
+                            <span class="col-red">Thất bại</span>
+                        }
+                    </td>
+                    <td>@item.PHONE_NUMBER</td>
+                    <td class="align-center">@(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</td>
+                    <td class="align-center">
+                        
+                        @if (!item.IS_SEND)
+                        {
+                            <span class="badge bg-red" id="@("span" + item.PKID)">@item.NUMBER_RETRY</span><br />
+                            <span class="waves-effect btn-default btn" onclick="ResetNumber('@item.PKID', this)" title="Thử lại"><i class="material-icons">refresh</i><span>Gửi lại</span></span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-blue">@item.NUMBER_RETRY</span>
+                        }
+                    </td>
+                    <td width="300px;">
+                        @Html.Raw(item.CONTENTS)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+</script>

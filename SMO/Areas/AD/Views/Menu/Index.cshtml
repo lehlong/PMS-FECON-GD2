@@ -1,0 +1,128 @@
+﻿@model SMO.Service.AD.MenuService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exedit-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exhide-3.5.min.js"></script>
+
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">clear_all</i> DANH SÁCH MENU</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdAdd", "Thêm mới", string.Format("CreateMenu();"), "Alt+N", "add")
+                        @Html.MyButton("cmdUpdateTree", "Cập nhật thứ tự", "UpdateTree();", "Alt+N", "done_all")
+                    </div>
+                </div>
+
+                <div id="divTree">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var setting = {
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false
+            },
+            edit: {
+                enable: true,
+                showRemoveBtn: false,
+                showRenameBtn: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onClick: OnClick,
+                beforeDrop: BeforeDrop
+            }
+        };
+
+        function BeforeDrop(treeId, treeNodes, targetNode, moveType, isCopy) {
+            //if (!targetNode) {
+            //    return false;
+            //} else if (targetNode.id == zNodes[0].id) {
+            //    return false;
+            //}
+        }
+
+        function OnClick(event, treeId, treeNode) {
+            $("#hddParent").val(treeNode.pId);
+            var id = treeNode.id;
+            var url = "@Url.Action("Edit")";
+            var ajaxParams = {
+                url: url,
+                data: { id: id }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        };
+
+        function CreateMenu() {
+            var ajaxParams = {
+                url: "@Url.Action("Create")",
+                data: { parent: $("#hddParent").val() }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        }
+
+        function BuildTree(menuSelected, isUpdateOrder) {
+            $('#divTree').html("");
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("BuildTree")',
+                type: "GET",
+                data: { menuSelected: menuSelected },
+                success: function (response) {
+                    $('#divTree').html(response);
+                    if (isUpdateOrder && isUpdateOrder == true) {
+                        UpdateTree();
+                    }
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function UpdateTree() {
+            var zTree = $.fn.zTree.getZTreeObj("treeMenu");
+            var nodes = zTree.transformToArray(zTree.getNodes());
+            var data = nodes.map(function (a) { return { id: a.id, pId: a.pId }; });
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateTree")',
+                type: "POST",
+                data: data,
+                dataType: "json",
+                contentType: 'application/json; charset=UTF-8',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        $(function () {
+            BuildTree();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+

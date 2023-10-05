@@ -1,0 +1,137 @@
+﻿@model SMO.Service.AD.SystemConfigService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("UpdateConfig", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.PKID)
+        @Html.HiddenFor(m => m.ObjDetail.CURRENT_CONNECTION)
+        @Html.HiddenFor(m => m.ObjDetail.AD_CONNECTION)
+        //Tránh chrome tự fill username mật khẩu vào
+        <input style="display:none">
+        <input type="password" style="display:none">
+
+        <div class="card">
+            <div class="body">
+                @Html.MyButton("cmdSave", "Cập nhật thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+            </div>
+        </div>
+
+        <div class="row m-t-20">
+            <div class="col-sm-4 col-xs-12 p-b-10">
+                <div class="card">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons">clear_all</i> THÔNG TIN KẾT NỐI SAP</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <label>Host</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_HOST)
+                                </div>
+                            </div>
+
+                            <label>Client</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_CLIENT)
+                                </div>
+                            </div>
+
+                            <label>System number</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_NUMBER)
+                                </div>
+                            </div>
+
+                            <label>User SAP</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_USER_NAME)
+                                </div>
+                            </div>
+
+                            <label>Password SAP</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_PASSWORD, new { @type = "password" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-4 col-xs-12 p-b-10">
+                <div class="card border-grey">
+                    <div class="body" style="padding-top: 0px;">
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> THÔNG TIN EMAIL</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <label>SMTP Host</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_HOST)
+                                </div>
+                            </div>
+
+                            <label>Port</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PORT)
+                                </div>
+                            </div>
+
+                            <label>User name</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_USER)
+                                </div>
+                            </div>
+
+                            <label>Password</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PASSWORD, new { @type = "password" })
+                                </div>
+                            </div>
+
+                            <div class="form-group m-t-20">
+                                @if (Model.ObjDetail.MAIL_IS_SSL)
+                                {
+                                    <input type="checkbox" id="chkIsSSL" onchange="OnChangeIsSSL(this);" style="margin:0;" class="filled-in" checked />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="chkIsSSL" onchange="OnChangeIsSSL(this);" style="margin:0;" class="filled-in" />
+                                }
+                                <label for="chkIsSSL"></label> &nbsp;&nbsp;<b>Có kết nối SSL</b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        function OnChangeIsSSL(obj) {
+            $("#hddIsSSL").val($(obj).is(":checked"));
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

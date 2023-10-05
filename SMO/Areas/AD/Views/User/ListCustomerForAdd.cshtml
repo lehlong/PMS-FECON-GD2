@@ -1,0 +1,39 @@
+﻿@model SMO.Service.AD.UserService
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllCustomerForAdd" onclick="Forms.CheckAll('chkItemCustomerForAdd', '#chkAllCustomerForAdd')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllCustomerForAdd"></label>
+                </th>
+                <th>Mã khách hàng</th>
+                <th>Tên khách hàng</th>
+                <th>Địa chỉ</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListCustomer)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemCustomerForAdd" name="chkItemCustomerForAdd" id="@("chkItemCustomerForAdd" + item.CUSTOMER_CODE)" modelId="@item.CUSTOMER_CODE" style="margin:0;" />
+                        <label for="@("chkItemCustomerForAdd" + item.CUSTOMER_CODE)"></label>
+                    </td>
+                    <td>@item.CUSTOMER_CODE</td>
+                    <td>@item.TEXT</td>
+                    <td>@item.ADDRESS</td>
+                    <td>@item.ACTIVE</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Paging", Model); }
+
+

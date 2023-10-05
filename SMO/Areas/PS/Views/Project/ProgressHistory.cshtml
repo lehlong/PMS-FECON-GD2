@@ -1,0 +1,39 @@
+﻿@model IEnumerable<SMO.Core.Entities.PS.T_PS_PROGRESS_HISTORY>
+@using Newtonsoft.Json;
+
+@{
+    var gridId = Guid.NewGuid().ToString();
+    var mappingData = from data in Model
+                      select new
+                      {
+                          ACTOR = data.ACTOR,
+                          NOTE = data.NOTE,
+                          ACTION = data.ACTION.GetEnum<ProjectStructureProgressAction>().GetName(),
+                          PRE_STATUS = data.PRE_STATUS.GetEnum<ProjectStructureProgressStatus>().GetName(),
+                          DES_STATUS = data.DES_STATUS.GetEnum<ProjectStructureProgressStatus>().GetName(),
+                          CREATED_DATE = data.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat),
+                      };
+}
+
+<div style="min-height: 353px" id="@gridId"></div>
+
+<script type="text/javascript">
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(mappingData));
+    const columns = [
+        //{ id: "ACTION", header: [{ text: "Hành động" }] },
+        { id: "ACTOR", header: [{ text: "Người thực hiện" }] },
+        //{ id: "PRE_STATUS", header: [{ text: "Trạng thái ban đầu" }] },
+        { id: "ACTION", header: [{ text: "Hành động" }] },
+        { id: "NOTE", header: [{ text: "Nội dung" }] },
+        { id: "CREATED_DATE", header: [{ text: "Thời gian" }], width: 150, adjust: false },
+    ]
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        autoHeight: true,
+        //adjust: true,
+        resizable: true,
+        keyNavigation: true,
+        data: rawData,
+    });
+</script>

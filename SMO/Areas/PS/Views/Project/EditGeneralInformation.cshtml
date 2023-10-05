@@ -1,0 +1,605 @@
+﻿@model SMO.Service.PS.ProjectService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.MD
+@using SMO.Core.Entities.PS
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var lstUserFecon = Model.UnitOfWork.GetSession().Query<T_AD_USER>().Where(x => x.USER_TYPE == UserType.Fecon).ToList();
+    var lstOrg = Model.UnitOfWork.GetSession().Query<T_AD_ORGANIZE>().ToList();
+    var hopDong = Model.UnitOfWork.GetSession().Query<T_PS_CONTRACT>().Where(x => x.PROJECT_ID == Model.ObjDetail.ID && x.IS_SIGN_WITH_CUSTOMER == true).FirstOrDefault();
+    var lstPurGroup = Model.UnitOfWork.GetSession().Query<T_MD_PUR_GROUP>().ToList();
+    var lstArea = Model.UnitOfWork.GetSession().Query<T_MD_AREA>().ToList();
+
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.1", Model.ObjDetail.ID))
+    {
+        editable = true;
+    }
+
+    var disabledTimeType = "disabeld";
+    if (Model.ObjDetail.STATUS == ProjectStatus.KHOI_TAO.GetValue())
+    {
+        disabledTimeType = "";
+    }
+    if (Model.ObjDetail.STATUS == ProjectStatus.DONG_DU_AN.GetValue())
+    {
+        editable = false;
+    }
+}
+<style>
+    #all-info-project, .fade-button {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+
+    @@media (min-width: 1200px) {
+        .col-lg-5 {
+            width: 39.666667%;
+        }
+    }
+    .dhx_string-cell, .dhx_string-cell .dhx_grid-cell__content {
+        text-align: left;
+        justify-content: flex-start;
+        word-break: break-word;
+    }
+    .dhx_grid-header-cell-text_content-auto-height {
+        overflow: hidden;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+</style>
+<div class="card" id="@Model.ViewId">
+    <div class="body" style="padding-top: 0px;">
+        <div class="tab-content">
+            <div class="page-function p-t-10">
+                <div class="page-function-button m-r-20 fade-button" style="display: flex; align-items: center">
+                    @if (editable)
+                    {
+                        @Html.MyButton("cmdSave", "Lưu thông tin dự án", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+
+                    }
+                    @if (Model.ObjDetail.STATUS == ProjectStatus.KHOI_TAO.GetValue())
+                    {
+                        @Html.MyButton("cmdBack", "Bắt đầu lập kế hoạch", "startProject_Edit();", "Alt+N", "check")
+                    }
+                    @if (Model.ObjDetail.STATUS == ProjectStatus.LAP_KE_HOACH.GetValue() || Model.ObjDetail.STATUS == ProjectStatus.BAT_DAU.GetValue())
+                    {
+                        <div id="progress-buttons">
+
+                        </div>
+                    }
+                    @if (Model.ObjDetail.STATUS == ProjectStatus.HOAN_THANH.GetValue() && AuthorizeUtilities.CheckUserRightProject("RP2.4", Model.ObjDetail.ID))
+                    {
+                        @Html.MyButton("cmdBack", "Đóng dự án", "closeProject_Edit();", "Alt+N", "close")
+                        @*@Html.MyButton("cmdBack", "Đồng bộ lên SAP", "UpdateProjectSAP();", "Alt+N", "backup")*@
+                    }
+
+                    @if (Model.ObjDetail.STATUS == ProjectStatus.BAT_DAU.GetValue() && AuthorizeUtilities.CheckUserRightProject("RP2.4", Model.ObjDetail.ID))
+                    {
+                        @Html.MyButton("cmdBack", "Hoàn thành", "doneProject_Edit();", "Alt+N", "done")
+                        @*@Html.MyButton("cmdBack", "Đồng bộ lên SAP", "UpdateProjectSAP();", "Alt+N", "backup")*@
+                    }
+                </div>
+            </div>
+            <div id="all-info-project" class="row m-t-30">
+                @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                {
+                    @Html.HiddenFor(x => x.ObjDetail.ID)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_STRUCT_PLAN)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_CUSTOMER_PLAN_COST)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_CUSTOMER_PLAN_PROGRESS)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_CUSTOMER_PLAN_QUANTITY)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_SL_DT)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_VENDOR_PLAN_COST)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_VENDOR_PLAN_PROGRESS)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS_VENDOR_PLAN_QUANTITY)
+                    @Html.HiddenFor(x => x.ObjDetail.FINISH_DATE_ACTUAL)
+                    @Html.HiddenFor(x => x.ObjDetail.NGAY_TRIEN_KHAI)
+                    @Html.HiddenFor(x => x.ObjDetail.START_DATE)
+                    @Html.HiddenFor(x => x.ObjDetail.IS_CREATE_ON_SAP)
+                    @Html.AntiForgeryToken()
+
+                <div class="col-lg-7 col-xs-10" style="box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 14px;">
+                    <div class="title-header" style="margin-bottom: 14px; display: flex; flex-direction: row; align-items: center;"><i class="material-icons" style="margin-right: 6px;">info</i>THÔNG TIN DỰ ÁN </div>
+
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Công ty phụ trách</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.DON_VI)" id="dllCompany" data-val="true" data-val-required="Công ty phụ trách bắt buộc nhập"
+                                        data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany();"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var company in lstOrg.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
+                                    {
+                                        var selected = "";
+                                        if (company.PKID == Model.ObjDetail.DON_VI)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@company.PKID" data-company="@company.COMPANY_CODE" @selected>
+                                            @company.NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            @Html.ValidationMessageFor(m => m.ObjDetail.DON_VI)
+                        </div>
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Phòng ban phụ trách</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.PHONG_BAN)" id="dllPhongBan" data-val="true" data-val-required="Phòng ban phụ trách bắt buộc nhập"
+                                        data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var phongBan in lstOrg.Where(x => x.TYPE == "BP").OrderBy(x => x.C_ORDER))
+                                    {
+                                        var selected = "";
+                                        if (phongBan.PKID == Model.ObjDetail.PHONG_BAN)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@phongBan.PKID" data-company="@phongBan.COMPANY_CODE" @selected>
+                                            @phongBan.NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PHONG_BAN)
+                        </div>
+                    </div>
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Mã dự án</label>
+                                @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { @readonly = "true" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                        </div>
+                        <div style="flex: 3">
+                            <div class="form-line">
+                                <label>Tên dự án</label>
+                                @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Loại dự án</label>
+                                @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetProjectType(),
+                                new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.TYPE)
+                        </div>
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Nhóm mua hàng</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.PUR_GROUP)" id="dllPurGroup" data-val="true" data-val-required="Nhóm mua hàng bắt buộc nhập"
+                                        data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var item in lstPurGroup)
+                                    {
+                                        var selected = "";
+                                        if (item.CODE == Model.ObjDetail.PUR_GROUP)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@item.CODE" data-company="@item.COMPANY_CODE" data-subtext="@item.CODE" @selected>
+                                            @item.NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PUR_GROUP)
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-line">
+                            <label>Khách hàng</label>
+                            @Html.MyDropDownListFor(m => m.ObjDetail.CUSTOMER_CODE, SelectListUtilities.GetCustomers(),
+                           new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ObjDetail.CUSTOMER_CODE)
+                    </div>
+
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Kỳ thời gian</label>
+                                @if (string.IsNullOrEmpty(disabledTimeType))
+                                {
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.TIME_TYPE, SelectListUtilities.GetTimePeriods(),
+                               new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                }
+                                else
+                                {
+                                    @Html.HiddenFor(m => m.ObjDetail.TIME_TYPE)
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.TIME_TYPE, SelectListUtilities.GetTimePeriods(),
+                               new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                                }
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.TIME_TYPE)
+                        </div>
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Cấp dự án</label>
+                                @Html.MyDropDownListFor(m => m.ObjDetail.PROJECT_LEVEL_CODE, SelectListUtilities.GetProjectLevel(),
+                               new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PROJECT_LEVEL_CODE)
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Ngày bắt đầu</label>
+                                @Html.MyTextBoxFor(m => m.ObjDetail.START_DATE, new { @class = "datepicker", @autocomplete = "off", @style = "text-align: left;", disabled = "true" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.START_DATE)
+                        </div>
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Ngày kết thúc</label>
+                                @Html.MyTextBoxFor(m => m.ObjDetail.FINISH_DATE, new { @class = "datepicker", @autocomplete = "off", @style = "text-align: left;" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.FINISH_DATE)
+                        </div>
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Ngày quyết toán dự kiến</label>
+                                @Html.MyTextBoxFor(m => m.ObjDetail.NGAY_QUYET_TOAN, new { @class = "datepicker", @autocomplete = "off", @style = "text-align: left;" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.NGAY_QUYET_TOAN)
+                        </div>
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Ngày hết hạn bảo hành</label>
+                                @Html.MyTextBoxFor(m => m.ObjDetail.HAN_BAO_HANH, new { @class = "datepicker", @autocomplete = "off", @style = "text-align: left;" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.HAN_BAO_HANH)
+                        </div>
+                    </div>
+
+                    <div style="display:flex; flex-direction: row; gap:10px;" class="form-group">
+                        <div style="flex-grow:1">
+                            <div class="form-line">
+                                <label class="m-t-15">Lãnh đạo phụ trách</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.GIAM_DOC_DU_AN)"
+                                        data-live-search="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var user in lstUserFecon.OrderBy(x => x.USER_NAME))
+                                    {
+                                        var selected = "";
+                                        if (user.USER_NAME == Model.ObjDetail.GIAM_DOC_DU_AN)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@user.USER_NAME" data-subtext="@user.USER_NAME" @selected>
+                                            @user.FULL_NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.GIAM_DOC_DU_AN)
+                        </div>
+                        <div style="flex-grow:1">
+                            <div class="form-line">
+                                <label class="m-t-15">PM dự án</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.QUAN_TRI_DU_AN)"
+                                        data-live-search="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var user in lstUserFecon.OrderBy(x => x.USER_NAME))
+                                    {
+                                        var selected = "";
+                                        if (user.USER_NAME == Model.ObjDetail.QUAN_TRI_DU_AN)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@user.USER_NAME" data-subtext="@user.USER_NAME" @selected>
+                                            @user.FULL_NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.QUAN_TRI_DU_AN)
+                        </div>
+                        <div style="flex-grow:1">
+                            <div class="form-line">
+                                <label class="m-t-15">Người phụ trách (SM)</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.PROJECT_OWNER)"
+                                        data-live-search="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var user in lstUserFecon.OrderBy(x => x.USER_NAME))
+                                    {
+                                        var selected = "";
+                                        if (user.USER_NAME == Model.ObjDetail.PROJECT_OWNER)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@user.USER_NAME" data-subtext="@user.USER_NAME" @selected>
+                                            @user.FULL_NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PROJECT_OWNER)
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display: flex; flex-flow: row; gap: 10px; margin-top: 24px; margin-bottom: 0;">
+                        <div style="flex:1">
+                            <div class="form-line" style="position: relative; top: -15px;">
+                                <label class="m-t-15">Phụ trách cung ứng</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.PHU_TRACH_CUNG_UNG)"
+                                        data-live-search="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var user in lstUserFecon.OrderBy(x => x.USER_NAME))
+                                    {
+                                        var selected = "";
+                                        if (user.USER_NAME == Model.ObjDetail.PHU_TRACH_CUNG_UNG)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@user.USER_NAME" data-subtext="@user.USER_NAME" @selected>
+                                            @user.FULL_NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PHU_TRACH_CUNG_UNG)
+                        </div>
+                        <div style="flex:1">
+                            <div class="form-line" style="position: relative; top: -15px;">
+                                <label class="m-t-15">Quản lý hợp đồng</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.QUAN_LY_HOP_DONG)"
+                                        data-live-search="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var user in lstUserFecon.OrderBy(x => x.USER_NAME))
+                                    {
+                                        var selected = "";
+                                        if (user.USER_NAME == Model.ObjDetail.QUAN_LY_HOP_DONG)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@user.USER_NAME" data-subtext="@user.USER_NAME" @selected>
+                                            @user.FULL_NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.QUAN_LY_HOP_DONG)
+                        </div>
+
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Giai đoạn</label>
+                                <input class="form-control col-red" value="@(Model.ObjDetail.STATUS.GetEnum<ProjectStatus>().GetName())" readonly style="text-align: left;">
+                            </div>
+                        </div>
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Trạng thái</label>
+                                <input class="form-control col-red" value="@(Model.ObjDetail.STATUS_STRUCT_PLAN.GetEnum<ProjectStructureProgressStatus>().GetName())" readonly style="text-align: left;">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                        <div style="flex: 1">
+                            <div class="form-line">
+                                <label>Khu vực</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.KHU_VUC)" data-val="true"
+                                        data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var area in lstArea.OrderBy(x => x.CODE))
+                                    {
+                                        var selected = "";
+                                        if (area.CODE == Model.ObjDetail.KHU_VUC)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@area.CODE" @selected>
+                                            @area.NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            @Html.ValidationMessageFor(m => m.ObjDetail.KHU_VUC)
+                        </div>
+                        <div style="flex: 1">
+                            <label>Địa điểm</label>
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.DIA_DIEM)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.DIA_DIEM)
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <div class="form-line">
+                            @Html.MyTextAreaFor(m => m.ObjDetail.DESCRIPTION)
+                        </div>
+                        @Html.ValidationMessageFor(m => m.ObjDetail.DESCRIPTION)
+                    </div>
+                </div>
+
+                    <div class="col-lg-5" style="margin-left: 20px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%);">
+                        <div class="title-header" style="margin-top: 14px; margin-bottom: 14px; display: flex; flex-direction: row; align-items: center;"><i class="material-icons" style="margin-right: 6px;">work</i>THÔNG TIN HỢP ĐỒNG </div>
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Số hợp đồng</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_NUMBER)" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 2">
+                                <div class="form-line">
+                                    <label>Tên hợp đồng</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.NAME)" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Ngày bắt đầu</label>
+                                    <input class="form-control valid align-center" type="text" value="@(hopDong?.START_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Ngày kết thúc</label>
+                                    <input class="form-control valid align-center" type="text" value="@(hopDong?.FINISH_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Giá trị(trước thuế)</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_VALUE.ToStringVN())" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>VAT %</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.VAT)" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Giá trị(sau thuế)</label>
+                                    <input class="form-control valid" type="text" readonly value="@((hopDong?.CONTRACT_VALUE + hopDong?.CONTRACT_VALUE * hopDong?.VAT / 100)?.ToString("0,0"))">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                }
+                <div class="col-lg-5" style="margin-left: 20px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%);">
+                    <div class="title-header" style=" margin-top: 14px; margin-bottom: 14px; display: flex; flex-direction: row; align-items: center;"> <i class="material-icons" style="margin-right: 6px;">attachment</i>FILE ĐÍNH KÈM</div>
+                    @if (editable)
+                    {
+                        <span class="waves-effect btn-default btn btn-border" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new {@area = "CM", referenceId = Model.ObjDetail.REFERENCE_FILE_ID }))"
+                              style="width: 100%; padding: 6px 10px 15px 10px !important;">
+                            <i class="material-icons col-orange" style="font-size: 24px; top: 6px;">cloud_upload</i><span>Thêm file đính kèm</span>
+                        </span>
+                    }
+
+                    @if (Model.ObjDetail.REFERENCE_FILE_ID != null)
+                    {
+                        Html.RenderAction("ListFiles", "ReferenceFile", new { @area = "CM", referenceId = Model.ObjDetail.REFERENCE_FILE_ID });
+                    }
+                </div>
+
+                <div class="col-lg-5" style="margin-left: 20px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%);">
+                    <div class="title-header" style="margin-top: 14px; margin-bottom: 14px; display: flex; flex-direction: row; align-items: center;"> <i class="material-icons" style="margin-right: 6px;">history</i>LỊCH SỬ THỰC HIỆN</div>
+                    @{
+                        Html.RenderAction("ProgressHistory", new { projectId = Model.ObjDetail.ID });
+                    }
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    jQuery(function () {
+        var datepicker = $('input.datepicker');
+
+        if (datepicker.length > 0) {
+            datepicker.datepicker({
+                autoclose: true,
+                format: "dd/mm/yyyy",
+                startDate: "@Model.ObjDetail.FINISH_DATE.Day/@Model.ObjDetail.FINISH_DATE.Month/@Model.ObjDetail.FINISH_DATE.Year"
+            });
+        }
+    });
+
+    function UpdateProjectSAP() {
+        Forms.Ajax({
+            url: '@Html.Raw(Url.Action($"UpdateProjectSAP"))',
+            type: "POST",
+            data: { projectId: "@Model.ObjDetail.ID" },
+            dataType: "json",
+            success: function (response) {
+                Message.execute(response);
+            }
+        });
+    }
+
+    function refreshProgressButtons() {
+            Forms.LoadAjax({
+                url: '@Html.Raw(Url.Action($"ProgressProjectButtons",
+                                   new { @area="PS", projectId = Model.ObjDetail.ID }))',
+                htmlTarget: '#@Model.ViewId #progress-buttons'
+            });
+        }
+    function OnChangeCompany() {
+        var companyCode = $("#@Model.ViewId #dllCompany").find(':selected').data("company");
+        //$("#dllPhongBan").val("");
+        //$("#dllPurGroup").val("");
+        $("#@Model.ViewId #dllPhongBan option").removeAttr('disabled');
+        $("#@Model.ViewId #dllPurGroup option").removeAttr('disabled');
+        $("#@Model.ViewId #dllPhongBan option").each(function () {
+            if ($(this).data('company') != companyCode) {
+                $(this).attr('disabled', 'disabled');
+            }
+        });
+
+        $("#@Model.ViewId #dllPurGroup option").each(function () {
+            if ($(this).data('company') != companyCode) {
+                $(this).attr('disabled', 'disabled');
+            }
+        });
+
+        $("#@Model.ViewId #dllPhongBan").selectpicker('refresh');
+        $("#@Model.ViewId #dllPurGroup").selectpicker('refresh');
+    }
+
+    $(function () {
+        Forms.CompleteUI();
+        refreshProgressButtons()
+        OnChangeCompany();
+
+        if ("@editable" == "False") {
+            $("#@Model.FormId *").prop("disabled", true);
+        }
+    });
+</script>
+

@@ -1,0 +1,58 @@
+﻿@model SMO.Service.MD.DomainService
+@{
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Ghi chú</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.CODE }));
+                var toggleAction = string.Format("Forms.ToggleActive('{0}', this);", Url.Action("ToggleActive", new { id = item.CODE }));
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.CODE)" modelId="@item.CODE" style="margin:0;" />
+                        <label for="@("chkItem" + item.CODE)"></label>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.NAME</td>
+                    <td ondblclick="@vdbclickAction">@item.NOTE</td>
+                    <td class="align-center" style="width:20px; vertical-align: middle">
+                        @if (item.ACTIVE)
+                        {
+                            <input onclick="@toggleAction" id="@chkActive" type="checkbox" class="filled-in chk-col-light-blue" checked="checked" />
+                            <label for="@chkActive"></label>
+                        }
+                        else
+                        {
+                            <input onclick="@toggleAction" id="@chkInActive" type="checkbox" class="filled-in chk-col-light-blue" />
+                            <label for="@chkInActive"></label>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

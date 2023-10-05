@@ -1,0 +1,111 @@
+﻿@{
+    var viewId = Guid.NewGuid().ToString();
+    var projectId = ViewBag.ProjectId;
+    var currentUser = ViewBag.CurrentUser;
+}
+
+<div id="@viewId">
+    <style>
+        .gantt_last_cell {
+            overflow: inherit !important;
+        }
+        .bg-gantt-green {
+            background-color: #BEE4BE !important;
+        }
+    </style>
+    <link href="~/Content/gantt-chart.css" rel="stylesheet" />
+    <link href="~/Properties/dhtmlx-gantt/codebase/dhtmlxgantt.min.css?v=7.1.7"
+          rel="stylesheet" type="text/css" />
+    @*<script src="~/Properties/dhtmlx-gantt/codebase/dhtmlxgantt.min.js?v=7.1.7"></script>*@
+    <script src="~/Scripts/GanttChart/dhtmlxgantt.js?v=7.1.8"></script>
+    <script type="text/javascript" src="~/Scripts/GanttChart/nav_menu.js?v=7.1.7"></script>
+    <script type="text/javascript" src="~/Scripts/GanttChart/zoom.js?v=7.1.7"></script>
+    <div class="gantt-demo-header">
+        <ul class="gantt-controls">
+            <li class="gantt-menu-item">
+                <a data-action="collapseAll">
+                    <span class="material-icons">keyboard_arrow_up</span>Thu gọn
+                </a>
+            </li>
+            <li class="gantt-menu-item gantt-menu-item-last">
+                <a data-action="expandAll">
+                    <span class="material-icons">keyboard_arrow_down</span>Mở rộng
+                </a>
+            </li>
+
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a data-action="fullscreen">
+                    <span class="material-icons">zoom_out_map</span>
+                    
+                </a>
+            </li>
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a data-action="zoomOut" class="">
+                    <span class="material-icons">zoom_out</span>
+                    
+                </a>
+            </li>
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a data-action="zoomIn" class="menu-item-disabled">
+                    <span class="material-icons">zoom_in</span>
+                    
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div>
+        <div id="gantt-chart" style="width: 100%; height: calc(100vh - 142px);"></div>
+    </div>
+    @{
+        Html.RenderPartial("~/Areas/GC/Views/Shared/CustomForm.cshtml");
+    }
+
+    <script>
+        function refreshData() {
+            gantt.load("/api/Data/GetGanttChartData?projectId=@projectId");
+    }
+        $('.masked-input-date').inputmask('dd/mm/yyyy', { placeholder: '__/__/____' });
+        //autosize
+        autosize($('.autosize'));
+        // initiating data loading
+        gantt.load("/api/Data/GetGanttChartData?projectId=@projectId");
+        // initializing gantt
+
+        gantt.plugins({
+            tooltip: true,
+            fullscreen: true,
+            marker: true
+        });
+        const formatFunc = gantt.date.date_to_str("%d/%m/%Y");
+
+        const id = gantt.addMarker({
+            start_date: new Date(),
+            text: "Today",
+            title: formatFunc(new Date())
+        });
+        //setInterval(function () {
+        //    var today = gantt.getMarker(id);
+        //    //today.start_date = new Date();
+        //    //today.title = formatFunc(today.start_date);
+        //    gantt.updateMarker(id);
+        //}, 1000 * 60);
+        gantt.init("gantt-chart");
+
+        gantt.projectId = "@projectId"
+
+        var router = function (entity, action, data, id) {
+            // entity: task / link
+            // action: create, update, delete,
+            // id: task id
+            // data:
+            data.projectId = '@projectId';
+            const server = "api";
+        }
+        var dp = gantt.createDataProcessor(router);
+
+        dp.init(gantt);
+        ganttModules.menu.setup();
+    </script>
+    <script src="~/Scripts/GanttChart/config_gantt_chart_view.js?v=1" type="text/javascript"></script>
+
+</div>

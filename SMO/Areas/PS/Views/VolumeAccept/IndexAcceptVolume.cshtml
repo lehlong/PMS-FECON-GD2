@@ -1,0 +1,232 @@
+﻿@model SMO.Service.PS.VolumeAcceptService
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    var type = Model.ObjDetail.IS_CUSTOMER ? "Customer" : "Vendor";
+    var typeDisplayText = Model.ObjDetail.IS_CUSTOMER ? "KHÁCH HÀNG" : "THẦU PHỤ";
+    var isNew = Model.ObjDetail.ID == Guid.Empty;
+    var actionDisplayText = isNew ? "NHẬP MỚI" : "CẬP NHẬT";
+    var editable = project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue();
+}
+<div id='@Model.ViewId'>
+    <style>
+        .bootstrap-select {
+            margin-left: 10px !important;
+            max-width: 200px;
+        }
+
+        .content .page-function-search {
+            max-width: 100%;
+        }
+
+        .alert-border {
+            border: 2px solid red;
+        }
+        .fade-accept {
+            position: relative;
+            animation: fadeInBottom 1.8s;
+            animation-timing-function: ease;
+        }
+
+        @@keyframes fadeInBottom {
+            from {
+                opacity: 0;
+                transform: translateY(100%);
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+    </style>
+    <div class="p-l-20 p-t-10">
+        <div class="title-header">
+            <i class="material-icons">content_copy</i> <span class="title-name"><b>@project.CODE - @project.NAME.ToUpper() - KHỐI LƯỢNG NGHIỆM THU @typeDisplayText</b></span>
+            <span class="title-nav">
+                KHỐI LƯỢNG NGHIỆM THU - @actionDisplayText DỮ LIỆU
+            </span>
+        </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}')", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    @using (Ajax.BeginForm($"EditAcceptVolume{type}", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.IS_CUSTOMER)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.VENDOR_CODE)
+        @Html.HiddenFor(m => m.ObjDetail.ID)
+        <div id="import" hidden>
+            <div class="modal-backdrop fade in"></div>
+            <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; padding-right: 17px;">
+                <div class="modal-dialog " role="document">
+                    <div class="modal-content">
+
+                        <div class="card">
+                            <div class="body" style="padding-top: 0px;">
+                                <div class="tab-content">
+                                    <div class="page-function p-t-10">
+                                        @Html.MyButton("cmdSave", "Import", "upload()", "Alt+N", "done_all")
+                                        @Html.MyButton("cmdSave", "Đóng", $"closePopUp()", "Alt+N", "close")
+                                    </div>
+                                    <div class="row m-t-30">
+                                        <div class="col-xs-1 col-lg-3"></div>
+                                        <div class="col-lg-6 col-xs-10">
+                                            <label>Chọn file</label>
+                                            <div class="form-group">
+                                                <div class="form-line">
+                                                    <input type="file" accept=".xlsx,.xls" id="file_upload" name="file_upload" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons"></i> @actionDisplayText DỮ LIỆU NGHIỆM THU</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-t-10">
+                        <div class="page-function-button m-r-20 fade-accept" style="display: flex">
+                            @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-detail\").click();$(\"#close-update-time\").click();$(\"#close-vendor\").click();"), "Alt+N", "arrow_back")
+                            @if (editable && project.STATUS != "04" && project.STATUS != "05")
+                            {
+                                if (isNew)
+                                {
+                                    @Html.MyButton("cmdSave", "Lưu dữ liệu", "saveData('0')", "Alt+N", "done_all")
+                                    @Html.MyButton("cmdSave", "Gửi", "saveData('1')", "Alt+N", "send")
+                                }
+                                else
+                                {
+                                    <div id="progress-buttons">
+
+                                    </div>
+                                    @Html.MyButton("cmdHisotry", "Xem lịch sử", "viewProgressHistory()", "Alt+N", "history")
+                                }
+                                if (Model.ObjDetail.STATUS == "01" || Model.ObjDetail.STATUS == "03" || Model.ObjDetail.STATUS == "06" || isNew)
+                                {
+
+                                    @Html.MyButton("cmdImport", "Nhập Excel", $"ImportData()", "Alt+N", "file_upload")
+                                }
+                            }
+                            @Html.MyButton("cmdSave", "Xuất Excel", $"ExportDataExcel()", "Alt+N", "file_download")
+                            
+                        </div>
+                    </div>
+                    <div class="m-t-20">
+
+                    </div>
+                    <div class="clearfix"></div>
+                    <div id="divResult" class="fade-accept">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script>
+    <script type="text/javascript">
+    function SubmitIndex() {
+        Forms.SubmitForm('@Model.FormId');
+    }
+
+    $(function () {
+                @if (!isNew && editable)
+            {
+                <text>
+        refreshProgressButtons();
+            </text>
+            }
+        Forms.SubmitForm('@Model.FormId');
+        Forms.CompleteUI();
+        Forms.SubmitByEnter("@Model.FormId");
+    });
+        @if(isNew)
+            {
+                <text>
+    function CloseView() {
+        Forms.Close('@Model.ViewId')
+        }
+        </text>
+            }
+
+        function ExportDataExcel() {
+            try {
+                ExportExcel()
+            } catch (e) {
+                alert("Lỗi trong quá trình xuất Excel.")
+            }
+        }
+        function Refresh() {
+            RefreshData();
+        }
+
+        function ImportData() {
+            $("#import").show();
+        }
+
+        function closePopUp() {
+            $("#import").hide();
+        }
+
+        function ImportDataExcel() {
+            try {
+                ImportExcel()
+            } catch (e) {
+                alert("Lỗi trong quá trình nhập Excel.")
+            }
+        }
+    function refreshProgressButtons() {
+        Forms.LoadAjax({
+            url: '@Html.Raw(Url.Action($"ProgressButtons",
+                                       new { id=Model.ObjDetail.ID }))',
+            htmlTarget: '#@Model.ViewId #progress-buttons'
+        });
+    }
+    function viewProgressHistory() {
+        Forms.LoadAjaxModalLarge({
+            url: '@Html.Raw(Url.Action("VolumeProgressHistory", "Project",
+                                   new { resourceId=Model.ObjDetail.ID }))'
+        })
+    }
+    function setAlertColumn(rowId) {
+        $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=acceptVolume]`).css('border', '2px solid red')
+        $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=acceptVolume]`).attr('tooltip', "Lỗi LK nghiệm thu > LK thực hiện")
+    }
+        function removeAlertColumn(rowId) {
+        $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=acceptVolume]`).css('border', '')
+        $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=acceptVolume]`).removeAttr('tooltip')
+    }
+
+    // Method to upload a valid excel file
+    function upload() {
+        var files = document.getElementById('file_upload').files;
+        if (files.length == 0) {
+            alert("Please choose any file...");
+            return;
+        }
+        var filename = files[0].name;
+        var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+        if (extension == '.XLS' || extension == '.XLSX') {
+            excelFileToJSON(files[0]);
+        } else {
+            alert("Please select a valid excel file.");
+        }
+    }
+    </script>
+
+</div>
+

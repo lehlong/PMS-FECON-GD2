@@ -1,0 +1,289 @@
+﻿@model IEnumerable<SMO.Service.PS.Models.Report.ProjectCostControl.ProjectCostControlReportData>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var gridId = Guid.NewGuid().ToString();
+    var searchModel = ViewBag.SearchModel as SMO.Service.PS.Models.Report.ProjectCostControl.ProjectCostControlReportModel;
+    searchModel.BoldRowIndexes = Model.GroupBy(x => x.Id).Select((data, index) => new { data, index }).Where(x => x.data.First().Type == "PROJECT").Select(x => x.index).ToList();
+    searchModel.PercentageRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.UnitCode == "%").Select(x => x.index).ToList();
+    var display = ConfigHideColumn.BAO_CAO_KIEM_SOAT_CHI_PHI_DU_AN.GetValue().ToString();
+
+}
+<style>
+    .row-bold .dhx_grid-cell {
+        font-weight: bold
+    }
+
+    .grid .dhx_grid-cell {
+        word-break: break-word
+    }
+
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
+
+    .fade-report {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+
+<div class="fade-report">
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+    <div class="dropdown-hide-column">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+        <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+        </select>
+        <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+    </div>
+    <div style="height: calc(100vh - 180px)" id="@gridId" class="grid"></div>
+
+    <script type="text/javascript">
+
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(Model.Distinct(), jsonSerializeSettings));
+    function displayNumberRounded(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0')
+    }
+    function displayNumber(value) {
+        return numeral(isNaN(value) || !_.isFinite(value) ? 0 : value).format('0,0.[000]')
+    }
+    function displayPercentage(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+    }
+    function displayQuantity(value, row) {
+        const { unitCode } = row
+        if (unitCode === "%") {
+            return numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+        }
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[000]')
+    }
+    const sumDescendantToParent = (row, _index, collection) => {
+        const { id, costPlanTotal, performanceCostTotal, mainContractTotal, performanceContractTotal } = row
+        const children = _.filter(collection, { "parentId": id })
+        const linkedElements = _.filter(collection, { "linkedBoqId": id })
+
+        if (children.length === 0) {
+            return row
+        }
+        if (!mainContractTotal || mainContractTotal === 0) {
+            row.mainContractTotal = _.sumBy(children, 'mainContractTotal')
+        }
+        if (!costPlanTotal || costPlanTotal === 0) {
+            row.costPlanTotal = _.sumBy(children, 'costPlanTotal')
+        }
+        if (!performanceCostTotal || performanceCostTotal === 0) {
+            row.performanceCostTotal = _.sumBy(children, 'performanceCostTotal')
+        }
+        if (!performanceContractTotal || performanceContractTotal === 0) {
+            row.performanceContractTotal = _.sumBy(children, 'performanceContractTotal')
+        }
+        return row
+    }
+
+    const sumRawData= _.chain(rawData)
+        .reverse()
+        .map(sumDescendantToParent)
+        .reverse()
+        .value()
+
+    const sumDescendantToParentLinkBoq = (row, _index, collection) => {
+        const { id, costPlanTotal, performanceCostTotal, mainContractTotal, performanceContractTotal,
+            costPlanVolume, costPlanPrice, performanceCostVolume, performanceCostPrice} = row
+        const linkedElements = _.filter(collection, { "linkedBoqId": id })
+        if (!costPlanTotal || costPlanTotal === 0) {
+            row.costPlanTotal = _.sumBy(linkedElements, function (row, _index, collection) { return row.costPlanVolume * row.costPlanPrice; });
+        }
+        if (!performanceCostTotal || performanceCostTotal === 0) {
+            row.performanceCostTotal = _.sumBy(linkedElements, function (row, _index, collection) { return row.performanceCostVolume * row.performanceCostPrice; });
+        }
+        return row
+    }
+
+    const gridData = _.chain(sumRawData)
+        .reverse()
+        .map(sumDescendantToParentLinkBoq)
+        .reverse()
+        .value()
+
+    const gridDataSumChild = _.chain(gridData)
+        .reverse()
+        .map(sumDescendantToParent)
+        .reverse()
+        .value()
+
+    const columns = [
+        { id: "structureCode", header: [{ text: "Mã " }, { content: "inputFilter" }], adjust: true },
+        { id: "structureName", header: [{ text: "Hạng mục", rowspan: 2, align: 'center' }], width: 250 },
+        { id: "vendorName", header: [{ text: "Đơn vị thực hiện", rowspan: 2, align: 'center' }], width: 250 },
+        { id: "unitName", header: [{ text: "Đơn vị tính", rowspan: 2, align: 'center' }], adjust: true },
+        { id: "norms", header: [{ text: "Định mức", rowspan: 2, align: 'center' }], adjust: true },
+        {
+            id: "mainContractVolume", header: [
+                { text: "HỢP ĐỒNG CHÍNH", colspan: 3, align: 'center' },
+                { text: 'Khối lượng HĐ', align: 'center' }
+            ], template: displayQuantity, align: 'right', width: 137
+        },
+        {
+            id: "mainContractPrice", header: ["", { text: "Đơn giá (chưa VAT)", align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 161
+        },
+        {
+            id: "mainContractTotal", header: ["", { text: "Thành tiền (chưa VAT)", align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 146
+        },
+        {
+            id: "costPlanVolume", header: [
+                { text: "KẾ HOẠCH CHI PHÍ", colspan: 3, align: 'center' },
+                { text: 'Khối lượng', align: 'center' }
+            ], template: displayQuantity, align: 'right', width: 135
+        },
+        {
+            id: "costPlanPrice", header: ["", { text: "Đơn giá (chưa VAT)", align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 161
+        },
+        {
+            id: "costPlanTotal", header: ["", { text: "Thành tiền (chưa VAT)", align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 146
+        },
+        {
+            id: "plannedProfitPreTax", header: [
+                { text: "LỢI NHUẬN KẾ HOẠCH", colspan: 2, align: 'center' },
+                { text: 'Lãi trước thuế', align: 'center' }
+            ], align: 'right',  template: displayNumberRounded, width: 125
+        },
+        {
+            id: "plannedProfitMargin", header: ["", { text: "Tỷ suất lợi nhuận", align: 'center' }],
+            template: displayPercentage, align: 'right', width: 132
+        },
+        {
+            id: "performanceContractVolume", header: [
+                { text: "THỰC HIỆN HỢP ĐỒNG", colspan: 2, align: 'center' },
+                { text: 'Khối lượng', align: 'center' }
+            ], template: displayQuantity, align: 'right', width: 135
+        },
+        {
+            id: "performanceContractTotal", header: ["", { text: "Thành tiền (chưa VAT)", align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 146
+        },
+        {
+            id: "performanceCostVolume", header: [
+                { text: "THỰC HIỆN CHI PHÍ", colspan: 3, align: 'center' },
+                { text: 'Khối lượng', align: 'center' }
+            ], template: displayQuantity, align: 'right', width: 135
+        },
+        {
+            id: "performanceCostPrice", header: ["", { text: "Đơn giá thầu phụ (chưa VAT)", align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 175
+        },
+        {
+            id: "performanceCostTotal", header: ["", { text: "Thành tiền  (chưa VAT)", align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 146
+        },
+        {
+            id: "profitMadePreTax", header: [
+                { text: "LỢI NHUẬN THỰC HIỆN", colspan: 2, align: 'center' },
+                { text: 'Lãi trước thuế', align: 'center' }
+            ], align: 'right',  template: displayNumberRounded, width: 125
+        },
+        {
+            id: "profitMadeMargin", header: ["", { text: "Tỷ suất lợi nhuận", align: 'center' }],
+            template: displayPercentage, align: 'right', width: 132
+        },
+    ]
+
+    var project = _.filter(gridDataSumChild, { 'type': 'PROJECT' });
+    var dataGrid;
+    for (i = 0; i < project.length; i++) {
+        project[i].plannedProfitPreTax = project[i].mainContractTotal - project[i].costPlanTotal;
+        project[i].plannedProfitMargin = project[i].mainContractTotal > 0 ? project[i].plannedProfitPreTax / project[i].mainContractTotal : null;
+        project[i].profitMadePreTax = project[i].performanceContractTotal - project[i].performanceCostTotal;
+        project[i].profitMadeMargin = project[i].performanceContractTotal > 0 ? project[i].profitMadePreTax / project[i].performanceContractTotal : null;
+        dataGrid = _.remove(gridDataSumChild, function (row) {
+            return row.structureCode == project[i].structureCode && row.type != project[i].type;
+        });
+        }
+
+        const dataReport = [...new Map(gridDataSumChild.map(item => [item['id'], item])).values()];
+
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        leftSplit: 5,
+        autoHeight: true,
+        resizable: true,
+        data: _.orderBy(dataReport, ['projectCode', 'orderNullRef'], ['asc', 'asc']),
+        selection: "cell",
+        keyNavigation: true,
+        rowCss: function ({ type }) { return type === "PROJECT" || type === 0 ? "row-bold" : "" },
+    });
+
+
+    function ExportExcel() {
+        grid.export.xlsx({
+            name: "BC_KIEM_SOAT_CHI_PHI_DU_AN.xlsx",
+            url: "@Url.Action("ExportExcelProjectCostControl", new { searchModel=JsonConvert.SerializeObject(searchModel)})"
+        });
+    }
+
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+
+        function updateHideColumn() {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+        }
+    $(function () {
+        for (i = 0; i < columns.length; i++) {
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+    });
+    </script>
+</div>

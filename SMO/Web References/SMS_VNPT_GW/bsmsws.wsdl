@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="SendBrandSms">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phonenumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="message" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="brandname" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="loaitin" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendBrandSmsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SendBrandSmsResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendBrandSmsQC">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="billid" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="billname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="phonenumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="message" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="brandname" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Sendtime" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendBrandSmsQCResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SendBrandSmsQCResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UPDATE_STATUS">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="idrequest" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="brandname" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UPDATE_STATUSResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="UPDATE_STATUSResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="int" type="s:int" />
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="SendBrandSmsSoapIn">
+    <wsdl:part name="parameters" element="tns:SendBrandSms" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsSoapOut">
+    <wsdl:part name="parameters" element="tns:SendBrandSmsResponse" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsQCSoapIn">
+    <wsdl:part name="parameters" element="tns:SendBrandSmsQC" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsQCSoapOut">
+    <wsdl:part name="parameters" element="tns:SendBrandSmsQCResponse" />
+  </wsdl:message>
+  <wsdl:message name="UPDATE_STATUSSoapIn">
+    <wsdl:part name="parameters" element="tns:UPDATE_STATUS" />
+  </wsdl:message>
+  <wsdl:message name="UPDATE_STATUSSoapOut">
+    <wsdl:part name="parameters" element="tns:UPDATE_STATUSResponse" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsHttpGetIn">
+    <wsdl:part name="username" type="s:string" />
+    <wsdl:part name="password" type="s:string" />
+    <wsdl:part name="phonenumber" type="s:string" />
+    <wsdl:part name="message" type="s:string" />
+    <wsdl:part name="brandname" type="s:string" />
+    <wsdl:part name="loaitin" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsHttpGetOut">
+    <wsdl:part name="Body" element="tns:int" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsQCHttpGetIn">
+    <wsdl:part name="username" type="s:string" />
+    <wsdl:part name="password" type="s:string" />
+    <wsdl:part name="billid" type="s:string" />
+    <wsdl:part name="billname" type="s:string" />
+    <wsdl:part name="phonenumber" type="s:string" />
+    <wsdl:part name="message" type="s:string" />
+    <wsdl:part name="brandname" type="s:string" />
+    <wsdl:part name="Sendtime" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsQCHttpGetOut">
+    <wsdl:part name="Body" element="tns:int" />
+  </wsdl:message>
+  <wsdl:message name="UPDATE_STATUSHttpGetIn">
+    <wsdl:part name="username" type="s:string" />
+    <wsdl:part name="password" type="s:string" />
+    <wsdl:part name="idrequest" type="s:string" />
+    <wsdl:part name="brandname" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="UPDATE_STATUSHttpGetOut">
+    <wsdl:part name="Body" element="tns:int" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsHttpPostIn">
+    <wsdl:part name="username" type="s:string" />
+    <wsdl:part name="password" type="s:string" />
+    <wsdl:part name="phonenumber" type="s:string" />
+    <wsdl:part name="message" type="s:string" />
+    <wsdl:part name="brandname" type="s:string" />
+    <wsdl:part name="loaitin" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsHttpPostOut">
+    <wsdl:part name="Body" element="tns:int" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsQCHttpPostIn">
+    <wsdl:part name="username" type="s:string" />
+    <wsdl:part name="password" type="s:string" />
+    <wsdl:part name="billid" type="s:string" />
+    <wsdl:part name="billname" type="s:string" />
+    <wsdl:part name="phonenumber" type="s:string" />
+    <wsdl:part name="message" type="s:string" />
+    <wsdl:part name="brandname" type="s:string" />
+    <wsdl:part name="Sendtime" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="SendBrandSmsQCHttpPostOut">
+    <wsdl:part name="Body" element="tns:int" />
+  </wsdl:message>
+  <wsdl:message name="UPDATE_STATUSHttpPostIn">
+    <wsdl:part name="username" type="s:string" />
+    <wsdl:part name="password" type="s:string" />
+    <wsdl:part name="idrequest" type="s:string" />
+    <wsdl:part name="brandname" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="UPDATE_STATUSHttpPostOut">
+    <wsdl:part name="Body" element="tns:int" />
+  </wsdl:message>
+  <wsdl:portType name="bsmswsSoap">
+    <wsdl:operation name="SendBrandSms">
+      <wsdl:input message="tns:SendBrandSmsSoapIn" />
+      <wsdl:output message="tns:SendBrandSmsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendBrandSmsQC">
+      <wsdl:input message="tns:SendBrandSmsQCSoapIn" />
+      <wsdl:output message="tns:SendBrandSmsQCSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UPDATE_STATUS">
+      <wsdl:input message="tns:UPDATE_STATUSSoapIn" />
+      <wsdl:output message="tns:UPDATE_STATUSSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="bsmswsHttpGet">
+    <wsdl:operation name="SendBrandSms">
+      <wsdl:input message="tns:SendBrandSmsHttpGetIn" />
+      <wsdl:output message="tns:SendBrandSmsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendBrandSmsQC">
+      <wsdl:input message="tns:SendBrandSmsQCHttpGetIn" />
+      <wsdl:output message="tns:SendBrandSmsQCHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UPDATE_STATUS">
+      <wsdl:input message="tns:UPDATE_STATUSHttpGetIn" />
+      <wsdl:output message="tns:UPDATE_STATUSHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="bsmswsHttpPost">
+    <wsdl:operation name="SendBrandSms">
+      <wsdl:input message="tns:SendBrandSmsHttpPostIn" />
+      <wsdl:output message="tns:SendBrandSmsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendBrandSmsQC">
+      <wsdl:input message="tns:SendBrandSmsQCHttpPostIn" />
+      <wsdl:output message="tns:SendBrandSmsQCHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UPDATE_STATUS">
+      <wsdl:input message="tns:UPDATE_STATUSHttpPostIn" />
+      <wsdl:output message="tns:UPDATE_STATUSHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="bsmswsSoap" type="tns:bsmswsSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="SendBrandSms">
+      <soap:operation soapAction="http://tempuri.org/SendBrandSms" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendBrandSmsQC">
+      <soap:operation soapAction="http://tempuri.org/SendBrandSmsQC" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UPDATE_STATUS">
+      <soap:operation soapAction="http://tempuri.org/UPDATE_STATUS" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="bsmswsSoap12" type="tns:bsmswsSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="SendBrandSms">
+      <soap12:operation soapAction="http://tempuri.org/SendBrandSms" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendBrandSmsQC">
+      <soap12:operation soapAction="http://tempuri.org/SendBrandSmsQC" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UPDATE_STATUS">
+      <soap12:operation soapAction="http://tempuri.org/UPDATE_STATUS" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="bsmswsHttpGet" type="tns:bsmswsHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="SendBrandSms">
+      <http:operation location="/SendBrandSms" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendBrandSmsQC">
+      <http:operation location="/SendBrandSmsQC" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UPDATE_STATUS">
+      <http:operation location="/UPDATE_STATUS" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="bsmswsHttpPost" type="tns:bsmswsHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="SendBrandSms">
+      <http:operation location="/SendBrandSms" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendBrandSmsQC">
+      <http:operation location="/SendBrandSmsQC" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UPDATE_STATUS">
+      <http:operation location="/UPDATE_STATUS" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="bsmsws">
+    <wsdl:port name="bsmswsSoap" binding="tns:bsmswsSoap">
+      <soap:address location="http://221.132.39.104:8083/bsmsws.asmx" />
+    </wsdl:port>
+    <wsdl:port name="bsmswsSoap12" binding="tns:bsmswsSoap12">
+      <soap12:address location="http://221.132.39.104:8083/bsmsws.asmx" />
+    </wsdl:port>
+    <wsdl:port name="bsmswsHttpGet" binding="tns:bsmswsHttpGet">
+      <http:address location="http://221.132.39.104:8083/bsmsws.asmx" />
+    </wsdl:port>
+    <wsdl:port name="bsmswsHttpPost" binding="tns:bsmswsHttpPost">
+      <http:address location="http://221.132.39.104:8083/bsmsws.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

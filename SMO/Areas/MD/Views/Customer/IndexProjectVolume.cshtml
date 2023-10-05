@@ -1,0 +1,41 @@
+﻿@model SMO.Service.MD.CustomerService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("ListProjectVolume", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ProjectId)
+        @Html.HiddenFor(m => m.IsAccept)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> DANH SÁCH KHÁCH HÀNG</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div> 
+    }
+
+    <script type="text/javascript">
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>

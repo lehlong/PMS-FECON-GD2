@@ -1,0 +1,83 @@
+﻿<style>
+    #lst-work {
+        position: relative;
+        animation: letftoright 1.8s;
+        animation-timing-function: ease;
+    }
+
+    #lst-project {
+        position: relative;
+        animation: righttoleft 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes letftoright {
+        from {
+            left: -840px;
+        }
+
+        to {
+            left: 0px;
+        }
+    }
+
+    @@keyframes righttoleft {
+        from {
+            right: -840px;
+        }
+
+        to {
+            right: 0px;
+        }
+    }
+</style>
+<div class="container-fluid child-content">
+    <div class="row clearfix">
+
+        <div id="lst-work" class="col-xs-12 col-sm-4">
+            <div class="m-b-20 m-t-20" style="box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);">
+                <div class="card border-grey" id="divTopNotify">
+                    <div class="header">
+                        <span class="font-15 col-fecon" style="color: #f6753c !important;">CÔNG VIỆC CẦN XỬ LÝ</span>
+                        <ul class="header-dropdown m-r--5">
+                            <li class="dropdown">
+                                <a href="#" role="button" title="Xem tất cả" onclick="$('#frmViewAllNotify').remove(); Forms.LoadAjax('/Notify')">
+                                    <i class="material-icons">clear_all</i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="body dropdown-menu all-notify" id="divTopNotifyBody" style="box-shadow: none !important;">
+                        <ul class="menu" data-bind="template: { name: 'RowTemplateNotify', foreach: ObjListNotify }"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="lst-project" class="col-xs-12 col-sm-8">
+            <div class="card border-grey m-t-20" id="divDanhSachDuAn" style="box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);">
+                <div class="header">
+                    <span class="font-15 col-fecon"  style="color: #f6753c !important;">DANH SÁCH DỰ ÁN</span>
+                    <ul class="header-dropdown m-r--5">
+                        <li class="dropdown">
+                            <a href="javascript:void(0);" role="button" title="Refresh" onclick="$('#divDanhSachDuAn .body').html(''); GetListDuAn();">
+                                <i class="material-icons">refresh</i>
+                            </a>
+                            <a href="#" role="button" title="View all" onclick="Forms.LoadAjax('/PS/Project');">
+                                <i class="material-icons">clear_all</i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="body" style="padding: 0;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        GetListDuAn();
+    });
+</script>

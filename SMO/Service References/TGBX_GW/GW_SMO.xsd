@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://tempuri.org/" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="https://tgbx.petrolimexsg.com.vn/SMO/GW_SMO.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/GW_SMO.Database" />
+  <xs:element name="Endpoint_01">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="deliveries_string" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Endpoint_01Response">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/GW_SMO.Database" minOccurs="0" name="Endpoint_01Result" nillable="true" type="q1:ArrayOfEndpoint_01Result" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Endpoint_02">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="deliveries_string" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="vehicle_number" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="smo_status" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="ngayvaokho" type="xs:dateTime" />
+        <xs:element minOccurs="0" name="nguoilaixe" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="sochuyen" type="xs:long" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Endpoint_02Response">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="Endpoint_02Result" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Endpoint_02_ViewTable">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Endpoint_02_ViewTableResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/GW_SMO.Database" minOccurs="0" name="Endpoint_02_ViewTableResult" nillable="true" type="q2:ArrayOfEndpoint_02_ViewTableResult" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,0 +1,251 @@
+﻿@model SMO.Service.PS.Models.Report.CustomerContract.CustomerContractReportModel
+@using SMO.Core.Entities.MD;
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var formId = Guid.NewGuid().ToString();
+    var lstOrg = SMOUtilities.GetAllCompanies();
+    var projects = SMOUtilities.GetAllProjects();
+    var lstUserFecon = SMOUtilities.GetUsers(x => x.USER_TYPE == UserType.Fecon);
+    var customers = ViewBag.Customers as IEnumerable<T_MD_CUSTOMER>;
+}
+<div id='@viewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("CustomerContractReport", null, FormDataUtils.GetAjaxOptions(viewId), new { @id = formId }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">description</i> BÁO CÁO THỰC HIỆN HỢP ĐỒNG KHÁCH HÀNG</a></li>
+                    <li role="presentation" style="float: right; color: black">
+                        <a onclick="@string.Format("Forms.Close('{0}');", viewId)">
+                            <strong>
+                                <i class="material-icons">close</i>
+                            </strong>
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="page-function p-t-10">
+                        <div class="page-function-button m-r-20" style="display: flex; justify-content:space-between">
+                            <div>
+                                @Html.MyButton("cmdSave", "Xem báo cáo", $"$('.parameter').css('display','none');Forms.SubmitForm('{formId}')", "Alt+N", "done_all")
+                                @Html.MyButton("cmdSave", "Xuất Excel", $"ExportDataExcel()", "Alt+N", "file_download")
+                                @Html.MyButton("expand_more", "", "$('.parameter').css('display','block');$('#expand_less').toggle();$('#expand_more').toggle();", "Alt+N", "expand_more")
+                                @Html.MyButton("expand_less", "", "$('.parameter').css('display','none');$('#expand_less').toggle();$('#expand_more').toggle();", "Alt+N", "expand_less")
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="page-search-advance row m-b-0 ">
+                        <div class="col-md-3 col-xs-12 m-b-0 parameter">
+                            <label>Công ty phụ trách</label>
+                            <select name="@Html.NameFor(m => m.CompanyId)" id="dllCompany" data-val="true"
+                                    data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany(this);"
+                                    class="selectpicker show-tick dropdown form-control" multiple data-max-options="1">
+                                @foreach (var company in lstOrg.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
+                                {
+                                    var selected = "";
+                                    if (company.PKID == Model.CompanyId)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected value="@company.PKID" data-company="@company.COMPANY_CODE">
+                                        @company.NAME
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 col-xs-12 m-b-0 parameter">
+                            <label>Phòng ban phụ trách</label>
+                            <select name="@Html.NameFor(m => m.DepartmentId)" id="dllPhongBan" data-val="true"
+                                    data-live-search="true" data-show-subtext="true" data-hide-disabled="true" onchange="OnChangeDepartment()"
+                                    class="selectpicker show-tick dropdown form-control">
+                                <option value="">-</option>
+                                @foreach (var phongBan in lstOrg.Where(x => x.TYPE == "BP").OrderBy(x => x.C_ORDER))
+                                {
+                                    var selected = "";
+                                    if (phongBan.PKID == Model.DepartmentId)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected value="@phongBan.PKID" data-company="@phongBan.COMPANY_CODE">
+                                        @phongBan.NAME
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-xs-12 m-b-0 parameter">
+                            <label>Lãnh đạo phụ trách</label>
+                            <select name="@Html.NameFor(m => m.GiamDocDuAn)" data-val="true"
+                                    data-live-search="true"
+                                    class="selectpicker show-tick dropdown form-control">
+                                <option value="">-</option>
+                                @foreach (var user in lstUserFecon.OrderBy(x => x.USER_NAME))
+                                {
+                                    var selected = "";
+                                    if (user.USER_NAME == Model.GiamDocDuAn)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option value="@user.USER_NAME" @selected data-subtext="@user.USER_NAME">
+                                        @user.FULL_NAME
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2 col-xs-12 m-b-0 parameter">
+                            <label>Loại dự án</label>
+                            @Html.MyDropDownListFor(m => m.ProjectType, SelectListUtilities.GetProjectType(),
+                           new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                        </div>
+                        <div class="col-md-2 col-xs-12 m-b-0 parameter">
+                            <label>Cấp dự án</label>
+                            @Html.MyDropDownListFor(m => m.ProjectLevel, SelectListUtilities.GetProjectLevel(),
+                           new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                        </div>
+                        <div class="col-md-3 col-xs-12 m-b-0 parameter">
+                            <label>Dự án</label>
+                            <select name="@Html.NameFor(m => m.ProjectId)" id="dllProject" data-val="true"
+                                    data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                                    class="selectpicker show-tick dropdown form-control">
+                                <option value="@Guid.Empty">-</option>
+                                @foreach (var project in projects.OrderBy(x => x.NAME))
+                                {
+                                    var selected = "";
+                                    if (project.ID == Model.ProjectId)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected value="@project.ID" data-department="@project.PHONG_BAN" data-company="@project.DON_VI" data-subtext="@($"{project.CODE}")">
+                                        @project.NAME
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 col-xs-12 m-b-0 parameter">
+                            <label>Khách hàng</label>
+                            <select class="form-control  selectpicker show-tick" data-live-search="true" data-val="true" data-show-subtext="true"
+                                    name="@Html.NameFor(x => x.Customer)">
+                                <option selected="selected" value=""> - </option>
+                                @foreach (var item in customers)
+                                {
+                                    var selected = "";
+                                    if (item.CODE == Model.Customer)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected data-subtext="@($"{item.CODE} - {item.MST}")" value="@item.CODE">@item.NAME - @item.SHORT_NAME</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-xs-12 m-b-0">
+                            <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label class="required">Từ ngày</label>
+                                        @Html.MyTextBoxFor(m => m.FromDate, new { @class = "datepicker", @autocomplete = "off", @style = "text-align: left;", data_val_required = "Từ ngày bắt buộc nhập" })
+                                    </div>
+                                </div>
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label class="required">Đến ngày</label>
+                                        @Html.MyTextBoxFor(m => m.ToDate, new { @class = "datepicker", @autocomplete = "off", @style = "text-align: left;", data_val_required = "Đến ngày bắt buộc nhập" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-xs-12 m-b-0 parameter">
+                            <label>Giai đoạn</label>
+                            <select name="@Html.NameFor(m => m.Status)" data-val="true"
+                                    data-live-search="true" data-show-subtext="true"
+                                    class="selectpicker show-tick dropdown form-control">
+                                <option value="">-</option>
+                                @foreach (ProjectStatus status in Enum.GetValues(typeof(ProjectStatus)))
+                                {
+                                    <option value="@((int)status)">
+                                        @status.GetName()
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        function OnChangeCompany(e) {
+            var companyCode = $("#@viewId #dllCompany").find(':selected').data("company");
+            const companyId = $("#@viewId #dllCompany").val()[0]
+            if (e) {
+                $("#@viewId #dllPhongBan").val("");
+                $("#@viewId #dllProject").val("@Guid.Empty");
+            }
+            $("#@viewId #dllProject option").removeAttr('disabled');
+            $("#@viewId #dllPhongBan option").removeAttr('disabled');
+            $("#@viewId #dllPhongBan option").each(function () {
+                if ($(this).data('company') !== companyCode && $(this).val()) {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+            $("#@viewId #dllProject option").each(function () {
+                if ($(this).data('company') !== companyId  && $(this).val() !== '@Guid.Empty.ToString()') {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+            $("#@viewId #dllPhongBan").selectpicker('refresh');
+            $("#@viewId #dllProject").selectpicker('refresh');
+        }
+        function OnChangeDepartment(e) {
+            $("#@viewId #dllPhongBan").selectpicker('refresh');
+            const departmentId = $("#@viewId #dllPhongBan").val();
+            if (e) {
+                $("#@viewId #dllProject").val("@Guid.Empty");
+            }
+            $("#@viewId #dllProject option").removeAttr('disabled');
+            if (departmentId) {
+                $("#@viewId #dllProject option").each(function () {
+                    if ($(this).data('department') !== departmentId) {
+                        $(this).attr('disabled', 'disabled');
+                    }
+                });
+            }
+            $("#@viewId #dllProject").selectpicker('refresh');
+        }
+        $(function () {
+
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@formId");
+            @if (Model.ProjectId != Guid.Empty)
+            {
+                <text>
+                OnChangeCompany();
+                OnChangeDepartment();
+                </text>
+            }
+            $('.parameter').css('display', 'none');
+            $('#expand_less').css('display', 'none');
+        });
+    $(document).ready(function () {
+        $('.dropdown-submenu a.test').on("click", function (e) {
+            $(this).next('ul').toggle();
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    });
+    function ExportDataExcel() {
+        debugger;
+        try {
+            ExportExcel()
+        } catch (e) {
+            alert("Cần nhấn xem báo cáo trước khi xuất.")
+        }
+    }
+    
+    </script>
+</div>

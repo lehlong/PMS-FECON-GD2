@@ -1,0 +1,119 @@
+﻿@model SMO.Service.CF.ConfigService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">clear_all</i> THÔNG TIN CẤU HÌNH ĐƠN HÀNG</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function" style="padding-bottom: 7px;">
+                    <div class="page-function-button m-r-20" @*style="float:left"*@>
+                        @Html.MyButton("cmdAdd", "Thêm mới", string.Format("Create();"), "Alt+N", "add")
+                    </div>
+
+                    @*<div class="input-group page-function-search" style="margin-bottom: 7px !important">
+                        @Html.MyDropDownListFor(m => m.ObjDetail.NAME, SelectListUtilities.GetAllOrganize(), new { @id = "ddlOrganize", @data_live_search = "true", @class = "selectpicker show-tick", placeholder = "Tìm theo tên tổ chức", @data_val = false, @OnChange = "Search();" })
+
+                        <span class="input-group-addon" title="Tìm kiếm" onclick="Search();">
+                            <i class="material-icons">search</i>
+                        </span>
+                    </div>*@
+                </div>
+                <input type="hidden" id="hddCompany" />
+                <input type="hidden" id="hddModulType"/>
+                <div id="divTree">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function Search(obj) {
+            var value = $("#ddlOrganize").val();
+            var zTree = $.fn.zTree.getZTreeObj("treeOrganize");
+            var node = zTree.getNodesByParamFuzzy("id", value, null);
+            if (node != null) {
+                zTree.selectNode(node[0]);
+            }
+        }
+
+        var setting = {
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false
+            },
+            edit: {
+                enable: false,
+                showRemoveBtn: false,
+                showRenameBtn: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onClick: OnClick
+            }
+        };
+
+        function OnClick(event, treeId, treeNode) {
+            $("#hddCompany").val(treeNode.companyCode);
+            $("#hddModulType").val(treeNode.modulType);
+            @*var id = treeNode.id;
+            var url = "@Url.Action("Edit")";
+            var ajaxParams = {
+                url: url,
+                data: { id: id }
+            };
+            Forms.LoadAjaxRight(ajaxParams);*@
+        };
+
+        function Create() {
+            var companyCode = $("#hddCompany").val();
+            var modulType = $("#hddCompany").val();
+            if (companyCode == undefined || companyCode == null || companyCode == "") {
+                alert("Bạn cần chọn một công ty trước!");
+                return;
+            }
+            var ajaxParams = {
+                url: "@Url.Action("Create")",
+                data: { companyCode: companyCode, modulType: modulType }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        }
+
+        function BuildTree(selected) {
+            $('#divTree').html("");
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("BuildTree")',
+                type: "GET",
+                data: { selected: selected },
+                success: function (response) {
+                    $('#divTree').html(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        $(function () {
+            BuildTree();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+

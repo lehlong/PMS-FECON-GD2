@@ -1,0 +1,44 @@
+﻿@model SMO.Service.MD.DischardService
+@{
+    var frmFormCode = "frmDischardIndex";
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th width="100px">Mã khách hàng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                <tr>
+                    <td>@item.CODE</td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => item.TEXT, new { @onchange = string.Format("UpdateDischard('{0}', 0 , this);", item.CODE) })
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => item.CUSTOMER_CODE, new { @onchange = string.Format("UpdateDischard('{0}', 1 , this);", item.CODE) })
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

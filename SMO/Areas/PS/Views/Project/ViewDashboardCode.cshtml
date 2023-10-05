@@ -1,0 +1,1014 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    var CA = ViewBag.CA == null ? "0.00" : (ViewBag.CA / 1000000000).ToString("0.00");
+    var BAC = ViewBag.BAC == null ? "0.00" : (ViewBag.BAC / 1000000000).ToString("0.00");
+    var TySuatLNKH = (CA == "0.00" || BAC == "0.00") ? "0.00" : ((ViewBag.CA - ViewBag.BAC) / ViewBag.CA * 100).ToString("0.00");
+    var WP = ViewBag.WP == null ? "0.00" : (ViewBag.WP / 1000000000).ToString("0.00");
+    var WD = ViewBag.WD == null ? "0.00" : (ViewBag.WD / 1000000000).ToString("0.00");
+    var SPI = (WP == "0.00" || WD == "0.00") ? "0.00" : (ViewBag.WD / ViewBag.WP).ToString("0.00");
+    var ACW = ViewBag.ACW == null ? "0.00" : (ViewBag.ACW / 1000000000).ToString("0.00");
+    var API = (ACW == "0.00" || WD == "0.00") ? "0.00" : (ViewBag.ACW / ViewBag.WD).ToString("0.00");
+    var PE = ViewBag.PE == null ? "0.00" : (ViewBag.PE / 1000000000).ToString("0.00");
+    var AC = ViewBag.AC == null ? "0.00" : (ViewBag.AC / 1000000000).ToString("0.00");
+    var BCWP = (PE == "0.00" || SPI == "0.00") ? "0.00" : ((ViewBag.PE * ViewBag.WD / ViewBag.WP) / 1000000000).ToString("0.00");
+    var CPI = (BCWP == "0.00" || AC == "0.00") ? "0.00" : ((ViewBag.PE * ViewBag.WD / ViewBag.WP) / ViewBag.AC).ToString("0.00");
+    var NT = ViewBag.NT == null ? "0.00" : (ViewBag.NT / 1000000000).ToString("0.00");
+
+    //var EAC = ((Convert.ToDecimal(BAC) - Convert.ToDecimal(BCWP)).ToString("0.00") == "0.00" || ((Convert.ToDecimal(CPI) * Convert.ToDecimal(SPI)).ToString("0.00")) == "0.00") ? AC : ((ViewBag.AC + ((ViewBag.BAC - ViewBag.PE * (ViewBag.WD / ViewBag.WP)) / ((ViewBag.PE * (ViewBag.WD / ViewBag.WP)) / ViewBag.AC * (ViewBag.WD / ViewBag.WP)))) / 1000000000).ToString("0.00");
+
+    var EAC = ((Convert.ToDecimal(BAC) - Convert.ToDecimal(BCWP)).ToString("0.00") == "0.00" || ((Convert.ToDecimal(CPI) * Convert.ToDecimal(SPI)).ToString("0.00")) == "0.00") ? AC : (Convert.ToDecimal(AC) + ((Convert.ToDecimal(BAC) - Convert.ToDecimal(BCWP)) / (Convert.ToDecimal(CPI) * Convert.ToDecimal(SPI)))).ToString("0.00");
+    var DTDK = ViewBag.DTDK == null ? "0.00" : (ViewBag.DTDK / 1000000000).ToString("0.00");
+    var TySuatLNDK = ((Convert.ToDecimal(CA) - Convert.ToDecimal(EAC)).ToString("0.00") == "0.00" || (Convert.ToDecimal(CA)).ToString("0.00") == "0.00") ? "0.00" : ((Convert.ToDecimal(CA) - Convert.ToDecimal(EAC)) / Convert.ToDecimal(CA)).ToString("0.00");
+    var TySuatLNTT = ((Convert.ToDecimal(WD) - Convert.ToDecimal(AC)).ToString("0.00") == "0.00" || WD == "0.00") ? "0.00" : ((ViewBag.WD - ViewBag.AC) / ViewBag.WD * 100).ToString("0.00");
+
+    var dataDashboardBOQ = ViewBag.DataDashboardBOQ;
+    var dataDashboardChiPhi = ViewBag.DataDashboardChiPhi;
+    var dataCostLevel2 = ViewBag.DataCostLevel2;
+
+    var allComment = ViewBag.AllComment as IList<SMO.Core.Entities.PS.T_PS_COMMENT>;
+    var resource = ViewBag.Resource as IList<SMO.Core.Entities.PS.T_PS_RESOURCE>;
+
+    TimeSpan timeProject = Model.ObjDetail.FINISH_DATE - Model.ObjDetail.START_DATE;
+    TimeSpan timeToday = DateTime.Now - Model.ObjDetail.START_DATE;
+    int dayProject = timeProject.Days;
+    int dayWorked = timeToday.Days;
+    var percentageDayDone = (Convert.ToDecimal(dayWorked) / Convert.ToDecimal(dayProject) * 100).ToString("0.0");
+}
+<style>
+    .card .body .fade-col {
+        margin: 1px;
+        min-width: 24%;
+        min-height: 120px;
+        max-height: 120px;
+    }
+
+    .card .body .col-sm-1 {
+        padding: 0 0;
+    }
+
+    .fade-col > span {
+        font-size: 16px;
+        line-height: 22px;
+        color: rgb(255, 255, 255);
+        font-weight: normal;
+        font-style: normal;
+        text-decoration: none;
+        display: flex;
+        justify-content: center;
+    }
+
+    .fade-col > p {
+        display: flex;
+        justify-content: center;
+        font-size: 26px;
+        color: #ffff;
+        padding: 4%;
+    }
+
+    div > .fade-col, div > #bieu-do-chi-phi, div > #progress-day {
+        position: relative;
+        animation: letftoright 1.8s;
+        animation-timing-function: ease;
+    }
+
+    div > #hang-muc-chi-phi, div > #bieu-do-san-luong {
+        position: relative;
+        animation: righttoleft 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes letftoright {
+        from {
+            left: -640px;
+        }
+
+        to {
+            left: 0px;
+        }
+    }
+
+    @@keyframes righttoleft {
+        from {
+            right: -640px;
+        }
+
+        to {
+            right: 0px;
+        }
+    }
+
+    .sub-text {
+        position: absolute;
+        top: 6%;
+        left: 60%;
+        color: rgb(242, 142, 43);
+        font-size: 18px;
+        font-weight: 500;
+        font-family: 'Nunito', serif;
+    }
+
+    .sort-plan:hover {
+        transform: scale(1.5);
+    }
+
+    @@media (min-width: 840px) {
+        .col-md-6 {
+            width: 48%;
+        }
+    }
+
+    @@media (min-width: 840px) {
+        .col-md-1 {
+            width: 2%;
+        }
+    }
+
+    @@media (min-width: 1200px) {
+        .container {
+            width: 100%;
+        }
+    }
+
+    @@media (min-width: 768px) {
+        .col-sm-1 {
+            width: 0.9%;
+        }
+    }
+</style>
+<!--Biểu đồ chi phí-->
+<script type="text/javascript">
+
+    var rawDataChiPhi = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataDashboardChiPhi));
+    var dataDashboardChiPhi = [];
+
+    for (i = 0; i < rawDataChiPhi.length; i++) {
+        var planCostLK = rawDataChiPhi[i].planCost;
+        var volumeWorkLK = rawDataChiPhi[i].volumeWork;
+        var bcwpLK = rawDataChiPhi[i].bcwp;
+        for (j = 0; j < i; j++) {
+            planCostLK += rawDataChiPhi[j].planCost;
+            volumeWorkLK += rawDataChiPhi[j].volumeWork;
+            bcwpLK += rawDataChiPhi[j].bcwp;
+        }
+
+        dataDashboardChiPhi.push([rawDataChiPhi[i].stringTime, Math.round(rawDataChiPhi[i].planCost), Math.round(rawDataChiPhi[i].bcwp), Math.round(rawDataChiPhi[i].volumeWork), Math.round(planCostLK), Math.round(bcwpLK), Math.round(volumeWorkLK)]);
+    }
+    dataDashboardChiPhi.unshift(['Tháng', 'CP Kế hoạch', 'CPKH theo SLTH', 'CP Thực hiện', 'CP Kế hoạch (LK)', 'CPKH theo SLTH (LK)', 'CP Thực hiện (LK)'])
+
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.setOnLoadCallback(drawVisualization);
+
+    function drawVisualization() {
+        // Some raw data (not necessarily accurate)
+        var dataChiPhi = google.visualization.arrayToDataTable(dataDashboardChiPhi);
+
+        var options = {
+            title: 'BIỂU ĐỒ CHI PHÍ',
+            titleTextStyle: {
+    fontSize: 16,
+                fontName: 'Nunito',
+            },
+            titlePosition: 'out',
+            vAxis: { title: 'Giá trị phát sinh', format: 'short' },
+            hAxis: { title: 'Kỳ thời gian' },
+            fontSize: 12,
+            fontName: 'Nunito',
+            selectionMode: 'multiple',
+            animation: {
+    duration: 2000,
+                easing: 'inAndOut',
+                startup: true
+            },
+            tooltip: {
+    showColorCode: true
+            },
+            legend: {
+    position: 'top'
+            },
+            chartArea: {width: '90%', height:'75%' },
+            series: {
+        0: { type: 'bars', color: 'rgb(0, 153, 198)' },
+                1: { type: 'bars', color: 'rgb(51, 102, 204)' },
+                2: { type: 'bars', color: 'rgb(255, 153, 0)' },
+                3: { type: 'line', color: 'rgb(0, 153, 198)' },
+                4: { type: 'line', color: 'rgb(51, 102, 204)' },
+                5: { type: 'line', color: 'rgb(255, 153, 0)' }
+    },
+            width: dataChiPhi.getNumberOfRows() * 110,
+            bar: { groupWidth: 65 },
+            //explorer: {
+            //    keepInBounds: true,
+            //    maxZoomIn: 8.0
+            //}
+        };
+
+    var chart = new google.visualization.ComboChart(document.getElementById('chart_div_bieudochiphi'));
+    chart.draw(dataChiPhi, options);
+    }
+</script>
+<!--Biểu đồ sản lượng-->
+<script type="text/javascript">
+
+    var rawDataBOQ = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataDashboardBOQ));
+
+    var dataDashboardBOQ = [];
+
+    for (i = 0; i < rawDataBOQ.length; i++) {
+        var planCostLK = rawDataBOQ[i].planCost;
+        var volumeWorkLK = rawDataBOQ[i].volumeWork;
+        var volumeAcceptLK = rawDataBOQ[i].volumeAccept;
+        for (j = 0; j < i; j++) {
+            planCostLK += rawDataBOQ[j].planCost;
+            volumeWorkLK += rawDataBOQ[j].volumeWork;
+            volumeAcceptLK += rawDataBOQ[j].volumeAccept;
+        }
+
+        dataDashboardBOQ.push([rawDataBOQ[i].stringTime, Math.round(rawDataBOQ[i].planCost), Math.round(rawDataBOQ[i].volumeWork), Math.round(rawDataBOQ[i].volumeAccept), Math.round(planCostLK), Math.round(volumeWorkLK), Math.round(volumeAcceptLK)]);
+    }
+    dataDashboardBOQ.unshift(['Tháng', 'SL Kế hoạch', 'SL Thực hiện', 'SL Nghiệm thu', 'SL Kế hoạch (LK)', 'SL Thực hiện (LK)', 'SL Nghiệm thu (LK)'])
+
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.setOnLoadCallback(drawVisualization);
+
+    function drawVisualization() {
+        // Some raw data (not necessarily accurate)
+        var dataBOQ = google.visualization.arrayToDataTable(dataDashboardBOQ);
+
+        var options = {
+            title: 'BIỂU ĐỒ SẢN LƯỢNG',
+            titleTextStyle: {
+    fontSize: 16,
+                fontName: 'Nunito',
+            },
+            titlePosition: 'out',
+            vAxis: { title: 'Giá trị sản lượng phát sinh', format: 'short' },
+            hAxis: { title: 'Kỳ thời gian' },
+            fontSize: 12,
+            fontName: 'Nunito',
+            selectionMode: 'multiple',
+            animation: {
+    duration: 2000,
+                easing: 'inAndOut',
+                startup: true
+            },
+            tooltip: {
+    showColorCode: true
+            },
+            legend: {
+    position: 'top'
+            },
+            chartArea: { width: '90%', height: '75%' },
+            series: {
+        0: { type: 'bars', color: 'rgb(0, 153, 198)' },
+                1: { type: 'bars', color: 'rgb(255, 153, 0)' },
+                2: { type: 'bars', color: 'rgb(51, 102, 204)' },
+                3: { type: 'line', color: 'rgb(0, 153, 198)' },
+                4: { type: 'line', color: 'rgb(255, 153, 0)' },
+                5: { type: 'line', color: 'rgb(51, 102, 204)' }
+    },
+            width: dataBOQ.getNumberOfRows() * 110,
+            bar: { groupWidth: 65 },
+        };
+
+    var chart = new google.visualization.ComboChart(document.getElementById('chart_div_bieudosanluong'));
+    chart.draw(dataBOQ, options);
+    }
+</script>
+
+<!--Biểu đồ chi phí cấp 2 -->
+<script type="text/javascript">
+
+    var rawDataCostLevel2 = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(dataCostLevel2));
+    var rawDataCostLevel2WithOrder = _.orderBy(rawDataCostLevel2, ['SumPlanCostVendor'], ['desc']);
+
+    var dataDashboardCostLevel2 = [];
+    var dataDashboardCostLevel2WithOrder = [];
+
+    for (i = 0; i < rawDataCostLevel2.length; i++) {
+        var percentage = (rawDataCostLevel2[i].SumVolumeWork > 0 && rawDataCostLevel2[i].CostData > 0)? (rawDataCostLevel2[i].SumVolumeWork / rawDataCostLevel2[i].CostData * 100) : 0;
+        var color = '';
+        if (percentage < 85 && percentage > 0) {
+            color = 'color:#CC2EFA'
+        } else if (percentage >= 85 && percentage < 95) {
+            color = 'color:rgb(51, 155, 148)'
+        } else if (percentage >= 95 && percentage < 105) {
+            color = 'color:#FFBF00'
+        } else {
+            color = 'color:#DF013A'
+        }
+
+        dataDashboardCostLevel2.push([
+            `${rawDataCostLevel2[i].Text} (${rawDataCostLevel2[i].Code})`,
+            rawDataCostLevel2[i].SumPlanCostVendor,
+            (rawDataCostLevel2[i].SumPlanCostVendor).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+            `Hạng mục chi phí: ${rawDataCostLevel2[i].Text} (${rawDataCostLevel2[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2[i].Code}
+    Chi phí TH LK : ${rawDataCostLevel2[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }
+    Chi phí KH LK : ${rawDataCostLevel2[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }
+    Tổng ngân sách : ${rawDataCostLevel2[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }
+    Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`,
+            rawDataCostLevel2[i].SumVolumeWork,
+            (rawDataCostLevel2[i].SumVolumeWork).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+                `Hạng mục chi phí: ${rawDataCostLevel2[i].Text} (${rawDataCostLevel2[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2[i].Code}
+    Chi phí TH LK : ${rawDataCostLevel2[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }
+    Chi phí KH LK : ${rawDataCostLevel2[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }
+    Tổng ngân sách : ${rawDataCostLevel2[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+    Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } %`,
+            `${color}`
+        ]);
+    }
+
+    for (i = 0; i < rawDataCostLevel2WithOrder.length; i++) {
+        var percentage = (rawDataCostLevel2WithOrder[i].SumVolumeWork > 0 && rawDataCostLevel2WithOrder[i].CostData > 0) ? (rawDataCostLevel2WithOrder[i].SumVolumeWork / rawDataCostLevel2WithOrder[i].CostData * 100) : 0;
+        var color = '';
+        if (percentage < 85 && percentage > 0) {
+            color = 'color:#CC2EFA'
+        } else if (percentage >= 85 && percentage < 95) {
+            color = 'color:rgb(51, 155, 148)'
+        } else if (percentage >= 95 && percentage < 105) {
+            color = 'color:#FFBF00'
+        } else {
+            color = 'color:#DF013A'
+        }
+
+        dataDashboardCostLevel2WithOrder.push([
+            `${rawDataCostLevel2WithOrder[i].Text} (${rawDataCostLevel2WithOrder[i].Code})`,
+            rawDataCostLevel2WithOrder[i].SumPlanCostVendor,
+            (rawDataCostLevel2WithOrder[i].SumPlanCostVendor).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+            `Hạng mục chi phí: ${rawDataCostLevel2WithOrder[i].Text} (${rawDataCostLevel2WithOrder[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2WithOrder[i].Code}
+    Chi phí TH LK : ${rawDataCostLevel2WithOrder[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+    Chi phí KH LK : ${rawDataCostLevel2WithOrder[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+    Tổng ngân sách : ${rawDataCostLevel2WithOrder[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+    Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`,
+            rawDataCostLevel2WithOrder[i].SumVolumeWork,
+            (rawDataCostLevel2WithOrder[i].SumVolumeWork).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+            `Hạng mục chi phí: ${rawDataCostLevel2WithOrder[i].Text} (${rawDataCostLevel2WithOrder[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2WithOrder[i].Code}
+    Chi phí TH LK : ${rawDataCostLevel2WithOrder[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+    Chi phí KH LK : ${rawDataCostLevel2WithOrder[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+    Tổng ngân sách : ${rawDataCostLevel2WithOrder[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+    Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`,
+            `${color}`
+        ]);
+    }
+
+    $("#remainingBudget").text(numeral(isNaN(rawDataCostLevel2[0].SumPlanCostVendor - rawDataCostLevel2[0].SumVolumeWork) ? 0 : rawDataCostLevel2[0].SumPlanCostVendor - rawDataCostLevel2[0].SumVolumeWork).format('0,0'));
+
+    dataDashboardCostLevel2.unshift(['Hạng mục chi phí', 'Tổng ngân sách', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, 'Chi phí thực hiện (LK)', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, {role:'style'}])
+    dataDashboardCostLevel2WithOrder.unshift(['Hạng mục chi phí', 'Tổng ngân sách', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, 'Chi phí thực hiện (LK)', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, { role: 'style' }])
+
+    google.charts.load('current', { packages: ['corechart', 'bar'] });
+    google.charts.setOnLoadCallback(drawMultSeries);
+
+    $("#sort-code").click(function () {
+        google.charts.setOnLoadCallback(drawMultSeries);
+    });
+    $("#sort-ab").click(function () {
+        google.charts.setOnLoadCallback(drawMultSeriesWithOrder);
+    });
+
+    function drawMultSeries() {
+        var data = google.visualization.arrayToDataTable(dataDashboardCostLevel2);
+
+        var options = {
+            title: 'CHI PHÍ THỰC HIỆN DỰ ÁN',
+            titleTextStyle: {
+    fontSize: 16,
+                fontName: 'Nunito',
+            },
+            titlePosition: 'out',
+            fontName: 'Nunito',
+            animation: {
+    duration: 2000,
+                easing: 'inAndOut',
+                startup: true
+            },
+            chartArea: '',
+            hAxis: {
+    title: 'Chi phí dự án',
+                minValue: 0,
+                format: 'short'
+            },
+            vAxis: {
+    title: 'Hạng mục chi phí',
+                textStyle: {
+        fontSize: 12,
+                    fontName: 'Nunito',
+                }
+    },
+            legend: {
+    position: 'top'
+            },
+            height:'',
+            bar: { groupWidth: 36 },
+            annotations: {
+    alwaysOutside: true,
+                textStyle: {
+        fontSize: 12,
+                    auraColor: 'none',
+                    fontName: 'Nunito',
+                },
+            },
+            series: {
+        0: { color: '#337ab7' }
+    },
+        };
+    if (rawDataCostLevel2.length <= 2) {
+        options.height = 220
+            options.chartArea = { width: '64%', height: '60%' }
+    } else if (rawDataCostLevel2.length > 2 && rawDataCostLevel2.length <= 6) {
+        options.height = rawDataCostLevel2.length * 90
+            options.chartArea = { width: '64%', height: '60%' }
+    } else if (rawDataCostLevel2.length > 10) {
+        options.height = rawDataCostLevel2.length * 70
+            options.chartArea = { width: '60%', height: '85%' }
+    } else if (rawDataCostLevel2.length > 6 && rawDataCostLevel2.length <= 9) {
+        options.height = rawDataCostLevel2.length * 70
+            options.chartArea = { width: '64%', height: '80%' }
+    }
+
+    var chart = new google.visualization.BarChart(document.getElementById('chart_div_level2'));
+    chart.draw(data, options);
+    }
+    function drawMultSeriesWithOrder() {
+        var data = google.visualization.arrayToDataTable(dataDashboardCostLevel2WithOrder);
+
+        var options = {
+            title: 'CHI PHÍ THỰC HIỆN DỰ ÁN',
+            titleTextStyle: {
+    fontSize: 16,
+                fontName: 'Nunito',
+            },
+            fontName: 'Nunito',
+            titlePosition: 'out',
+            animation: {
+    duration: 2000,
+                easing: 'inAndOut',
+                startup: true
+            },
+            chartArea: '',
+            hAxis: {
+    title: 'Chi phí dự án',
+                minValue: 0,
+                format: 'short'
+            },
+            vAxis: {
+    title: 'Hạng mục chi phí',
+                textStyle: {
+        fontSize: 12,
+                    fontName: 'Nunito',
+                }
+    },
+            legend: {
+    position: 'top'
+            },
+            height: '',
+            bar: { groupWidth: 36 },
+            annotations: {
+    alwaysOutside: true,
+                textStyle: {
+        fontSize: 12,
+                    auraColor: 'none',
+                    fontName: 'Nunito',
+                },
+            },
+            series: {
+        0: { color: '#337ab7' }
+    },
+        };
+    if (rawDataCostLevel2.length <= 2) {
+        options.height = 220
+            options.chartArea = { width: '64%', height: '60%' }
+    } else if (rawDataCostLevel2.length > 2 && rawDataCostLevel2.length <= 6) {
+        options.height = rawDataCostLevel2.length * 90
+            options.chartArea = { width: '64%', height: '60%' }
+    } else if (rawDataCostLevel2.length > 10) {
+        options.height = rawDataCostLevel2.length * 70
+            options.chartArea = { width: '60%', height: '85%' }
+    } else if (rawDataCostLevel2.length > 6 && rawDataCostLevel2.length <= 9) {
+        options.height = rawDataCostLevel2.length * 70
+            options.chartArea = { width: '64%', height: '80%' }
+    }
+
+    var chart = new google.visualization.BarChart(document.getElementById('chart_div_level2'));
+    chart.draw(data, options);
+    }
+</script>
+
+<script>
+    document.getElementById('toDate').valueAsDate = new Date();
+    var date = new Date("@Model.ObjDetail.START_DATE.ToString("yyyy-MM-ddTHH:mm:ss")");
+    document.getElementById('fromDate').valueAsDate = new Date(date.getTime() + 86400000);
+</script>
+<div class="row" style="padding-top: 12px; margin-bottom: 0;">
+    <div class="col-md-12">
+        <div class="row">
+            <div style="font-size: 32px; line-height: 43px; color: rgb(51, 155, 148); font-weight: normal; font-style: normal; text-decoration: none; ">
+                Báo cáo dự án -  <span style="font-size: 32px; line-height: 43px; color: rgb(255, 130, 71); font-weight: normal; font-style: normal; text-decoration: none; ">@Model.ObjDetail.NAME</span>
+
+                <div id="choose-date" style="font-size: 14px; float: right;">
+                    <label>Từ ngày</label><input type="date" id="fromDate" style="height: 24px; margin: 12px; color: #333;" />
+                    <label>Đến ngày</label><input type="date" id="toDate" style="height: 24px; margin: 12px; color: #333;" onblur="onChangeDate()" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div id="dashboard">
+    <div class="col-md-12" style=" margin-bottom: 0;">
+        <div class="row">
+            <div class="col-md-1" style="float: right; padding: 5px; width: 4%;">
+                <label>@Model.ObjDetail.FINISH_DATE.ToString("dd/MM/yyyy")</label>
+            </div>
+
+            <div class="col-md-6" style="float: right">
+                <div class="progress" style=" margin-bottom: 0; background: #DEEAEE; height: 30px;">
+                    <div class="progress-bar bg-success" id="progress-day" role="progressbar" style="width: @percentageDayDone%; background-color: #337ab7;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                        <label style="font-weight: 100; padding: 4px;">@dayWorked ngày | @percentageDayDone%</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1" style="float: right; padding: 5px; width: 4%; ">
+                <label>@Model.ObjDetail.START_DATE.ToString("dd/MM/yyyy")</label>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6" style="padding:0 0">
+                <div class="container" style="padding: 0 0">
+                    <div class="row">
+                        <div class="col-md-2 fade-col" style="background-color: rgb(51, 155, 148);">
+                            <span>Giá trị hợp đồng</span>
+                            <span>(CA)</span>
+                            <p><span style="font-weight: bold; font-size: 28px;">@CA </span><span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgb(242, 142, 43);">
+                            <span>SL nghiệm thu</span>
+                            <span>(ACW)</span>
+                            <p><span style="font-weight: bold; font-size: 28px;">@ACW </span> <span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgb(242, 142, 43);">
+                            <span style="font-size: 15px;">Sản lượng TH/KH</span>
+                            <span>(WD/WP)</span>
+                            @if (ViewBag.WD > 100000000000 || ViewBag.WP > 100000000000)
+                            {
+                                <p style="padding: 0; margin: 0"><span style="font-weight: bold; font-size: 28px">@WD </span>/<span style="font-weight: bold; font-size: 28px;">@WP </span></p>
+                                <span>(Tỷ)</span>
+                            }
+                            else
+                            {
+                                <p><span style="font-weight: bold; font-size: 28px;">@WD </span> <span style="font-size:20px;padding-top:6px">Tỷ</span>/<span style="font-weight: bold; font-size: 28px;">@WP </span> <span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                            }
+                            <p><span style="font-weight: bold; font-size: 28px;">@WD </span> <span style="font-size:20px;padding-top:6px">Tỷ</span>/<span style="font-weight: bold; font-size: 28px;">@WP </span> <span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgba(0, 0, 0, 0); border-width: 1px; border-style: solid; border-color: rgb(137, 137, 137); padding: 0 0;">
+                            <span style="color:#000000">SPI</span>
+                            <span style="color:#000000">(Chỉ số hoàn thành SL)</span>
+                            @if (Convert.ToDouble(SPI) < 0.85)
+                            {
+                                <p style="color: #DF013A; font-weight: bold; font-size: 28px;">@SPI</p>
+                            }
+                            else if (Convert.ToDouble(SPI) >= 0.85 && Convert.ToDouble(SPI) < 0.95)
+                            {
+                                <p style="color: #FFBF00; font-weight: bold; font-size: 28px;">@SPI</p>
+                            }
+                            else if (Convert.ToDouble(SPI) >= 0.95 && Convert.ToDouble(SPI) < 1.05)
+                            {
+                                <p style="color: rgb(51, 155, 148); font-weight: bold; font-size: 28px;">@SPI</p>
+                            }
+                            else
+                            {
+                                <p style="color: #CC2EFA; font-weight: bold; font-size: 28px;">@SPI</p>
+                            }
+
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 fade-col" style="background-color: rgb(51, 155, 148);">
+                            <span>Ngân sách được giao</span>
+                            <span>(BAC)</span>
+                            <p><span style="font-weight: bold; font-size: 28px;">@BAC </span> <span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgb(242, 142, 43);">
+                            <span>CP dự kiến khi xong</span>
+                            <span>(EAC)</span>
+                            <p><span style="font-weight: bold; font-size: 28px;">@EAC </span> <span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgb(242, 142, 43);">
+                            <span style="font-size: 15px;">Chi phí TH/KH</span>
+                            <span>(AC/PE)</span>
+                            @if (ViewBag.AC > 100000000000 || ViewBag.PE > 100000000000)
+                            {
+                                <p style="padding: 0; margin: 0"><span style="font-weight: bold; font-size: 28px;">@AC </span> /<span style="font-weight: bold; font-size: 28px;">@PE </span> </p>
+                                <span>(Tỷ)</span>
+                            }
+                            else
+                            {
+                                <p><span style="font-weight: bold; font-size: 28px;">@AC </span> <span style="font-size:20px;padding-top:6px">Tỷ</span>/<span style="font-weight: bold; font-size: 28px;">@PE </span> <span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                            }
+                            <p><span style="font-weight: bold; font-size: 28px;">@AC </span> <span style="font-size:20px;padding-top:6px">Tỷ</span>/<span style="font-weight: bold; font-size: 28px;">@PE </span> <span style="font-size:20px;padding-top:6px">Tỷ</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgba(0, 0, 0, 0); border-width: 1px; border-style: solid; border-color: rgb(137, 137, 137); padding: 0 0;">
+                            <span style="color:#000000">CPI</span>
+                            <span style="color:#000000">(Chỉ số TH ngân sách)</span>
+                            @if (Convert.ToDouble(CPI) < 0.85)
+                            {
+                                <p style="color: #DF013A; font-weight: bold; font-size: 28px;">@CPI</p>
+                            }
+                            else if (Convert.ToDouble(CPI) >= 0.85 && Convert.ToDouble(CPI) < 0.95)
+                            {
+                                <p style="color: #FFBF00; font-weight: bold; font-size: 28px;">@CPI</p>
+                            }
+                            else if (Convert.ToDouble(CPI) >= 0.95 && Convert.ToDouble(CPI) < 1.05)
+                            {
+                                <p style="color: rgb(51, 155, 148); font-weight: bold; font-size: 28px;">@CPI</p>
+                            }
+                            else
+                            {
+                                <p style="color: #CC2EFA; font-weight: bold; font-size: 28px;">@CPI</p>
+                            }
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 fade-col" style="background-color: rgb(51, 155, 148);">
+                            <span>Tỷ suất LN kế hoạch</span>
+                            <p style="margin-top: 12px;"><span style="font-weight: bold; font-size: 28px;">@TySuatLNKH </span> <span style="font-size:20px;padding-top:6px">%</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgb(242, 142, 43);">
+                            <span>Tỷ suất LN dự kiến</span>
+                            @if (TySuatLNDK == "0.00")
+                            {
+                                <p style="margin-top: 12px;"><span style="font-weight: bold; font-size: 28px;">NaN </span></p>
+                            }
+                            else
+                            {
+                                <p style="margin-top: 12px;"><span style="font-weight: bold; font-size: 28px;">@TySuatLNDK </span> <span style="font-size:20px;padding-top:6px">%</span></p>
+                            }
+
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgb(242, 142, 43);">
+                            <span>Tỷ suất LN thực tế</span>
+                            <p style="margin-top: 12px;"><span style="font-weight: bold; font-size: 28px;">@TySuatLNTT </span> <span style="font-size:20px;padding-top:6px">%</span></p>
+                        </div>
+                        <div class="col-sm-1"></div>
+                        <div class="col-md-2 fade-col" style="background-color: rgba(0, 0, 0, 0); border-width: 1px; border-style: solid; border-color: rgb(137, 137, 137); padding: 0 0;">
+                            <span style="color:#000000">API</span>
+                            <span style="color:#000000">(Chỉ số nghiệm thu)</span>
+                            @if (Convert.ToDouble(API) < 0.85)
+                            {
+                                <p style="color: #DF013A; font-weight: bold; font-size: 28px;">@API</p>
+                            }
+                            else if (Convert.ToDouble(API) >= 0.85 && Convert.ToDouble(API) < 0.95)
+                            {
+                                <p style="color: #FFBF00; font-weight: bold; font-size: 28px;">@API</p>
+                            }
+                            else if (Convert.ToDouble(API) >= 0.95 && Convert.ToDouble(API) < 1.05)
+                            {
+                                <p style="color: rgb(51, 155, 148); font-weight: bold; font-size: 28px; ">@API</p>
+                            }
+                            else
+                            {
+                                <p style="color: #CC2EFA; font-weight: bold; font-size: 28px;">@API</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-6" id="hang-muc-chi-phi" style=" border: solid 1px black; padding: 0;">
+                <!--Div that will hold the pie chart-->
+                <div id="chart_div_level2" style="height: 362px; overflow-x: hidden; overflow-y: scroll;"></div>
+                <div class="sub-text">Ngân sách còn lại: <span id="remainingBudget"></span></div>
+                <div style="position: absolute; top: 1%; left: 1%;">
+                    <i class="material-icons sort-plan" id="sort-code" style="color: rgb(51, 155, 148); cursor:pointer">toc</i>
+                    <i class="material-icons sort-plan" id="sort-ab" style="color: rgb(242, 142, 43); cursor:pointer">sort</i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6" id="bieu-do-chi-phi" style=" border: solid 1px black;padding:0">
+                <!--Fill dữ liệu biểu đồ chi phí-->
+                <div id="chart_div_bieudochiphi" style="height: 500px; overflow-x: scroll; overflow-y: hidden; cursor:grab"></div>
+            </div>
+            <div class="col-md-1"></div>
+            <div class="col-md-6" id="bieu-do-san-luong" style=" border: solid 1px black;padding:0">
+                <!--Fill dữ liệu biểu đồ sản lượng-->
+                <div id="chart_div_bieudosanluong" style="height: 500px; overflow-x: scroll; overflow-y: hidden; cursor:grab"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const vendor = document.querySelector('#chart_div_bieudochiphi');
+    const customer = document.querySelector('#chart_div_bieudosanluong');
+
+    let mouseDown = false;
+    let startX, scrollLeft;
+
+    let startDraggingVendor = function (e) {
+        mouseDown = true;
+    startX = e.pageX - vendor.offsetLeft;
+    scrollLeft = vendor.scrollLeft;
+    };
+    let startDraggingCustomer = function (e) {
+        mouseDown = true;
+    startX = e.pageX - customer.offsetLeft;
+    scrollLeft = customer.scrollLeft;
+    };
+    let stopDragging = function (event) {
+        mouseDown = false;
+    };
+
+    vendor.addEventListener('mousemove', (e) => {
+        e.preventDefault();
+        if (!mouseDown) { return; }
+        const x = e.pageX - vendor.offsetLeft;
+        const scroll = x - startX;
+        vendor.scrollLeft = scrollLeft - scroll;
+    });
+    customer.addEventListener('mousemove', (e) => {
+        e.preventDefault();
+        if (!mouseDown) { return; }
+        const x = e.pageX - customer.offsetLeft;
+        const scroll = x - startX;
+        customer.scrollLeft = scrollLeft - scroll;
+    });
+
+    vendor.addEventListener('mousedown', startDraggingVendor, false);
+    vendor.addEventListener('mouseup', stopDragging, false);
+    vendor.addEventListener('mouseleave', stopDragging, false);
+    customer.addEventListener('mousedown', startDraggingCustomer, false);
+    customer.addEventListener('mouseup', stopDragging, false);
+    customer.addEventListener('mouseleave', stopDragging, false);
+
+    function onChangeDate() {
+        var toDate = $("#toDate").val();
+        var fromDate = $("#fromDate").val();
+        $("#dashboard").empty();
+        var ajaxParams = {
+            url: '@Url.Action("GetDataDashboardByTime")',
+            data: {
+    projectId: '@Model.ObjDetail.ID.ToString()',
+                startDate: fromDate,
+                finishDate: toDate
+            },
+            htmlTarget: "#dashboard"
+        };
+    Forms.LoadAjax(ajaxParams);
+    }
+</script>
+
+@*Comment*@
+<div id="import" hidden>
+    <div class="modal-backdrop fade in"></div>
+    <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; padding-right: 17px;">
+        <div class="modal-dialog " role="document">
+            <div class="modal-content">
+                <div class="card">
+                    <div class="body" style="padding-top: 0px;">
+                        <div class="tab-content">
+                            <div class="page-function p-t-10">
+                                @Html.MyButton("cmdSave", "Gửi", $"uploadFile()", "Alt+N", "send")
+                                @Html.MyButton("cmdSave", "Đóng", string.Format("$(\"#import\").hide();"), "Alt+N", "close")
+                            </div>
+                            <div class="row m-t-30">
+                                <div class="col-xs-1 col-lg-3"></div>
+                                <div class="col-lg-6 col-xs-10">
+                                    <label>Chọn file</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input type="file" id="file_upload" name="file_upload" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="position: fixed; right: 2%; bottom: 2%; cursor:pointer" id="show-hide-mess">
+    <img src="~/Theme/images/message.png" style="height:52px" />
+</div>
+<div style="position: fixed; background: #fff; height: 90vh; width: 19%; bottom: 2%; left: 76%; box-shadow: 0px 12px 12px rgb(0 0 0 / 0.3);display:none" id="mess-project">
+    <div id="header-comment" style="height: 5vh; background-color: #207ce5; padding: 3%; display: flex; justify-content: space-between; box-shadow: 0 8px 10px rgb(0 0 0 / 0.2); ">
+        <p style=" color: #fff; font-size: 16px;">Trao đổi</p>
+        <i class="material-icons" style="color: #fff; cursor: pointer;" onclick="$('#mess-project').fadeOut();">close</i>
+    </div>
+    
+    <div style="width: 99%; height: 86%; overflow-y: auto; margin: 2px;" id="main-content">
+        <div class="row" id="all-mess">
+            @foreach (var item in allComment)
+            {
+                if (item.USER_NAME == ProfileUtilities.User?.USER_NAME)
+                {
+                    if (item.IS_FILE.Trim() == "N")
+                    {
+                        if (item.MESSENGER.Contains("http"))
+                        {
+                            <div style="text-align: -webkit-right;">
+                                <div style="background: #C6E2FF; max-width: 240px; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;width:fit-content">
+                                    <div class="row">
+                                        <span style="font-size: 10px; font-weight: normal;">@item.CREATE_DATE</span>
+                                    </div>
+                                    <div style="word-break: break-word;">
+                                        <a href="@item.MESSENGER" target="_blank">@item.MESSENGER</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="text-align: -webkit-right;">
+                                <div style="background: #C6E2FF; max-width: 240px; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;width:fit-content">
+                                    <div class="row">
+                                        <span style="font-size: 10px; font-weight: normal;">@item.CREATE_DATE</span>
+                                    </div>
+                                    <div style="word-break: break-word;">
+                                        @item.MESSENGER
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    }
+                    else
+                    {
+                        <div style="text-align: -webkit-right;">
+                            <div style="background: #C6E2FF; max-width: 240px; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;width:fit-content">
+                                <div style="word-break: break-word;">
+                                    @if (item.MIME_TYPE.Contains("image"))
+                                    {
+                                        <div class="row">
+                                            <span style="font-size: 10px; font-weight: normal;">@item.CREATE_DATE</span>
+                                        </div>
+                                        <a href="@item.PATH_FILE" target="_blank"><img src="@item.PATH_FILE" style="max-width: 216px;height:auto" /></a>
+                                    }
+                                    else
+                                    {
+                                        <div class="row">
+                                            <span style="font-size: 10px; font-weight: normal;">@item.CREATE_DATE</span>
+                                        </div>
+                                        <a href="@item.PATH_FILE" target="_blank">@item.MESSENGER</a>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                }
+                else
+                {
+                    if (item.IS_FILE.Trim() == "N")
+                    {
+                        if (item.MESSENGER.Contains("http"))
+                        {
+                            <div style="background: #D3D3D3; max-width: 240px; width: fit-content; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;">
+                                <div class="row">
+                                    <div style="font-weight:bold">@item.USER_NAME <span style="font-size: 10px; font-weight: normal;">@item.CREATE_DATE</span></div>
+                                </div>
+                                <div style="word-break: break-word;">
+                                    <a href="@item.MESSENGER" target="_blank">@item.MESSENGER</a>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="background: #D3D3D3; max-width: 240px; width: fit-content; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;">
+                                <div class="row">
+                                    <div style="font-weight:bold">@item.USER_NAME <span style="font-size: 10px; font-weight: normal;">@item.CREATE_DATE</span></div>
+                                </div>
+                                <div style="word-break: break-word;">
+                                    @item.MESSENGER
+                                </div>
+                            </div>
+                        }
+
+                    }
+                    else
+                    {
+                        <div style="background: #D3D3D3; max-width: 240px; width: fit-content; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;">
+                            <div class="row">
+                                <div style="font-weight:bold">@item.USER_NAME <span style="font-size: 10px; font-weight: normal;">@item.CREATE_DATE</span></div>
+                            </div>
+                            <div style="word-break:break-word;">
+                                @if (item.MIME_TYPE.Contains("image"))
+                                {
+                                    <a href="@item.PATH_FILE" target="_blank"><img src="@item.PATH_FILE" style="max-width: 216px;height:auto" /></a>
+                                }
+                                else
+                                {
+                                    <a href="@item.PATH_FILE" target="_blank">@item.MESSENGER</a>
+                                }
+
+                            </div>
+                        </div>
+                    }
+
+                }
+            }
+
+        </div>
+    </div>
+
+    <div style="width: 99%; height: 9%; margin: 2px; padding: 12px;display:flex">
+        <input type="text" class="form-control" id="content-messenger" />
+        <i class="material-icons" style="cursor: pointer; padding: 5px;" onclick="$('#import').show();">attachment</i>
+    </div>
+</div>
+
+<div id="tag-name" style="width: 236px; background: #fff; height: auto; position: fixed; bottom: 8%; right: 11%; box-shadow: 0 3px 10px rgb(0 0 0 / 20%);display:none ">
+    @foreach (var item in resource)
+    {
+        <div style="height: 36px; background: #fff; padding: 8px 12px; cursor:pointer" onclick="addUserToInput('@item.USER_NAME')">@item.USER_NAME - @item.User.FULL_NAME</div>
+    }
+
+</div>
+<script>
+    $(function () {
+        Forms.CompleteUI();
+        $("#main-content").animate({ scrollTop: 99999999 }, 1000);
+    });
+
+    function uploadFile() {
+        var fileUpload = $("#file_upload");
+        var formdata = new FormData();
+        var fileInput = document.getElementById('file_upload');
+        for (i = 0; i < fileInput.files.length; i++) {
+            formdata.append(fileInput.files[i].name, fileInput.files[i]);
+        }
+        formdata.append('projectId', '@Model.ObjDetail.ID');
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'PS/Project/SaveFileComment');
+        xhr.send(formdata);
+        //$("#all-mess").append(`<div style="text-align: -webkit-right;"><div style="background: #C6E2FF; max-width: 240px; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;width:fit-content"><div style="word-break: break-word;"><a href='/FileUpload/${fileInput.files[0].name}' target="_blank">${fileInput.files[0].name} </a></div></div></div>`);
+        //$("#main-content").animate({ scrollTop: 99999999 }, 1000);
+        //Message.func.AlertSuccess({ Message: { Message: "Gửi file thành công", Code: "1002" } })
+        //$('#import').hide();
+        //$("#file_upload").val('');
+        //$('#li-dash-board').click();
+        onClickDashboardBeta();
+        setTimeout(function () {
+            $("#main-content").animate({ scrollTop: 99999999 }, 1000);
+            $('#mess-project').show();
+        }, 3000)
+        
+        return false;
+    }
+
+    function addUserToInput(username) {
+        $("#tag-name").hide();
+        $("#content-messenger").val($("#content-messenger").val() + username)
+    }
+
+    $("#show-hide-mess").on('click', function (e) {
+        $("#main-content").animate({ scrollTop: 99999999 }, 1000);
+        $("#mess-project").toggle();
+    });
+
+    $("#content-messenger").keydown(function () {
+        if (event.shiftKey == true && event.which == 50) {
+            $("#tag-name").show();
+        }
+        if (event.which == 8) {
+            $("#tag-name").hide();
+        }
+        if (event.key === "Enter") {
+            var messenger = $("#content-messenger").val();
+            if (messenger) {
+                $("#all-mess").append(`<div style="text-align: -webkit-right;"><div style="background: #C6E2FF; max-width: 240px; height: auto; margin: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); padding: 6px 12px;width:fit-content"><div style="word-break: break-work;">${messenger}</div></div></div>`);
+
+                var ajaxParams = {
+                    url: 'PS/Project/SaveComment',
+                    type: "POST",
+                    data: {
+                        projectId: '@Model.ObjDetail.ID',
+                        comment: messenger,
+                    },
+                }
+                Forms.AjaxWithoutLoading(ajaxParams)
+                document.getElementById('content-messenger').value = ''
+                $("#main-content").animate({ scrollTop: 99999999 }, 1000);
+            }
+        }
+    });
+</script>

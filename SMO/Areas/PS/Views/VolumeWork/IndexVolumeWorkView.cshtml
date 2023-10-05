@@ -1,0 +1,110 @@
+﻿@model SMO.Service.PS.VolumeWorkService
+@using SMO.Core.Entities.PS;
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var projectTimes = ViewBag.ProjectTimes as IList<T_PS_TIME>;
+    var timeType = projectTimes.FirstOrDefault()?.TIME_TYPE;
+    var timeTypeText = string.Empty;
+    var type = Model.ObjDetail.IS_CUSTOMER ? "Customer" : "Vendor";
+
+
+    foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
+    {
+        if (time.GetValue().Equals(timeType))
+        {
+            timeTypeText = time.GetName();
+            break;
+        }
+    }
+
+    var dateFormat = timeType == ProjectTimeTypeEnum.MONTH.GetValue() ? "MM/yyyy" : "dd/MM";
+    var selectList = from time in projectTimes.GroupBy(x => x.C_ORDER).Select(x => x.First()).OrderBy(x => x.C_ORDER)
+                     let subTitle = timeType == ProjectTimeTypeEnum.MONTH.GetValue() ? $"({time.START_DATE.ToString(dateFormat)})" : $"({time.START_DATE.ToString(dateFormat)}-{time.FINISH_DATE.ToString(dateFormat)})"
+                     select new SelectListItem
+                     {
+                         Value = time.ID.ToString(),
+                         Text = $"{timeTypeText} {time.C_ORDER + 1} {subTitle}",
+                         Selected = DateTime.Now >= time.START_DATE && DateTime.Now <= time.FINISH_DATE
+                     };
+
+    var selectListStatus = new List<SelectListItem>();
+    foreach (ProjectWorkVolumeStatus projectVolume in Enum.GetValues(typeof(ProjectWorkVolumeStatus)))
+    {
+        selectListStatus.Add(new SelectListItem
+        {
+            Text = projectVolume.GetName(),
+            Value = projectVolume.GetValue()
+        });
+    }
+    foreach (ProjectWorkVolumeActiveStatus activeStatus in Enum.GetValues(typeof(ProjectWorkVolumeActiveStatus)))
+    {
+        selectListStatus.Add(new SelectListItem
+        {
+            Text = activeStatus.GetName(),
+            Value = activeStatus.GetValue()
+        });
+    }
+}
+<div id='@Model.ViewId'>
+    <style>
+        .bootstrap-select {
+            margin-left: 10px !important;
+            max-width: 200px;
+        }
+
+        .content .page-function-search {
+            max-width: 100%;
+        }
+    </style>
+    @using (Ajax.BeginForm($"VolumeWork{type}View", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.IS_CUSTOMER)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+
+        <div class="page-function p-t-10">
+            <div class="page-function-button m-r-20">
+                <div class="input-group page-function-search" style="z-index: 1000; padding-bottom: 10px;">
+                    @if (!Model.ObjDetail.IS_CUSTOMER)
+                    {
+                        @Html.MyDropDownListFor(m => m.Vendor, SelectListUtilities.GetVendors(Model.ObjDetail.PROJECT_ID),
+         new { @class = "selectpicker show-tick", @placeholder = "Tìm theo thầu phụ" })
+
+                        <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                            <i class="material-icons">search</i>
+                        </span>
+                        <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                            <i class="material-icons">refresh</i>
+                        </span>
+                    }
+                    <div class="p-l-40 " style="text-align: right">
+                        Kỳ cập nhật:
+
+                        @Html.MyDropDownListFor(m => m.ObjDetail.TIME_PERIOD_ID, selectList,
+                                    new { @data_live_search = "true", @class = "selectpicker", @style = "width: 150px", @onChange = $"Forms.SubmitForm('{Model.FormId}')" })
+                                                
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row m-t-30" id="divResult">
+        </div>
+    }
+
+</div>
+<script type="text/javascript">
+    function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+</script>
+

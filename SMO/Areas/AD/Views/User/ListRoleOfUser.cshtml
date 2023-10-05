@@ -1,0 +1,66 @@
+﻿@model SMO.Service.AD.UserService
+@using SMO.Core.Entities
+
+@{ 
+    var lstRoleOfUserGroup = new List<T_AD_ROLE>();
+    foreach (var item1 in Model.ObjDetail.ListUserUserGroup)
+    {
+        foreach (var item2 in item1.UserGroup.ListUserGroupRole)
+        {
+            lstRoleOfUserGroup.Add(item2.Role);
+        }
+    }
+
+    var lstRoleOfUser = new List<T_AD_ROLE>();
+    foreach (var item in Model.ObjDetail.ListUserRole)
+    {
+        lstRoleOfUser.Add(item.Role);
+    }
+}
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllRoleOfUser" onclick="Forms.CheckAll('chkItemRoleOfUser', '#chkAllRoleOfUser')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllRoleOfUser"></label>
+                </th>
+                <th>Mã role</th>
+                <th>Tên role</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in lstRoleOfUserGroup.Distinct())
+            {
+                <tr>
+                    <td></td>
+                    <td>@item.CODE</td>
+                    <td>@item.NAME</td>
+                    <td>Role kế thừa từ nhóm người dùng</td>
+                </tr>
+            }
+
+            @foreach (var item in lstRoleOfUser)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemRoleOfUser" name="chkItemRoleOfUser" id="@("chkItemRoleOfUser" + item.CODE)" modelId="@item.CODE" style="margin:0;" />
+                        <label for="@("chkItemRoleOfUser" + item.CODE)"></label>
+                    </td>
+                    <td>@item.CODE</td>
+                    <td>@item.NAME</td>
+                    <td></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+
+

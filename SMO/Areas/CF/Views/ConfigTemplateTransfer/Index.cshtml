@@ -1,0 +1,123 @@
+﻿@model SMO.Service.CF.ConfigTemplateTransferService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <script src="~/Theme/plugins/ckeditor/ckeditor.js"></script>
+    <div class="card border-grey m-b-20">
+        <div class="body">
+            @Html.MyButton("cmdSave", "Cập nhật thông tin", "Submit()", "", "done_all")
+        </div>
+    </div>
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.PKID)
+        <div class="card border-grey">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a href="#tabTemplateInvite" data-toggle="tab"><i class="material-icons col-fecon">clear_all</i> THÔNG BÁO CHO ĐƠN VỊ BÁN</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#tabTemplateInviteCouncil" data-toggle="tab"><i class="material-icons col-fecon">clear_all</i> THÔNG BÁO CHO ĐƠN VỊ MUA</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="tabTemplateInvite">
+                        <div class="form-group">
+                            <b>Các tham số được sử dụng trong nội dung sms, email bao gồm :</b><br />
+                            <span class="badge bg-blue" title="Mã đơn hàng">{SO_LUONG_DON_HANG}</span>
+                            <span class="badge bg-blue" title="Đơn vị bán">{DON_VI_BAN}</span>
+                            <span class="badge bg-blue" title="Đơn vị mua">{DON_VI_MUA}</span>
+                            <span class="badge bg-blue" title="Ngày giao dịch">{NGAY_GIAO_DICH}</span>
+                            <span class="badge bg-blue" title="Ngày giao dịch">{NOI_DUNG_CHI_TIET}</span>
+                        </div>
+
+                        <b>Nội dung SMS</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.SMS_SOURCE_TEMPLATE)
+                            </div>
+                        </div>
+
+                        <b>Tiêu đề email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.SUBJECT_SOURCE_TEMPLATE)
+                            </div>
+                        </div>
+
+                        <b>Nội dung Email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextAreaFor(m => m.ObjDetail.EMAIL_SOURCE_TEMPLATE, new { @id = "txtSourceBody" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="tabTemplateInviteCouncil">
+                        <div class="form-group">
+                            <b>Các tham số được sử dụng trong nội dung sms, email bao gồm :</b><br />
+                            <span class="badge bg-blue" title="Mã đơn hàng">{SO_LUONG_DON_HANG}</span>
+                            <span class="badge bg-blue" title="Đơn vị bán">{DON_VI_BAN}</span>
+                            <span class="badge bg-blue" title="Đơn vị mua">{DON_VI_MUA}</span>
+                            <span class="badge bg-blue" title="Ngày giao dịch">{NGAY_GIAO_DICH}</span>
+                            <span class="badge bg-blue" title="Ngày giao dịch">{NOI_DUNG_CHI_TIET}</span>
+                        </div>
+
+                        <b>Nội dung SMS</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.SMS_DES_TEMPLATE)
+                            </div>
+                        </div>
+
+                        <b>Tiêu đề email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.SUBJECT_DES_TEMPLATE)
+                            </div>
+                        </div>
+
+                        <b>Nội dung Email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextAreaFor(m => m.ObjDetail.EMAIL_DES_TEMPLATE, new { @id = "txtDesBody" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+<script type="text/javascript">
+        function Submit() {
+            $("#txtDesBody").val(CKEDITOR.instances.txtDesBody.getData());
+            $("#txtSourceBody").val(CKEDITOR.instances.txtSourceBody.getData());
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+            CKEDITOR.replace('txtDesBody', {
+                filebrowserImageBrowseUrl: '/Home/SelectImage',
+                filebrowserImageUploadUrl: '/Home/UploadImage'
+            });
+
+            CKEDITOR.replace('txtSourceBody', {
+                filebrowserImageBrowseUrl: '/Home/SelectImage',
+                filebrowserImageUploadUrl: '/Home/UploadImage'
+            });
+
+            function UpdateValue(id, value) {
+                document.getElementById(id).value = value;
+            }
+        });
+</script>
+</div>
+
+

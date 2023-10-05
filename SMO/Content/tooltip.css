@@ -1,0 +1,33 @@
+﻿tool-tip {
+    background-color: #424242;
+    color: #fff;
+    border-radius: 0.125rem;
+    line-height: 30px;
+    height: 30px;
+    white-space: nowrap;
+    padding: 0 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    pointer-events: none;
+    transform-origin: center;
+}
+
+@keyframes limitedTooltip {
+    0% {
+        opacity: 1;
+    }
+
+    4% {
+        opacity: 1;
+    }
+
+    96% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        animation-timing-function: ease-in-out;
+    }
+}

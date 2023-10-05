@@ -1,0 +1,210 @@
+﻿@model SMO.Service.AD.RoleService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId'>
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <div class="container-fluid child-content">
+        <div class="card">
+            <div class="p-t-10 p-l-10">
+                @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+            </div>
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" class="active"><a href="#thongTinChinh" data-toggle="tab">Thông tin chính</a></li>
+                    <li role="presentation"><a href="#danhSachQuyen" data-toggle="tab">Danh sách quyền</a></li>
+                    <li role="presentation"><a href="#danhSachNhomNguoiDung" data-toggle="tab">DS nhóm người dùng</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="thongTinChinh">
+                        @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                        {
+                            @Html.AntiForgeryToken();
+                            @Html.HiddenFor(m => m.ObjDetail.CODE)
+                            @Html.HiddenFor(m => m.ObjDetail.ACTIVE)
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdSave", "Cập nhật thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                                </div>
+                            </div>
+
+                                <div class="row">
+                                    <div class="col-xs-1"></div>
+                                    <div class="col-lg-7 col-xs-10">
+                                        <label>Code</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { @disabled = "" })
+                                            </div>
+                                        </div>
+
+                                        <label>Name</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                                        </div>
+
+                                        <label>Ghi chú</label>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.NOTES)
+                                        </div>
+                                    </div>
+                                </div>
+                        }
+
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="danhSachQuyen">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdCapNhatQuyen", "Cập nhật quyền", "UpdateRightOfRole();", "Alt+S", "done_all")
+                            </div>
+
+                            <div class="input-group page-function-search" style="margin-bottom: 7px !important">
+                                @Html.DropDownList("ddlRight", SelectListUtilities.GetAllRight(), new { @id = "ddlRight", @data_live_search = "true", @class = "form-control selectpicker show-tick", placeholder = "Tìm theo domain", @data_val = false, @OnChange = "SearchRight(this);" })
+
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="SearchRight();">
+                                    <i class="material-icons">search</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="m-l-20">
+                            <ul id="treeRight" class="ztree"></ul>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="danhSachNhomNguoiDung">
+                        @{
+                            Model.ViewId = Guid.NewGuid().ToString();
+                            Model.FormId = Guid.NewGuid().ToString();
+                        }
+                        <div id='@Model.ViewId'>
+                            @using (Ajax.BeginForm("ListUserGroupOfRole", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                            {
+                                @Html.AntiForgeryToken();
+                                @Html.HiddenFor(m => m.ObjDetail.CODE)
+                                <div class="page-function">
+                                    <div class="page-function-button m-r-20">
+                                        @Html.MyButton("cmdAddUserGroup", "Thêm nhóm người dùng", "AddUserGroup();", "Alt+S", "add")
+                                        @Html.MyButton("cmdRemoveUserGroup", "Xóa nhóm người dùng khỏi role", "RemoveUserGroup();", "Alt+S", "delete")
+                                    </div>
+                                </div>
+
+                                    <div id="divResult">
+                                    </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+ 
+    </div>
+
+   
+    <script type="text/javascript">
+        function SearchRight(obj) {
+            var value = $("#ddlRight").val();
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var node = zTree.getNodesByParamFuzzy("id", value, null);
+            if (node != null) {
+                zTree.selectNode(node[0]);
+            }
+        }
+
+        function AddUserGroup() {
+            var roleCode = '@Model.ObjDetail.CODE';
+            var params = {
+                url : "@Url.Action("AddUserGroup")",
+                data: { roleCode: roleCode }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function RemoveUserGroup() {
+            var lstSelected = '';
+            $('.chkItemUserGroupOfRole').each(function () {
+                if (this.checked) {
+                    lstSelected += $(this).attr('modelId') + ',';
+                }
+            });
+            if (lstSelected == '') {
+                alert("Bạn hãy chọn ít nhất một nhóm người dùng!");
+                return;
+            }
+
+            lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+            var ajaxParams = {
+                url: "@Url.Action("DeleteUserGroupOfRole")",
+                type: 'POST',
+                dataType : 'json',
+                data: { lstUserGroup: lstSelected, roleCode: '@Model.ObjDetail.CODE' }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function SubmitListUserGroupOfRole() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        function UpdateRightOfRole() {
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var nodeChecked = zTree.getCheckedNodes(true);
+            var roleCode = "@Model.ObjDetail.CODE";
+            var arr = [];
+            $.each(nodeChecked, function (i, val) {
+                arr.push(nodeChecked[i].id);
+            });
+
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateRight")',
+                type: "POST",
+                data: { roleCode: roleCode, rightList: arr.join("|") },
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        var setting = {
+            check: {
+                enable: true,
+                chkboxType: { "Y" : "ps", "N" : "ps" }
+            },
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            }
+        };
+
+        var zNodes = jQuery.parseJSON('@Html.Raw(ViewBag.zNode)');
+        $(function () {
+            SubmitListUserGroupOfRole();
+            $.fn.zTree.init($("#treeRight"), setting, zNodes);
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

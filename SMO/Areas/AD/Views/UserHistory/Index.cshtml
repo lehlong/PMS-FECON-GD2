@@ -1,0 +1,43 @@
+﻿@model SMO.Service.AD.UserHistoryService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.USER_NAME)
+            @Html.HiddenFor(m => m.FormId)
+            <div class="card">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons">history</i> LỊCH SỬ ĐĂNG NHẬP CỦA NGƯỜI DÙNG</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            $(function () {
+                Forms.SubmitForm("@Model.FormId");
+            });
+        </script>
+    </div>
+</div>
+
+
+
+

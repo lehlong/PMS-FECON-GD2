@@ -1,0 +1,391 @@
+﻿@model IEnumerable<SMO.Service.PS.Models.Report.VendorMonitoring.VendorMonitoringReportData>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var gridId = Guid.NewGuid().ToString();
+    var searchModel = ViewBag.SearchModel as SMO.Service.PS.Models.Report.VendorMonitoring.VendorMonitoringReportModel;
+    searchModel.BoldRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.IsSummary).Select(x => x.index).ToList();
+    searchModel.PercentageRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.UnitCode == "%").Select(x => x.index).ToList();
+    var display = ConfigHideColumn.BAO_CAO_THEO_DOI_THAU_PHU.GetValue().ToString();
+
+}
+
+<style>
+    .row-bold .dhx_grid-cell {
+        font-weight: bold
+    }
+
+    .grid .dhx_grid-cell {
+        word-break: break-word
+    }
+
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
+
+    .fade-report {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div class="fade-report">
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+    <div class="dropdown-hide-column">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+        <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+        </select>
+        <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+    </div>
+    <div style="height: calc(100vh - 180px)" id="@gridId" class="grid"></div>
+    <script type="text/javascript">
+
+    function calculatePercentage(val1, val2) {
+        if (_.isNil(val1) || _.isNil(val2) || isNaN(val1) || isNaN(val2)) {
+            return 0
+        } else if (val2 > 0) {
+            return val1 / val2
+        }
+        return 0
+    }
+    function displayNumberRounded(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0')
+    }
+    function displayQuantity(value, row) {
+        const { unitCode } = row
+        if (unitCode === "%") {
+            return numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+        }
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[000]')
+    }
+    function calculateSummaryData(row, allContractDetails) {
+        const contractTotal = _.sumBy(allContractDetails, 'contractTotal')
+        const inPeriodTotalPlanCost = _.sumBy(allContractDetails, 'inPeriodTotalPlanCost')
+        const inPeriodTotalWorkVolumeCost = _.sumBy(allContractDetails, 'inPeriodTotalWorkVolumeCost')
+        const inPeriodTotalAcceptVolumeCost = _.sumBy(allContractDetails, 'inPeriodTotalAcceptVolumeCost')
+        const inPeriodPercentageWorkWithPlan = calculatePercentage(inPeriodTotalWorkVolumeCost, inPeriodTotalPlanCost)
+        const endPeriodTotalPlanCost = _.sumBy(allContractDetails, 'endPeriodTotalPlanCost')
+        const endPeriodTotalWorkVolumeCost = _.sumBy(allContractDetails, 'endPeriodTotalWorkVolumeCost')
+        const endPeriodTotalAcceptVolumeCost = _.sumBy(allContractDetails, 'endPeriodTotalAcceptVolumeCost')
+        const endPeriodPercentageWorkWithPlan = calculatePercentage(endPeriodTotalWorkVolumeCost, endPeriodTotalPlanCost)
+        const endPeriodInProgressCost = endPeriodTotalWorkVolumeCost - endPeriodTotalAcceptVolumeCost
+        const endPeriodDonePercentage = calculatePercentage(endPeriodTotalWorkVolumeCost, contractTotal)
+        const endPeriodAcceptPercentage = calculatePercentage(endPeriodTotalAcceptVolumeCost, endPeriodTotalWorkVolumeCost)
+        return {
+            ...row,
+            contractTotal,
+            inPeriodTotalPlanCost,
+            inPeriodTotalAcceptVolumeCost,
+            inPeriodTotalWorkVolumeCost,
+            inPeriodPercentageWorkWithPlan,
+            endPeriodTotalPlanCost,
+            endPeriodTotalWorkVolumeCost,
+            endPeriodTotalAcceptVolumeCost,
+            endPeriodPercentageWorkWithPlan,
+            endPeriodInProgressCost,
+            endPeriodDonePercentage,
+            endPeriodAcceptPercentage
+        }
+    }
+
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+    console.log(rawData)
+    const gridData = _.chain(rawData).map(row => {
+        const { contractPrice,
+            structurePrice, contractVolume, inPeriodWorkVolume,
+            inPeriodAcceptVolume, inPeriodPlanVolume, endPeriodPlanVolume,
+            endPeriodWorkVolume, endPeriodAcceptVolume, inPeriodWorkPrice, inPeriodAcceptPrice,
+            endPeriodAcceptPrice, endPeriodWorkPrice, inPeriodTotalWorkVolume, inPeriodTotalAcceptVolume,
+            endPeriodTotalWorkVolume, endPeriodTotalAcceptVolume,
+            vendorName, vendorCode
+        } = row
+        const contractTotal = contractPrice * contractVolume
+        const inPeriodTotalPlanCost = inPeriodPlanVolume * structurePrice
+        const inPeriodTotalWorkVolumeCost = inPeriodTotalWorkVolume
+        const inPeriodTotalAcceptVolumeCost = inPeriodTotalAcceptVolume
+        const inPeriodPercentageWorkWithPlan = calculatePercentage(inPeriodTotalWorkVolumeCost, inPeriodTotalPlanCost)
+
+        const endPeriodTotalPlanCost = structurePrice * endPeriodPlanVolume
+        const endPeriodTotalWorkVolumeCost = endPeriodTotalWorkVolume
+        const endPeriodTotalAcceptVolumeCost = endPeriodTotalAcceptVolume
+        const endPeriodPercentageWorkWithPlan = calculatePercentage(endPeriodTotalWorkVolumeCost, endPeriodTotalPlanCost)
+        const endPeriodInProgressCost = endPeriodTotalWorkVolumeCost - endPeriodTotalAcceptVolumeCost
+        const endPeriodDonePercentage = calculatePercentage(endPeriodTotalWorkVolumeCost, contractTotal)
+        const endPeriodAcceptPercentage = calculatePercentage(endPeriodTotalAcceptVolumeCost, endPeriodTotalWorkVolumeCost)
+        return {
+            ...row,
+            vendorName: vendorName ? `${vendorName} (${vendorCode})` : undefined,
+            contractTotal,
+            inPeriodTotalPlanCost,
+            inPeriodTotalWorkVolumeCost,
+            inPeriodTotalAcceptVolumeCost,
+            inPeriodPercentageWorkWithPlan,
+            endPeriodTotalPlanCost,
+            endPeriodTotalWorkVolumeCost,
+            endPeriodTotalAcceptVolumeCost,
+            endPeriodPercentageWorkWithPlan,
+            endPeriodInProgressCost,
+            endPeriodDonePercentage,
+            endPeriodAcceptPercentage
+        }
+    }).reverse()
+        .map((row, _index, collection) => {
+            const { id, contractCode, vendorCode, inPeriodTotalAcceptVolumeCost, inPeriodTotalWorkVolumeCost, endPeriodTotalAcceptVolumeCost, endPeriodTotalWorkVolumeCost, contractTotal, inPeriodTotalPlanCost, endPeriodTotalPlanCost } = row
+            if (!id) {
+                return row;
+            }
+            const children = _.filter(collection, { 'parentId': id, 'vendorCode': vendorCode, 'contractCode': contractCode });
+            if (!children || children.length === 0) {
+                return row;
+            }
+            if (!inPeriodTotalAcceptVolumeCost) {
+                row.inPeriodTotalAcceptVolumeCost = _.sumBy(children, 'inPeriodTotalAcceptVolumeCost')
+            }
+            if (!inPeriodTotalWorkVolumeCost) {
+                row.inPeriodTotalWorkVolumeCost = _.sumBy(children, 'inPeriodTotalWorkVolumeCost')
+            }
+            if (!endPeriodTotalAcceptVolumeCost) {
+                row.endPeriodTotalAcceptVolumeCost = _.sumBy(children, 'endPeriodTotalAcceptVolumeCost')
+            }
+            if (!endPeriodTotalWorkVolumeCost) {
+                row.endPeriodTotalWorkVolumeCost = _.sumBy(children, 'endPeriodTotalWorkVolumeCost')
+            }
+            if (!contractTotal) {
+                row.contractTotal = _.sumBy(children, 'contractTotal')
+            }
+            if (!inPeriodTotalPlanCost) {
+                row.inPeriodTotalPlanCost = _.sumBy(children, 'inPeriodTotalPlanCost')
+            }
+            if (!endPeriodTotalPlanCost) {
+                row.endPeriodTotalPlanCost = _.sumBy(children, 'endPeriodTotalPlanCost')
+            }
+
+            row.inPeriodPercentageWorkWithPlan = calculatePercentage(row.inPeriodTotalWorkVolumeCost, row.inPeriodTotalPlanCost)
+            row.endPeriodPercentageWorkWithPlan = calculatePercentage(row.endPeriodTotalWorkVolumeCost, row.endPeriodTotalPlanCost)
+            row.endPeriodInProgressCost = row.endPeriodTotalWorkVolumeCost - row.endPeriodTotalAcceptVolumeCost
+            row.endPeriodDonePercentage = calculatePercentage(row.endPeriodTotalWorkVolumeCost, row.contractTotal)
+            row.endPeriodAcceptPercentage = calculatePercentage(row.endPeriodTotalAcceptVolumeCost, row.endPeriodTotalWorkVolumeCost)
+            return row;
+        }).reverse().value()
+    const gridDataWithSummaryContract = _.chain(gridData).map(row => {
+        const { contractCode, isSummary } = row
+        if (!isSummary) {
+            return row
+        }
+        const allContractDetails = _.filter(gridData, { 'isSummary': false, 'contractCode': contractCode })
+        const allIds = _.map(allContractDetails, "id")
+        const contractDetailFiltereds = _.filter(allContractDetails, ({ parentId }) => !allIds.includes(parentId))
+        return calculateSummaryData(row, contractDetailFiltereds)
+    }).value();
+    const gridDataWithSummaryVendor = _.chain(gridDataWithSummaryContract).map(row => {
+        const { vendorCode, isSummary, contractCode } = row
+        if (!isSummary || contractCode) {
+            return row
+        }
+        const allContractDetails = _.filter(gridDataWithSummaryContract, { 'isSummary': true, 'vendorCode': vendorCode })
+        return calculateSummaryData(row, allContractDetails)
+    }).value();
+
+    if (gridDataWithSummaryVendor.length > 0) {
+        const allContractDetails = _.filter(gridDataWithSummaryVendor, { 'isSummary': true, 'contractCode': null })
+        gridDataWithSummaryVendor[0] = calculateSummaryData(gridDataWithSummaryVendor[0], allContractDetails)
+    }
+    function displayNumber(value) {
+        return numeral(isNaN(value) || !_.isFinite(value) ? 0 : value).format('0,0.[000]')
+    }
+    function displayPercentage(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+    }
+    const columns = [
+        { id: "vendorName", header: [{ text: "Thầu phụ" }, { content: "selectFilter" }], adjust: true },
+        {
+            id: "contractCode", header: [{
+                text: "Số HĐ/PLHĐ"
+            }, { content: "inputFilter" }], adjust: true
+        },
+        { id: "structureCode", header: [{ text: "Mã ", align: 'center' }, { content: "selectFilter" }], width: 100 },
+        { id: "structureName", header: [{ text: "Hạng mục công việc", align: 'center' }], width: 250 },
+        { id: "unitName", header: [{ text: "Đơn vị tính", align: 'center' }], adjust: true },
+        {
+            id: "contractPrice", header: [
+                { text: "HỢP ĐỒNG", colspan: 3, align: 'center' },
+                { text: 'Đơn giá' }
+            ], align: 'right',  template: displayNumberRounded, width: 95
+        },
+        {
+            id: "contractVolume", header: ["", { text: "Tổng khối lượng HĐ", align: 'center' }], align: 'right',
+            template: displayQuantity, width: 127
+        },
+        {
+            id: "contractTotal", header: ["", { text: "Giá trị hợp đồng (chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded,
+            width: 168
+        },
+        {
+            id: "inPeriodPlanVolume", header: [
+                { text: "TRONG KỲ", colspan: 7, align: 'center' },
+                { text: 'KL kế hoạch', align: 'center' }
+            ], align: 'right',
+            template: displayQuantity, width: 104
+        },
+        {
+            id: "inPeriodTotalPlanCost", header: ["", { text: "Giá trị kế hoạch (chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded,
+            width: 163
+        },
+        {
+            id: "inPeriodWorkVolume", header: ["", { text: "KL thực hiện", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 115
+        },
+        {
+            id: "inPeriodTotalWorkVolumeCost", header: ["", {
+                text: "Giá trị thực hiện (chưa VAT)", align: 'center'
+            }], align: 'right',  template: displayNumberRounded,
+            width: 166
+        },
+        {
+            id: "inPeriodAcceptVolume", header: ["", { text: "KL nghiệm thu", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 134
+        },
+        {
+            id: "inPeriodTotalAcceptVolumeCost", header: ["", { text: "Giá trị nghiệm thu (chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded,
+            width: 160
+        },
+        {
+            id: "inPeriodPercentageWorkWithPlan", header: ["", { text: "%thực hiện/ kế hoạch", align: 'center' }], align: 'right',
+            width: 143, template: displayPercentage
+        },
+        {
+            id: "endPeriodPlanVolume", header: [
+                { text: "CUỐI KỲ", colspan: 10, align: 'center' },
+                { text: 'KL kế hoạch', align: 'center' }
+            ], align: 'right',
+            template: displayQuantity,
+            width: 104
+        },
+        {
+            id: "endPeriodTotalPlanCost", header: ["", { text: "Giá trị kế hoạch (chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded,
+            width: 163
+        },
+        {
+            id: "endPeriodWorkVolume", header: ["", { text: "KL thực hiện", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 115
+        },
+        {
+            id: "endPeriodTotalWorkVolumeCost", header: ["", { text: "Giá trị thực hiện (chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded,
+            width: 166
+        },
+        {
+            id: "endPeriodAcceptVolume", header: ["", { text: "KL nghiệm thu", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 134
+        },
+        {
+            id: "endPeriodTotalAcceptVolumeCost", header: ["", { text: "Giá trị nghiệm thu (chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded,
+            width: 160
+        },
+        {
+            id: "endPeriodPercentageWorkWithPlan", header: ["", {
+                text: "%thực hiện/ kế hoạch", align: 'center'
+            }], align: 'right',
+            template: displayPercentage, width: 143
+        },
+        {
+            id: "endPeriodInProgressCost", header: ["", { text: "Giá trị dở dang", align: 'center' }], align: 'right',  template: displayNumberRounded,
+            width: 124
+        },
+        {
+            id: "endPeriodDonePercentage", header: ["", {
+                text: "Tỉ lệ hoàn thành", align: 'center'
+            }], type: "percent", format: "#.00",
+            width: 128
+        },
+        {
+            id: "endPeriodAcceptPercentage", header: ["", {
+                text: "Tỉ lệ nghiệm thu", align: 'center'
+            }], align: 'right',
+            template: displayPercentage, width: 147
+        },
+    ]
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        leftSplit: 5,
+        autoHeight: true,
+        resizable: true,
+        data: gridDataWithSummaryVendor,
+        selection: "cell",
+        keyNavigation: true,
+        keyNavigation: true,
+        rowCss: function ({ isSummary }) { return isSummary ? "row-bold" : "" },
+    });
+
+    function ExportExcel() {
+        grid.export.xlsx({
+            name: "BC_THEO_DOI_THAU_PHU.xlsx",
+            url: "@Url.Action("ExportExcelVendorMonitoring", new { searchModel=JsonConvert.SerializeObject(searchModel)})"
+        });
+    }
+
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+
+        function updateHideColumn() {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+        }
+    $(function () {
+        for (i = 0; i < columns.length; i++) {
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+    });
+    </script>
+</div>

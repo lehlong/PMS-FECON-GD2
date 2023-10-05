@@ -1,0 +1,509 @@
+﻿@model SMO.Service.AD.UserService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.MD
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var dsResult = new System.Data.DataSet();
+    var lstSelect = new List<SqlSelectMutil>();
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_AD_ORGANIZE", Where = " 1=1 ORDER BY C_ORDER" });
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_VENDOR" });
+    dsResult = SMOUtilities.GetMultilpleTable(lstSelect);
+    List<T_AD_ORGANIZE> lstOrganize = UtilsCore.ConvertDataToListExtends<T_AD_ORGANIZE>(dsResult.Tables["T_AD_ORGANIZE"]);
+    List<T_MD_VENDOR> lstVendor = UtilsCore.ConvertDataToListExtends<T_MD_VENDOR>(dsResult.Tables["T_MD_VENDOR"]);
+}
+
+<div id='@Model.ViewId'>
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <div class="container-fluid child-content">
+        <div class="card">
+            <div class="">
+                @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+            </div>
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" class="active"><a href="#thongTinChinh" data-toggle="tab">Thông tin chính</a></li>
+                    <li role="presentation"><a href="#danhSachNhomNguoiDung" data-toggle="tab">DSách nhóm người dùng</a></li>
+                    <li role="presentation"><a href="#danhSachRole" data-toggle="tab">DSách role</a></li>
+                    <li role="presentation"><a href="#danhSachQuyen" data-toggle="tab">Chỉnh sửa quyền</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="thongTinChinh">
+                        @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                        {
+                            @Html.AntiForgeryToken();
+                            @Html.HiddenFor(m => m.ObjDetail.USER_NAME)
+                            @Html.HiddenFor(m => m.ObjDetail.ACTIVE)
+                            @Html.HiddenFor(m => m.ObjDetail.IS_MODIFY_RIGHT)
+                            <div class="page-function" style="padding-top: 10px;">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdSave", "Cập nhật thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                                    @Html.MyButton("cmdResetPassword", "Reset mật khẩu", "ResetPassword();", "Alt+N", "refresh")
+                                    @if (Model.ObjDetail.ACTIVE)
+                                    {
+                                        @Html.MyButton("cmdToggleActive", "Khóa tài khoản", "if(!confirm('Bạn chắc chắn không?')){return;}" + string.Format("Forms.ToggleActive('{0}',{1}, this);", Url.Action("ToggleActive"), "{ id : '" + Model.ObjDetail.USER_NAME + "' }"), "", "lock")
+                                    }
+                                    else
+                                    {
+                                        @Html.MyButton("cmdToggleActive", "Kích hoạt tài khoản", "if(!confirm('Bạn chắc chắn không?')){return;}" + string.Format("Forms.ToggleActive('{0}',{1}, this);", Url.Action("ToggleActive"), "{ id : '" + Model.ObjDetail.USER_NAME + "' }"), "", "lock_open")
+                                    }
+                                </div>
+                            </div>
+                            <div class="row" style="padding: 20px;">
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>Tên đăng nhập</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME, new { @disabled = "" })
+                                        </div>
+                                    </div>
+
+                                    <label>Tài khoản AD Fecon</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.ACCOUNT_AD)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.ACCOUNT_AD)
+                                    </div>
+
+                                    <label>Họ và tên</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.FULL_NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.FULL_NAME)
+                                    </div>
+
+                                    <label>Email</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.EMAIL)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.EMAIL)
+                                    </div>
+
+                                    <label>Số điện thoại</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.PHONE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.PHONE)
+                                    </div>
+
+                                    @*<label>Địa chỉ</label>
+        <div class="form-group">
+            <div class="form-line">
+                @Html.MyTextBoxFor(m => m.ObjDetail.ADDRESS)
+            </div>
+            @Html.ValidationMessageFor(m => m.ObjDetail.ADDRESS)
+        </div>*@
+
+                                    <label>Ghi chú</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NOTES)
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-xs-12">
+                                    <label>Kiểu người dùng</label>
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.USER_TYPE, SelectListUtilities.GetUserType(false), new { @data_live_search = "true", @class = "selectpicker show-tick", @onchange = "OnChangeUserType();", @id = "ddlUserType" })
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.USER_TYPE)
+                                    </div>
+
+                                    <label>Chức vụ</label>
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.TITLE_CODE, SelectListUtilities.GetTitles(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.TITLE_CODE)
+                                    </div>
+
+                                    <label>Nhà thầu</label>
+                                    <div class="form-group">
+                                        <select name="@Html.NameFor(m => m.ObjDetail.VENDOR_CODE)"
+                                                data-live-search="true" data-show-subtext="true"
+                                                class="selectpicker show-tick dropdown form-control">
+                                            <option value="">-</option>
+                                            @foreach (var vendor in lstVendor)
+                                            {
+                                                <option value="@vendor.CODE">
+                                                    @vendor.NAME - @vendor.SHORT_NAME
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <label>Công ty</label>
+                                            <select name="@Html.NameFor(m => m.COMPANY_ID)" id="dllCompany" data-val="true" data-val-required="Công ty bắt buộc nhập"
+                                                    data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany();"
+                                                    class="selectpicker show-tick dropdown form-control">
+                                                <option value="">-</option>
+                                                @foreach (var company in lstOrganize.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
+                                                {
+                                                    var selected = "";
+                                                    if (company.PKID == Model.COMPANY_ID)
+                                                    {
+                                                        selected = "selected";
+                                                    }
+                                                    <option value="@company.PKID" data-company="@company.COMPANY_CODE" @selected>
+                                                        @company.NAME
+                                                    </option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <label>Phòng ban</label>
+                                            <select name="@Html.NameFor(m => m.ObjDetail.COMPANY_ID)" id="dllPhongBan" data-live-search="true" data-show-subtext="true"
+                                                    data-hide-disabled="true"
+                                                    class="selectpicker show-tick dropdown form-control">
+                                                <option value="">-</option>
+                                                @foreach (var phongBan in lstOrganize.Where(x => x.TYPE == "BP").OrderBy(x => x.C_ORDER))
+                                                {
+                                                    var selected = "";
+                                                    if (phongBan.PKID == Model.ObjDetail.COMPANY_ID)
+                                                    {
+                                                        selected = "selected";
+                                                    }
+                                                    <option value="@phongBan.PKID" data-company="@phongBan.COMPANY_CODE" @selected>
+                                                        @phongBan.NAME
+                                                    </option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="danhSachNhomNguoiDung">
+                        @{
+                            Model.ViewId = Guid.NewGuid().ToString();
+                            Model.FormId = Guid.NewGuid().ToString();
+                            var frmUserGroupOfUserId = Model.FormId;
+                        }
+                        <div id='@Model.ViewId'>
+                            @using (Ajax.BeginForm("ListUserGroupOfUser", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                            {
+                                @Html.AntiForgeryToken();
+                                @Html.HiddenFor(m => m.ObjDetail.USER_NAME)
+                                <div class="page-function">
+                                    <div class="page-function-button m-r-20">
+                                        @Html.MyButton("cmdAddUserGroup", "Gán vào nhóm người dùng", "AddUserGroup();", "Alt+S", "add")
+                                        @Html.MyButton("cmdRemoveUserGroup", "Rời khỏi nhóm người dùng", "RemoveUserGroup();", "Alt+S", "delete")
+                                    </div>
+                                </div>
+
+                                <div id="divResult">
+                                    @Html.Partial("ListUserGroupOfUser", Model)
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="danhSachRole">
+                        @{
+                            Model.ViewId = Guid.NewGuid().ToString();
+                            Model.FormId = Guid.NewGuid().ToString();
+                            var frmRoleOfUserId = Model.FormId;
+                        }
+                        <div id='@Model.ViewId'>
+                            @using (Ajax.BeginForm("ListRoleOfUser", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                            {
+                                @Html.AntiForgeryToken();
+                                @Html.HiddenFor(m => m.ObjDetail.USER_NAME)
+                                <div class="page-function">
+                                    <div class="page-function-button m-r-20">
+                                        @Html.MyButton("cmdAddRole", "Thêm role", "AddRole();", "Alt+S", "add")
+                                        @Html.MyButton("cmdRemoveRole", "Xóa role", "RemoveRole();", "Alt+S", "delete")
+                                    </div>
+                                </div>
+                                <div id="divResult">
+                                    @Html.Partial("ListRoleOfUser", Model)
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="danhSachQuyen">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdCapNhatQuyen", "Cập nhật quyền", "UpdateRightOfUser();", "Alt+S", "done_all")
+                                @if (Model.ObjDetail.IS_MODIFY_RIGHT)
+                                {
+                                    @Html.MyButton("cmdResetQuyen", "Lấy lại quyền mặc định", "ResetRightOfUser();", "Alt+S", "refresh")
+                                }
+                            </div>
+                            <div class="input-group page-function-search" style="margin-bottom: 7px !important">
+                                @Html.DropDownList("ddlRight", SelectListUtilities.GetAllRight(), new { @id = "ddlRight", @data_live_search = "true", @class = "form-control selectpicker show-tick", placeholder = "Tìm theo domain", @data_val = false, @OnChange = "SearchRight(this);" })
+
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="SearchRight();">
+                                    <i class="material-icons">search</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="divTree">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="text/javascript">
+        function OnChangeUserType() {
+
+        }
+
+        function SearchRight(obj) {
+            var value = $("#ddlRight").val();
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var node = zTree.getNodesByParamFuzzy("id", value, null);
+            if (node != null) {
+                zTree.selectNode(node[0]);
+            }
+        }
+
+        function AddUserGroup() {
+            var userName = '@Model.ObjDetail.USER_NAME';
+            var params = {
+                url: "@Url.Action("AddUserGroup")",
+                data: { userName: userName }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function RemoveUserGroup() {
+            var lstSelected = '';
+            $('.chkItemUserGroupOfUser').each(function () {
+                if (this.checked) {
+                    lstSelected += $(this).attr('modelId') + ',';
+                }
+            });
+            if (lstSelected == '') {
+                alert("Bạn hãy chọn ít nhất một nhóm người dùng!");
+                return;
+            }
+
+            lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+            var ajaxParams = {
+                url: "@Url.Action("DeleteUserGroupOfUser")",
+                type: 'POST',
+                dataType: 'json',
+                data: { lstUserGroup: lstSelected, userName: '@Model.ObjDetail.USER_NAME' }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+
+        function AddVendor() {
+            var userName = '@Model.ObjDetail.USER_NAME';
+            var params = {
+                url: "@Url.Action("AddVendor")",
+                data: { userName: userName }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function RemoveVendor() {
+            var lstSelected = '';
+            $('.chkItemVendorOfUser').each(function () {
+                if (this.checked) {
+                    lstSelected += $(this).attr('modelId') + ',';
+                }
+            });
+            if (lstSelected == '') {
+                alert("Bạn hãy chọn ít nhất một đơn vị vận tải!");
+                return;
+            }
+
+            lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+            var ajaxParams = {
+                url: "@Url.Action("DeleteVendorOfUser")",
+                type: 'POST',
+                dataType: 'json',
+                data: { lstVendor: lstSelected, userName: '@Model.ObjDetail.USER_NAME' }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+
+
+        function AddRole() {
+            var userName = '@Model.ObjDetail.USER_NAME';
+            var params = {
+                url: "@Url.Action("AddRole")",
+                data: { userName: userName }
+            };
+            Forms.ShowLoading();
+            Forms.LoadAjaxModal(params);
+        }
+
+        function RemoveRole() {
+            var lstSelected = '';
+            $('.chkItemRoleOfUser').each(function () {
+                if (this.checked) {
+                    lstSelected += $(this).attr('modelId') + ',';
+                }
+            });
+            if (lstSelected == '') {
+                alert("Bạn hãy chọn ít nhất một role!");
+                return;
+            }
+
+            lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+            var ajaxParams = {
+                url: "@Url.Action("DeleteRoleOfUser")",
+                type: 'POST',
+                dataType: 'json',
+                data: { lstRole: lstSelected, userName: '@Model.ObjDetail.USER_NAME' }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function SubmitListUserGroupOfUser() {
+            Forms.SubmitForm('@frmUserGroupOfUserId');
+        }
+
+        function SubmitListRoleOfUser() {
+            Forms.SubmitForm('@frmRoleOfUserId');
+        }
+
+
+        function UpdateRightOfUser() {
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var nodeChange = zTree.getChangeCheckedNodes(true);
+            var userName = "@Model.ObjDetail.USER_NAME";
+            var arrRight = [];
+            var arrStatus = [];
+            $.each(nodeChange, function (i, val) {
+                arrRight.push(nodeChange[i].id);
+                arrStatus.push(nodeChange[i].checked);
+            });
+
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateRightOfUser")',
+                type: "POST",
+                data: { userName: userName, rightList: arrRight.join("|"), statusList: arrStatus.join("|") },
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function ResetPassword() {
+            if (!confirm("Bạn chắc chắn không?")) {
+                return;
+            }
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("ResetPassword")',
+                type: "POST",
+                data: { userName: '@Model.ObjDetail.USER_NAME' },
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function ResetRightOfUser() {
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("ResetRightOfUser")',
+                type: "POST",
+                data: { userName: '@Model.ObjDetail.USER_NAME' },
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        var setting = {
+            check: {
+                enable: true,
+                chkboxType: { "Y": "ps", "N": "ps" }
+            },
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false,
+                fontCss: GetFont
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            }
+        };
+
+        function GetFont(treeId, node) {
+            if (node.isRemove == "1") {
+                return { color: "red" };
+            }
+
+            if (node.isAdd == "1") {
+                return { color: "blue" };
+            }
+        }
+
+        function BuildTreeRight() {
+            $('#divTree').html("");
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("BuildTreeRight")',
+                type: "GET",
+                data: { userName: '@Model.ObjDetail.USER_NAME' },
+                success: function (response) {
+                    $('#divTree').html(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function OnChangeCompany() {
+            var companyCode = $("#@Model.ViewId #dllCompany").find(':selected').data("company");
+            $("#@Model.ViewId #dllPhongBan option").removeAttr('disabled');;
+            $("#@Model.ViewId #dllPhongBan option").each(function () {
+                if ($(this).data('company') != companyCode) {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+
+            $("#@Model.ViewId #dllPhongBan").selectpicker('refresh');
+        }
+
+        $(function () {
+            //SubmitListUserOfGroup();
+            //SubmitListRoleOfUserGroup();
+            OnChangeCompany();
+            BuildTreeRight();
+            Forms.CompleteUI();
+            OnChangeUserType();
+        });
+    </script>
+</div>

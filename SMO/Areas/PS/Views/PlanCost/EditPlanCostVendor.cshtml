@@ -1,0 +1,806 @@
+﻿@model IList<SMO.Service.PS.Models.PlanCostViewModel>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@using SMO.Core.Entities.PS;
+@{
+    var gridId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var projectId = (ViewBag.ProjectId as Guid?).Value;
+    var project = SMOUtilities.GetProject(projectId);
+    var timePeriods = (ViewBag.ProjectTimes as IList<T_PS_TIME>).Select(x => new { x.START_DATE, x.FINISH_DATE, x.ID }).ToList();
+    var timeType = project.TIME_TYPE;
+    var timeTypeText = string.Empty;
+
+    var ngayQuyetToan = ViewBag.NgayQuyetToan;
+    var hanBaoHanh = ViewBag.HanBaoHanh;
+    var display = ConfigHideColumn.KE_HOACH_CHI_PHI.GetValue().ToString();
+
+    foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
+    {
+        if (time.GetValue().Equals(timeType))
+        {
+            timeTypeText = time.GetName();
+            break;
+        }
+    }
+
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP5.2", projectId))
+    {
+        editable = true;
+    }
+    if (project.STATUS == "04" || project.STATUS == "05")
+    {
+        editable = false;
+    }
+
+    string[] header = new string[] { project.NAME, project.CODE, project.ID.ToString() };
+
+
+}
+
+<style>
+    .alert-border {
+        border: 2px solid red;
+    }
+
+    .selectCell {
+        background-color: #E8E6E6;
+    }
+    .fade-cost {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div class="p-t-10 fade-cost">
+    <b>TRẠNG THÁI: @(project.STATUS.GetEnum<ProjectStatus>().GetName().ToUpper())</b>
+    @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-plan-cost\").click();"), "Alt+N", "arrow_back")
+    @Html.MyButton("cmdSave", "Xuất Excel", $"ExportExcel()", "Alt+N", "file_download")
+    @Html.MyButton("cmdImport", "Nhập Excel", string.Format("$(\"#import\").show();"), "Alt+N", "file_upload")
+</div>
+<div id="import" hidden>
+    <div class="modal-backdrop fade in"></div>
+    <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; padding-right: 17px;">
+        <div class="modal-dialog " role="document">
+            <div class="modal-content">
+                <div class="card">
+                    <div class="body" style="padding-top: 0px;">
+                        <div class="tab-content">
+                            <div class="page-function p-t-10">
+                                @Html.MyButton("cmdSave", "Import", $"upload()", "Alt+N", "done_all")
+                                @Html.MyButton("cmdSave", "Đóng", string.Format("$(\"#import\").hide();"), "Alt+N", "close")
+                            </div>
+                            <div class="row m-t-30">
+                                <div class="col-xs-1 col-lg-3"></div>
+                                <div class="col-lg-6 col-xs-10">
+                                    <label>Chọn file</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input type="file" accept=".xlsx,.xls" id="file_upload" name="file_upload" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="height: calc(100vh - 180px)">
+    <div class="p-t-10 fade-cost" style="height: 100%; width: 100%" id="@gridId"></div>
+</div>
+
+<script type="text/javascript">
+    var editablePlanVendor = false;
+    @if (editable)
+    {
+        <text>
+    editablePlanVendor = true;
+        </text>
+    }
+    $(function () {
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+        const timePeriods = @Html.Raw(JsonConvert.SerializeObject(timePeriods));
+        const structGroup = _.chain(rawData)
+            .map(x => ({
+                ...x,
+                startDate: moment(x.startDate).format("DD/MM/YYYY"),
+                finishDate: moment(x.finishDate).format("DD/MM/YYYY")
+            }))
+            .groupBy("projectStructureId")
+            .value();
+        const gridData = []
+        _.forOwn(structGroup, (value) => {
+            gridData.push({
+                ..._.chain(value)
+                    .keyBy(({ timePeriodOrder }) => `period_${timePeriodOrder}`).mapValues("value")
+                    .value(),
+                ..._.chain(value)
+                    .keyBy(({ timePeriodOrder }) => `periodTotal_${timePeriodOrder}`).mapValues("periodTotal")
+                    .value(),
+                ...value[0]
+            });
+        })
+        function calculateTotalVolumePlan(rowData) {
+            let value = 0
+            for (let i = 0; i < rawData.length / gridData.length; i++) {
+                value += parseFloat(_.get(rowData, `period_${i}`));
+            }
+            return value;
+        }
+
+        const gridWithTotalVolumeData = _.map(gridData, (row) => {
+            return {
+                ...row,
+                totalVolumePlan: calculateTotalVolumePlan(row)
+            }
+        })
+        function validateNumber(value) {
+            return numeral(isNaN(value) ? 0 : value).format('0.[000000000]')
+        }
+        function displayQuantity(value, row) {
+            const { unitCode } = row
+            if (unitCode === "%") {
+                return numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+            }
+            return numeral(isNaN(value) ? 0 : value).format('0,0.[000]')
+        }
+        function displayTotalVolumePlan(value, row) {
+            const { unitCode } = row
+            if (unitCode === "%") {
+                return numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+            }
+            return numeral(isNaN(value) ? 0 : value).format('0,0.[000]')
+        }
+        const columns = [
+            { id: "genCode", header: [{ text: "Mã hạng mục" }, { content: "inputFilter" }] },
+            { id: "projectStructureName", header: [{ text: "Hạng mục công việc" }, { content: "inputFilter" }], maxWidth: 350 },
+            {
+                id: "projectStructureType", header: [{ text: "" }],
+                template: (type) => {
+                    return `<image src="Content/Images/IconProject/${type}.png"></image>`
+                },
+                htmlEnable: true,
+                align: "center",
+                width: 50
+            },
+            //{ id: "CODE", header: [{ text: "MÃ" }] },
+            { id: "unitCode", header: [{ text: "ĐVT" }], minWidth: 70 },
+            {
+                id: "quantity", header: [{ text: "Khối lượng dự án" }], align: "right", template: displayQuantity
+            },
+            { id: "price", header: [{ text: "Đơn giá" }], type: "number", format: "#,#" },
+            {
+                id: "thanhTien", header: [{ text: "Thành tiền" }], align: "right", template: (value, row) => {
+                    const { thanhTien } = row;
+                    if (!thanhTien) {
+                        return undefined;
+                    }
+                    return Number(thanhTien).toLocaleString("en-US", { maximumFractionDigits: 0 })
+                }
+            },
+            {
+                id: "totalVolumePlan", header: [{ text: "Tổng KL kế hoạch" }], align: "right",
+                template: displayTotalVolumePlan
+            },
+            { id: "startDate", header: [{ text: "Ngày bắt đầu" }] },
+            { id: "finishDate", header: [{ text: "Ngày kết thúc" }]},
+            { id: "duration", header: [{ text: "Số ngày thi công" }], type: "number", format: "#,#" },
+
+        ]
+
+        var lengthTime = 0;
+        @if (ngayQuyetToan == null || hanBaoHanh == null)
+        {
+            <text>
+                lengthTime = rawData.length / gridData.length;
+            </text>
+        }
+        else
+        {
+            <text>
+                lengthTime = rawData.length / gridData.length - 2;
+            </text>
+        }
+        for (var i = 0; i < lengthTime ; i++) {
+            const period = timePeriods[i];
+            const startDate = moment(period.START_DATE).format("@Global.DateToStringMomentJSFormat");
+            const endDate = moment(period.FINISH_DATE).format("@Global.DateToStringMomentJSFormat");
+            var timeType = `@timeTypeText`;
+
+            columns.push({
+                id: `period_${i}`, header: [{
+                    text: `<div style="display: block;width: 100%;text-align: center;white-space: initial;">
+                            <strong>${timeType + ` ` + (i + 1)} </strong>
+                            <div style="text-align: center; font-size: 0.8em">${(startDate + ` - ` + endDate)}</div>
+                            </div>`
+                    , colspan: 2
+                },
+                { text: "Khối lượng" }],
+                template: (value, row) => {
+                    const { startDate, finishDate } = row
+
+                    const startDateRow = moment(period.START_DATE).toDate();
+                    const endDateRow = moment(period.FINISH_DATE).toDate();
+                    if (startDate > endDateRow || finishDate < startDateRow) {
+                        return;
+                    }
+
+                    return displayQuantity(value, row)
+                },
+                maxWidth: 150,
+                minWidth: 150,
+                editable: editablePlanVendor,
+                align: "right",
+            })
+
+            columns.push({
+                id: `periodTotal_${i}`, header: ["", { text: "Thành tiền" }],
+                maxWidth: 150,
+                minWidth: 150,
+                align: "right", type: "number", format: "#,#"
+            })
+        }
+
+        const grid = new dhx.Grid("@gridId", {
+            columns,
+            leftSplit: 8,
+            adjust: true,
+            resizable: true,
+            data: gridWithTotalVolumeData,
+            editable: true,
+            selection: "cell",
+            keyNavigation: true,
+            headerRowHeight: 50,
+            sortable: false
+        });
+
+        ExportExcel= function() {
+            grid.export.xlsx({
+                name: "KeHoachChiPhi.xlsx",
+                url: "@Url.Action("ExportExcelKHChiPhi", new { header = JsonConvert.SerializeObject(header) })"
+            });
+        }
+
+
+        //var arr = [];
+        //const empty = arr => arr.length = 0;
+        //const copyToClipboard = str => {
+        //    if (navigator && navigator.clipboard && navigator.clipboard.writeText)
+        //        return navigator.clipboard.writeText(str);
+        //    return Promise.reject('The Clipboard API is not available.');
+        //};
+        //var isMouseDown = false
+        //grid.events.on("cellClick", function (row, col) {
+        //    for (i = 0; i < gridWithTotalVolumeData.length; i++) {
+        //        if ($("div").hasClass("selectCell")) {
+        //            grid.removeCellCss(gridWithTotalVolumeData[i].id, col.id, "selectCell")
+        //        }
+        //    }
+
+        //});
+        //console.log(gridWithTotalVolumeData)
+        //grid.events.on("cellMouseDown", function (row, col) {
+        //    isMouseDown = true;
+        //    grid.selection.setCell(row, col)
+        //    grid.addCellCss(row.id, col.id, "selectCell")
+        //    empty(arr)
+        //    arr.push([row[col.id]])
+        //});
+        //grid.events.on("cellMouseOver", function (row, col) {
+        //    if (isMouseDown) {
+        //        grid.selection.setCell(row, col)
+        //        grid.addCellCss(row.id, col.id, "selectCell")
+        //        arr.push([row[col.id]])
+        //    }
+        //});
+
+        //$(document)
+        //    .mouseup(function () {
+        //        isMouseDown = false;
+
+        //    }).bind("selectstart", function () {
+        //        return false;
+        //    });
+
+        //function convertToCSV(objArray) {
+        //    var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+        //    var str = '';
+
+        //    for (var i = 0; i < array.length; i++) {
+        //        var line = '';
+        //        for (var index in array[i]) {
+        //            if (line != '') line += ','
+
+        //            if (array[i][index] != null) {
+        //                line += array[i][index];
+        //            } else {
+        //                line += ''
+        //            }
+        //        }
+        //        str += line + '\r\n';
+        //    }
+        //    return str;
+        //}
+
+        //$(document).on('copy', function () {
+        //    copyToClipboard(convertToCSV(arr))
+        //});
+
+        document.getElementById("@gridId").addEventListener("keydown", function (e) {
+            if (e.keyCode == 37 || e.which == 37 || e.keyCode == 38 || e.which == 38 || e.keyCode == 39 || e.which == 39 || e.keyCode == 40 || e.which == 40) {
+                grid.editEnd();
+            }
+        });
+        document.getElementById("@gridId").onkeypress = function (e) {
+            var selectedCell = grid.selection.getCell();
+            if (selectedCell == undefined || e.which == 9 || e.which == 13 || @project.STATUS == "04" || @project.STATUS == "05") {
+                return;
+            }
+            const { row, column } = selectedCell;
+            if (!column.id.includes('period_') && !column.id.includes('planVolume')) {
+                return;
+            }
+            if (column.$cellCss[row.id] == "dhx-cell-disabled ") {
+                return;
+            }
+            if (row.unitCode === "%") {
+                grid.editCell(row.id, column.id);
+                row[column.id] = parseFloat(e.key) / 100;
+            } else {
+                grid.editCell(row.id, column.id);
+                row[column.id] = parseFloat(e.key);
+            }
+        };
+
+        function displayNummber(value) {
+            return numeral(isNaN(value) ? 0 : value).format('0.[000]')
+        }
+        function PasteVendor(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var selectedCell = grid.selection.getCell();
+            if (selectedCell == undefined || @project.STATUS == "04"|| @project.STATUS == "05") {
+                return;
+            }
+            const { row, column } = selectedCell;
+            if (!column.id.includes('period_')) {
+                return;
+            }
+            try {
+                var errorCheck = 0;
+                var pastedText = (e.originalEvent.clipboardData || window.clipboardData)?.getData('text').trim().split(/\r?\n */).map(r => r.split(/\t/));
+                var indexSelectCell = grid.data.getIndex(row.id);
+                var dataCell = grid.data.getRawData();
+                var lengthText;
+                if (pastedText.length > dataCell.length - indexSelectCell) {
+                    lengthText = dataCell.length - indexSelectCell;
+                } else {
+                    lengthText = pastedText.length;
+                }
+                for (var i = 0; i < lengthText; i++) {
+                    if (column.$cellCss[row.id] == "dhx-cell-disabled ") {
+                        continue;
+                    }
+                    var oldValue = dataCell[indexSelectCell + i][column.id];
+                    var value = String(pastedText[i][0]).replaceAll(",", "");
+                    var { id: colId } = column
+                    var { price, projectStructureId, unitCode } = dataCell[indexSelectCell + i]
+                    if (unitCode === "%") {
+                        value /= 100
+                    }
+                    if (String(value).includes("%")) {
+                        value = String(value).replace("%", "");
+                    }
+                    value = displayNummber(value);
+                    dataCell[indexSelectCell + i][column.id] = value;
+                    grid.paint();
+
+                    var totalVolumePlan = calculateTotalVolumePlan(dataCell[indexSelectCell + i]);
+                    if (totalVolumePlan > dataCell[indexSelectCell + i].quantity) {
+                        setAlertColumn(dataCell[indexSelectCell + i].id)
+                        console.log(dataCell[indexSelectCell + i])
+                        errorCheck++;
+                    } else {
+                        removeAlertColumn(dataCell[indexSelectCell + i].id)
+
+                        if (oldValue.toString() == value.toString()) {
+                            continue;
+                        }
+                        grid.data.update(dataCell[indexSelectCell + i].id, { [colId]: value })
+
+                        var periodId = _.find(structGroup[projectStructureId], ["timePeriodOrder", +column.id.replace("period_", "")])?.timePeriodId
+                        var ajaxParams = {
+                            url: '@Url.Action("UpdateValueVendor")',
+                            type: "POST",
+                            data: {
+                                projectStructId: projectStructureId,
+                                periodId,
+                                value,
+                                total: value * price,
+                                projectId: '@projectId',
+                                isCustomer: false
+                            },
+                            dataType: 'json',
+                            success: function () {
+                                updateTotalGrid();
+                                grid.paint();
+                                updateParentTotal(projectStructureId, +column.id.replace("period_", ""), periodId);
+                            }
+                        };
+                        Forms.AjaxWithoutLoading(ajaxParams)
+                    }
+                }
+                updateTotalGrid();
+                updateData();
+                grid.paint();
+                if (errorCheck > 0) {
+                    Message.func.AlertWarning({ Message: { Message: "Chú ý: Dữ liệu các ô báo đỏ không được lưu! Vui lòng kiểm tra lại!", Code: "1003" } })
+                } else {
+                    Message.func.AlertSuccess({ Message: { Message: "Cập nhật thông tin thành công", Code: "1002" } })
+                }
+            } catch (e) {
+                alert("Lỗi trong quá trình paste dữ liệu!!! Ctrl + F5 để tải lại trang!")
+            }
+        }
+        var checkValue = "Ven";
+        $(document).unbind("paste");
+        $(document).bind('paste', function (e) {
+            if (checkValue == "Ven") {
+                PasteVendor(e);
+            }
+        });
+
+
+        _.forEach(grid.data.serialize(), (data) => {
+            const { quantity, id } = data
+            const totalVolumePlan = calculateTotalVolumePlan(data)
+            if (parseFloat(totalVolumePlan.toFixed(3)) > quantity && quantity) {
+                setAlertColumn(id)
+            }
+            for (var i = 0; i < lengthTime; i++) {
+                const period = timePeriods[i];
+                const { startDate, finishDate, id, quantity } = data
+
+                const startDateRow = moment(period.START_DATE).toDate();
+                const endDateRow = moment(period.FINISH_DATE).toDate();
+
+                var datePartsStart = startDate.split("/");
+                var dateStart = new Date(+datePartsStart[2], datePartsStart[1] - 1, +datePartsStart[0]);
+
+                var datePartsFinish = finishDate.split("/");
+                var dateFinish = new Date(+datePartsFinish[2], datePartsFinish[1] - 1, +datePartsFinish[0]);
+
+                if (dateStart > endDateRow || dateFinish < startDateRow) {
+                    grid.addCellCss(id, `period_${i}`, 'dhx-cell-disabled');
+                    grid.addCellCss(id, `periodTotal_${i}`, 'dhx-cell-disabled');
+                }
+                let totalVolumePlan = 0
+                for (let i = 0; i < lengthTime; i++) {
+                    totalVolumePlan += Number(data[i]);
+                }
+                if (parseFloat(totalVolumePlan.toFixed(3)) > quantity) {
+                    grid.addCellCss(id, 'totalVolumePlan', 'dhx-cell-border-red');
+
+                }
+            }
+        });
+
+        updateTotalGrid();
+        updateData()
+        let oldValue = "";
+        grid.events.on("afterEditStart", function (row, col, editorType) {
+            oldValue = row[col.id];
+            setTimeout(function () {
+                const { unitCode } = row
+                const element = $(".dhx_cell-editor__input")
+                if (unitCode === "%") {
+                    element.val(element.val() * 100)
+                    element.inputmask({ 'alias': 'percentage', 'max': 10000000, 'min': -9999999, 'allowMinus': true, 'groupSeparator': ',', 'digits': 3, 'autoGroup': true, 'autoUnmask': true });
+                } else {
+                    element.inputmask({ 'alias': 'decimal', 'groupSeparator': ',', 'digits': 3, 'autoGroup': true, 'autoUnmask': true });
+                }
+            }, 50);
+        });
+
+        grid.events.on("beforeEditEnd", function (value, row, col) {
+            if (!value) {
+                value = "0"
+                return true;
+            }
+            row[col.id] = String(value)
+            const { unitCode, quantity, id } = row
+            const { id: colId } = col
+
+            let unmaskValue = undefined
+            if (unitCode === "%") {
+                unmaskValue = Inputmask.unmask(value, { alias: 'percentage', digits: 5, groupSeparator: ',', autoGroup: true });
+                value /= 100
+            } else {
+                unmaskValue = Inputmask.unmask(value, { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            }
+            if (isNaN(unmaskValue))
+                return false;
+
+            let flagCanUpdateValue = true;
+            var totalVolumePlan = 0;
+            for (var i = 0; i < timePeriods.length; i++) {
+                if (row.unitCode === "%") {
+                    row[col.id] = row[col.id] / 100
+                }
+                totalVolumePlan += Number(row[`period_${i}`]);
+            }
+            if (Number(totalVolumePlan.toFixed(3)) > quantity) {
+                setAlertColumn(id)
+                flagCanUpdateValue = false
+            } else {
+                removeAlertColumn(id)
+            }
+            return flagCanUpdateValue
+        });
+
+        grid.events.on("afterEditEnd", function (value, row, column) {
+            if (oldValue.toString() == value.toString()) {
+                return;
+            }
+            const { id: colId } = column
+            const { price, projectStructureId, unitCode } = row
+            if (unitCode === "%") {
+                value /= 100
+            }
+            grid.data.update(row.id, { [colId]: value })
+
+            const periodId = _.find(structGroup[projectStructureId], ["timePeriodOrder", +column.id.replace("period_", "")])?.timePeriodId
+            const ajaxParams = {
+                url: '@Url.Action("UpdateValueVendor")',
+                type: "POST",
+                data: {
+                    projectStructId: projectStructureId,
+                    periodId,
+                    value,
+                    total: value * price,
+                    projectId: '@projectId',
+                    isCustomer: false
+                },
+                dataType: 'json',
+                success: function (response) {
+                    updateTotalGrid();
+                    Message.execute(response);
+                    grid.paint();
+
+                    updateParentTotal(projectStructureId, +column.id.replace("period_", ""), periodId);
+                }
+            };
+            Forms.AjaxWithoutLoading(ajaxParams)
+        });
+
+        grid.events.on("beforeEditEnd", function (value) {
+            value = Inputmask.unmask(value, { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            return !isNaN(value);
+        });
+
+        grid.events.on("beforeEditStart", function (row, col) {
+            const { startDate, finishDate } = row
+            const period = _.get(timePeriods, col.id.replace("period_", ""));
+            if (!period) {
+                return false;
+            }
+
+            const startDatePeriod = moment(period.START_DATE).toDate();
+            const endDatePeriod = moment(period.FINISH_DATE).toDate();
+
+            var datePartsStart = startDate.split("/");
+            var dateStart = new Date(+datePartsStart[2], datePartsStart[1] - 1, +datePartsStart[0]);
+
+            var datePartsFinish = finishDate.split("/");
+            var dateFinish = new Date(+datePartsFinish[2], datePartsFinish[1] - 1, +datePartsFinish[0]);
+
+            if (dateStart > endDatePeriod || dateFinish < startDatePeriod) {
+                return false
+            }
+
+            return true;
+        });
+
+        function updateParentTotal(projectStructureId, periodIndex, periodId) {
+            const parentId = _.find(grid.data.serialize(), ["id", projectStructureId])?.parentId
+
+            if (parentId) {
+                const ajaxParams = {
+                    url: '@Url.Action("UpdateParentTotal")',
+                    type: "POST",
+                    data: {
+                        projectStructId: parentId,
+                        periodId,
+                        total: _.chain(grid.data.serialize())
+                            .find(["id", parentId])
+                            .get(`periodTotal_${periodIndex}`),
+                        projectId: '@projectId',
+                        isCustomer: false
+                    },
+                    dataType: 'json',
+                    success: () => { }
+                };
+                Forms.AjaxWithoutLoading(ajaxParams)
+                updateParentTotal(parentId, periodIndex, periodId)
+            }
+        }
+
+        function updateTotalGrid() {
+            _.forEach(_.orderBy(grid.data.serialize(), ['order'], ['desc']), (data) => {
+                const { price, id } = data || {};
+                const children = _.filter(grid.data.serialize(), ['parentId', id]);
+
+                    for (var i = 0; i < lengthTime; i++) {
+                        const value = _.get(data, `period_${i}`)
+                        if (!(value && price)) {
+                            const total = _.chain(children)
+                                .map((row) => {
+                                    const childPrice = _.get(row, 'price')
+                                    const periodTotal = _.get(row, `periodTotal_${i}`)
+                                    const quantity = _.get(row, `period_${i}`)
+                                    const calculateTotal = quantity * childPrice;
+                                    return calculateTotal > 0 ? calculateTotal : Number(periodTotal);
+                                })
+                                .sum()
+                                .value();
+                            const updateObj = {}
+
+                            grid.data.update(id, _.set(updateObj, `periodTotal_${i}`, total), true);
+                        } else {
+                            const updateObj = {}
+                            grid.data.update(id, _.set(updateObj, `periodTotal_${i}`, value * price), true);
+                        }
+                }
+                const totalVolumePlan = calculateTotalVolumePlan(data)
+                grid.data.update(id, _.set({}, `totalVolumePlan`, totalVolumePlan), true);
+
+            });
+        }
+
+        function updateData() {
+            const lv1 = _.filter(gridData, { 'genCode': '@project.CODE', 'projectStructureType': 'WBS'})[0]
+            const lv2 = _.filter(gridData, ['parentId', lv1?.projectStructureId])
+
+            _.forEach(lv2, (child) => {
+
+                const { projectStructureId: parentId } = child
+                _.forEach(timePeriods, (timePeriod, periodIndex) => {
+
+                    const { ID: periodId } = timePeriod
+                     const ajaxParams = {
+                         url: '@Url.Action("UpdateParentTotal")',
+                         type: "POST",
+                         data: {
+                             projectStructId: parentId,
+                             periodId,
+                             total: _.chain(grid.data.serialize())
+                                 .find(["id", parentId])
+                                 .get(`periodTotal_${periodIndex}`),
+                             projectId: '@projectId',
+                             isCustomer: false
+                         },
+                         dataType: 'json',
+                         success: () => { }
+                     };
+                     Forms.AjaxWithoutLoading(ajaxParams)
+                })
+
+            })
+        }
+
+
+        upload = function () {
+            var files = document.getElementById('file_upload').files;
+            if (files.length == 0) {
+                alert("Hãy chọn 1 file Excel trước khi Import...");
+                return;
+            }
+            var filename = files[0].name;
+            var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+            if (extension == '.XLS' || extension == '.XLSX') {
+                excelFileToJSON(files[0]);
+            } else {
+                alert("File không đúng định dạng! Vui lòng chọn file Excel...");
+            }
+        }
+
+        function excelFileToJSON(file) {
+            try {
+                $("#import").hide();
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+                reader.onload = function (e) {
+
+                    var data = e.target.result;
+                    var workbook = XLSX.read(data, {
+                        type: 'binary'
+                    });
+                    var result = {};
+                    workbook.SheetNames.forEach(function (sheetName) {
+                        var range = XLSX.utils.decode_range(workbook.Sheets[sheetName]['!ref']);
+                        range.s.c = 0;
+                        range.s.r = 5;
+                        range.e.c = columns.length;
+                        range.e.r = rawData.length;
+                        var new_range = XLSX.utils.encode_range(range);
+                        var excelInJSON = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName], { blankRows: false, defval: '', range: new_range });
+                        result = excelInJSON
+                    });
+                    var dataExcel = JSON.parse(JSON.stringify(result, null, 4))
+                    dataExcel.splice(0, 2);
+                    var dataCell = grid.data.getRawData();
+
+                    var errorCheck = 0;
+                    for (i = 0; i < dataCell.length; i++) {
+                        const { projectStructureId, price } = dataCell[i];
+                        var projectVolume = dataCell[i].quantity;
+
+                        var totalVolumePlan = 0;
+                        for (j = 1; j < rawData.length / gridData.length - 1; j++) {
+                            totalVolumePlan += parseFloat(dataExcel[i][`__EMPTY_${9 + j + j}`])
+                        }
+
+                        for (j = 1; j < rawData.length / gridData.length - 1; j++) {
+                            var value = dataExcel[i][`__EMPTY_${9 + j + j}`]
+                            var oldValue = dataCell[i][`period_${j - 1}`]
+                            grid.editCell(grid.data.getId(i), `period_${j - 1}`);
+                            grid.data._order[i][`period_${j - 1}`] = validateNumber(String(value).replaceAll(",", ""));
+
+                            if (parseFloat(totalVolumePlan.toFixed(3)) > projectVolume) {
+                                setAlertColumn(dataCell[i].id)
+                                errorCheck++;
+                                continue;
+                            } else {
+                                if (oldValue.toString() == value.toString()) {
+                                    continue;
+                                }
+                                var periodId = _.find(structGroup[projectStructureId], ["timePeriodOrder", +String(`period_${j - 1}`).replace("period_", "")])?.timePeriodId
+                                var ajaxParams = {
+                                    url: '@Url.Action("UpdateValueVendor")',
+                                    type: "POST",
+                                    data: {
+                                        projectStructId: projectStructureId,
+                                        periodId,
+                                        value,
+                                        total: value * price,
+                                        projectId: '@projectId',
+                                        isCustomer: false
+                                    },
+                                    dataType: 'json',
+                                    success: function () {
+                                        updateTotalGrid();
+                                        grid.paint();
+                                        updateParentTotal(projectStructureId, +String(`period_${j - 1}`).replace("period_", ""), periodId);
+                                    }
+                                };
+                                Forms.AjaxWithoutLoading(ajaxParams)
+                            }
+                        }
+                    }
+                    if (errorCheck > 0) {
+                        Message.func.AlertWarning({ Message: { Message: "Chú ý: Dữ liệu các ô báo đỏ không được lưu! Vui lòng kiểm tra lại!", Code: "1003" } })
+                    } else {
+                        Message.func.AlertSuccess({ Message: { Message: "Cập nhật thông tin thành công", Code: "1002" } })
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    });
+</script>

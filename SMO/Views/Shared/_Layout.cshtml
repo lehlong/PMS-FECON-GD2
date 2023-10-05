@@ -1,0 +1,305 @@
+﻿@using Newtonsoft.Json
+@using SMO.Core.Entities
+@using SMO.Service.CM
+@{ 
+    var isChangePass = "0";
+    if (ProfileUtilities.User.LAST_CHANGE_PASS_DATE.HasValue)
+    {
+        TimeSpan ts = DateTime.Now.Subtract(ProfileUtilities.User.LAST_CHANGE_PASS_DATE.Value);
+        if (ts.TotalDays > 60)
+        {
+            isChangePass = "1";
+        }
+    }
+
+    var checkSessionExpire = false;
+    if (ProfileUtilities.User == null || string.IsNullOrEmpty(ProfileUtilities.User.USER_NAME))
+    {
+        checkSessionExpire = true;
+    }
+}
+
+@if (checkSessionExpire)
+{
+    <script>
+        window.open('/Authorize/Logout', '_self');
+    </script>
+    return;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>PMS</title>
+    <link rel="icon" href="~/Content/pms-ico.png" type="image/x-icon">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
+    <link href="~/Theme/css/google_roboto.css" rel="stylesheet" type="text/css">
+    <link href="~/Theme/css/google_material_icon.css" rel="stylesheet" type="text/css">
+
+    <!-- Bootstrap Core Css -->
+    <link href="~/Theme/plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Waves Effect Css -->
+    <link href="~/Theme/plugins/node-waves/waves.css" rel="stylesheet" />
+
+    <!-- Animation Css -->
+    <link href="~/Theme/plugins/animate-css/animate.css" rel="stylesheet" />
+
+    <!-- Morris Chart Css-->
+    <link href="~/Theme/plugins/morrisjs/morris.css" rel="stylesheet" />
+
+    <!-- Bootstrap Select Css -->
+    <link href="~/Theme/plugins/bootstrap-select/css/bootstrap-select.css?v=2" rel="stylesheet" />
+
+    <!-- Custom Css -->
+    <link href="~/Theme/css/style.css?v=3.5" rel="stylesheet">
+
+    <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
+    <link href="~/Theme/css/themes/theme-indigo.min.css" rel="stylesheet" />
+
+    @* autosize js for textarea *@
+    <script src="~/Properties/autosize.js/autosize.min.js"></script>
+
+    @*Font awesome*@
+    <link href="~/Properties/font-awesome/css/all.min.css" rel="stylesheet" />
+    <!-- Jquery Core Js -->
+    @*<script src="~/Theme/plugins/jquery/jquery.min.js"></script>*@
+
+    <link href="~/Theme/css/materialize.css" rel="stylesheet" />
+    <link href="~/Theme/plugins/bootstrap-datepicker-1.6.4/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.10.2.js?v=1.1"></script>
+
+    @* select 2*@
+    <link href="~/Properties/select2/css/select2.min.css" rel="stylesheet" />
+    <script src="~/Properties/select2/js/select2.min.js"></script>
+
+    @*XLSX*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script>
+
+    @* Suite *@
+    <script src="~/Scripts/Suite/codebase/suite.js?v=7.2.7"></script>
+    <link href="~/Scripts/Suite/codebase/suite.css?v=7.2.5" rel="stylesheet" />
+    @* Lodash *@
+    <script src="~/Properties/lodash.js/lodash.min.js"></script>
+    @*<script
+        <script src="~/Scripts/Suite/codebase/suite.js"></script>
+                src="https://code.jquery.com/jquery-2.2.4.js"
+                integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI="
+                crossorigin="anonymous"></script>*@
+    @* Sweetalert 2 *@
+    <link href="~/Properties/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="~/Properties/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <link href="~/Theme/plugins/jquery-dropdown/jquery.dropdown.css" rel="stylesheet" />
+    <script src="~/Properties/numeral.js/numeral.min.js"></script>
+
+    @* tooltip *@
+    <link href="~/Content/tooltip.css" rel="stylesheet" />
+    <script type="module" src="https://unpkg.com/tooltipper@1/tooltipper.min.mjs"></script>
+</head>
+<body class="theme-indigo ls-closed">
+    @Html.Hidden("antiForgeryToken", Html.GetAntiForgeryToken())
+    <!-- Page Loader -->
+    <div class="page-loader-wrapper" id="divLoading">
+        <div class="loader">
+            <div class="preloader pl-size-xl">
+                <div class="spinner-layer pl-orange">
+                    <div class="circle-clipper left">
+                        <div class="circle"></div>
+                    </div>
+                    <div class="circle-clipper right">
+                        <div class="circle"></div>
+                    </div>
+                </div>
+            </div>
+            <p>Hệ thống đang xử lý ...</p>
+        </div>
+    </div>
+    <!-- #END# Page Loader -->
+    <!-- Overlay For Sidebars -->
+    <div class="overlay" style="z-index: 1000"></div>
+    <!-- #END# Overlay For Sidebars -->
+    <!-- Top Bar -->
+    <nav class="navbar" style="z-index: 22; box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);">
+        <div class="container-fluid">
+            <a href="javascript:void(0);" class="bars"></a>
+            @*<i class="material-icons navbar-icons" style="position: absolute; left: 10px; cursor: pointer;" onclick="$('body').addClass('ls-closed'); $(this).remove();">menu</i>*@
+            <a class="navbar-brand" href="#">
+                <b onclick="window.location.reload()" class="m-l-10">PMS</b>
+            </a>
+            <div>
+                <a title="User" href="javascript:void(0);" class="dropdown-toggle navbar-icons" data-toggle="dropdown" role="button" style="float:right;" data-target="ulProfile">
+                    @*<i class="material-icons navbar-icons" >person_outline</i>*@
+                    <i class="material-icons" style="margin-right: -7px;">person</i>
+                    <i class="material-icons">arrow_drop_down</i>
+                </a>
+                <ul class="dropdown-menu" style="right: 0;top: 80px !important; left: auto; width: 250px;" id="ulProfile">
+                    <li><a href="javascript:void(0);"><i class="material-icons">person_outline</i> @ProfileUtilities.User.FULL_NAME</a></li>
+                    <li><a href="#" onclick="Forms.LoadAjaxModal('/Authorize/ChangePassword')"><i class="material-icons">vpn_key</i> Đổi mật khẩu</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="/Authorize/Logout"><i class="material-icons">exit_to_app</i> Đăng xuất</a></li>
+                </ul>
+            </div>
+
+            <div id="divNotify">
+                <a title="Thông báo" href="javascript:void(0);" id="tagAShowNotify" onclick="SendNotifyIsViewed();" class="dropdown-toggle navbar-icons" data-target="ulNotification" data-toggle="dropdown" role="button" style="float:right; position: relative; margin-right: 10px;">
+                    <i class="material-icons">notifications</i>
+                    <span class="label-count" style="top: 0; right: 0" data-bind="text: IntCountNew"></span>
+                </a>
+
+                <ul class="dropdown-menu" style="right: 0;top: 80px !important; left: unset; min-width: 320px; overflow-y: auto;" id="ulNotification">
+                    <li class="header">THÔNG BÁO</li>
+                    <li class="body">
+                        <ul class="menu" data-bind="template: { name: 'RowTemplateNotify', foreach: ObjListNotify }">
+                        </ul>
+                    </li>
+                    <li class="footer">
+                        <a href="#" onclick="$('#frmViewAllNotify').remove(); Forms.LoadAjax('/Notify')">Xem tất cả</a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <a title="Hỗ trợ" href="https://teams.microsoft.com/l/channel/19%3abcdb5d91ca0e4c48ad0f5edbd7a88320%40thread.tacv2/PMS-%2520Qu%25E1%25BA%25A3n%2520l%25C3%25BD%2520d%25E1%25BB%25B1%2520%25C3%25A1n?groupId=da183600-1168-4e38-85b1-29c89af30702&tenantId=56e56246-8739-4b1c-9110-355c73255716"
+                   target="_blank"
+                   class="navbar-icons" role="button" style="float: right; position: relative; margin-right: 10px;">
+                    <i class="material-icons">help</i>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <section>
+        <!-- Left Sidebar -->
+        <aside id="leftsidebar" class="sidebar">
+            <div class="user-info">
+                <div class="image">
+                    <img src="~/Theme/images/user.png" width="48" height="48" alt="User" />
+                </div>
+
+                <div class="info-container">
+                    <div class="name">@ProfileUtilities.User.FULL_NAME</div>
+                    <div class="email">@UserType.GetText(ProfileUtilities.User.USER_TYPE)</div>
+                </div>
+            </div>
+            <!-- Menu -->
+            @*@Html.Partial("Menu")*@
+            @{ Html.RenderAction("Menu", "Home"); }
+            <!-- #Menu -->
+            <!-- Footer -->
+
+
+            <div class="legal">
+                <div class="copyright">
+                    &copy; 2018 <a href="http://d2s.com.vn" target="_blank">d2s.com.vn</a>
+                </div>
+            </div>
+            <!-- #Footer -->
+        </aside>
+        <!-- #END# Left Sidebar -->
+    </section>
+
+    <section class="content row">
+        <div class="right-content col-md-6 col-sm-6 col-xs-12" id="rightContent" style="margin-top: 45px; top:0; height: calc(100% - 45px); z-index: 22">
+
+        </div>
+        <div class="right-content col-md-8 col-sm-12" id="rightContentGanttDetail" style="margin-top: 45px; top:0; height: calc(100% - 45px)">
+        </div>
+        <div id="mainContent">
+            @RenderBody()
+        </div>
+
+    </section>
+
+    <script type="text/html" id="RowTemplateNotify">
+        <li data-bind="html: CONTENTS, css: CLASS_IS_NOT_READED, attr : {id : PKID}"></li>
+    </script>
+
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+
+    <script src="~/Theme/plugins/bootstrap-datepicker-1.6.4/js/bootstrap-datepicker.min.js"></script>
+    <script src="~/Theme/plugins/bootstrap-datepicker-1.6.4/locales/bootstrap-datepicker.vi.min.js"></script>
+    <script src="~/Theme/plugins/jquery-inputmask/jquery.inputmask.bundle.js"></script>
+    <!-- Bootstrap Core Js -->
+    <script src="~/Theme/plugins/bootstrap/js/bootstrap.js"></script>
+
+    <!-- Slimscroll Plugin Js -->
+    <script src="~/Theme/plugins/jquery-slimscroll/jquery.slimscroll.js?v=2"></script>
+
+    <!-- Waves Effect Plugin Js -->
+    <script src="~/Theme/plugins/node-waves/waves.js"></script>
+
+    <!-- Jquery CountTo Plugin Js -->
+    <script src="~/Theme/plugins/jquery-countto/jquery.countTo.js"></script>
+
+    <!-- Morris Plugin Js -->
+    <script src="~/Theme/plugins/raphael/raphael.min.js"></script>
+    <script src="~/Theme/plugins/morrisjs/morris.js"></script>
+    <script src="~/Theme/plugins/ckeditor_full/ckeditor.js"></script>
+    <script src="~/Theme/plugins/bootstrap-select/js/bootstrap-select.js"></script>
+    <script src="~/Theme/plugins/bootstrap-notify/bootstrap-notify.js"></script>
+    <!-- Custom Js -->
+    <script src="~/Scripts/jquery.floatingscroll.js"></script>
+
+    <script src="~/Theme/js/admin.js?v=2"></script>
+    <script src="~/Scripts/D2SCoreJS/D2SCoreJS.js?v=1.1"></script>
+    <script src="~/Scripts/D2SCoreJS/Utilities.js?v=3"></script>
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    @*@Scripts.Render("~/bundles/jqueryunobtrusive")*@
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+    <script src="~/Scripts/knockout-3.4.2.js"></script>
+    <script src="~/Scripts/knockout.mapping-latest.js"></script>
+    <script src="~/Theme/plugins/momentjs/moment.js"></script>
+    <script src="~/Scripts/ko.model.Notify.js"></script>
+    <script type="text/javascript" src="~/Theme/plugins/jquery-dropdown/jquery.dropdown.js"></script>
+    @{
+        JsonSerializerSettings serializerSetting = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+    }
+    <script type="text/javascript">
+        var notifyService = @Html.Raw(JsonConvert.SerializeObject(ViewBag.NotifyService, serializerSetting));
+    </script>
+    <script src="~/Scripts/layout.js?v=1"></script>
+    <script type="text/javascript">
+        function roundNumber(number) {
+            return numeral(numeral(number).format('0,0')).value()
+        }
+        function calculateGanttDetail(_, new_width) {
+            //const ganttLayoutWidth = $(".gantt_layout_cell.gantt_layout").first()?.width();
+            //const gridLayoutWidth = new_width ?? $(".gantt_layout_cell.grid_cell").first()?.width();
+            //$("#rightContentGanttDetail").width(ganttLayoutWidth - gridLayoutWidth + 15);
+            /*$("#rightContentGanttDetail").height($("#gantt-chart")?.height() + $(".header.gantt-demo-header")?.outerHeight() - 2);*/
+        }
+
+        function SendNotifyIsViewed() {
+            if (modelNotify.IntCountNew() != "" || modelNotify.IntCountNew() != 0) {
+                notification.server.notifyIsViewed('@ProfileUtilities.User.USER_NAME');
+            }
+        }
+
+        function SendNotifyIsReaded(pkId) {
+            notification.server.notifyIsReaded(pkId, '@ProfileUtilities.User.USER_NAME');
+        }
+
+        $(function(){
+            history.pushState(null, null, location.href);
+            window.onpopstate = function () {
+                history.go(1);
+            };
+
+            setInterval(function () {
+                $.ajax({
+                    url: "/Home/KeepConnection"
+                });
+            }, 60000);
+        });
+        $.fn.modal.prototype.constructor.Constructor.DEFAULTS.backdrop = 'static';
+        $.fn.modal.prototype.constructor.Constructor.DEFAULTS.keyboard = false;
+        
+    </script>
+</body>
+</html>

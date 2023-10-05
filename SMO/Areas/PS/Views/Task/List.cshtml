@@ -1,0 +1,101 @@
+﻿@model SMO.Service.PS.TaskService
+@using Newtonsoft.Json;
+
+@{
+    var gridId = Guid.NewGuid().ToString();
+    var taskStatuses = SelectListUtilities.GetListTaskStatuses();
+    var taskPriorities = SelectListUtilities.GetListTaskPriorities();
+    var jsonData = Model.ObjList.Select(x => new
+    {
+        START_DATE = x.START_DATE,
+        FINISH_DATE = x.FINISH_DATE,
+        TEXT = x.TEXT,
+        STATUS = x.STATUS,
+        PRIORITY = x.PRIORITY,
+        userPerformer = x.USER_PERFORMER == Guid.Empty ? string.Empty : x.UserPerformer?.USER_NAME,
+        //userAprove = x.USER_APPROVE == Guid.Empty ? string.Empty : x.UserAprove?.USER_NAME,
+        id = x.ID
+    });
+}
+
+    <div class="p-t-10 p-b-20" style="min-height: 200px; width: 100%" id="@gridId"></div>
+
+
+    <script type="text/javascript">
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(jsonData));
+    const taskStatuses = @Html.Raw(JsonConvert.SerializeObject(taskStatuses));
+    const taskPriorities = @Html.Raw(JsonConvert.SerializeObject(taskPriorities));
+    const gridData = _.map(rawData, (x) => (
+        {
+            ...x,
+            START_DATE: moment(x.START_DATE).toDate(),
+            FINISH_DATE: moment(x.FINISH_DATE).toDate(),
+            statusName: _.find(taskStatuses, ["Value", x.STATUS]).Text,
+            priorityName: _.find(taskPriorities, ["Value", x.PRIORITY]).Text,
+        }))
+    const columns = [
+        {
+            id: "icon", header: [{ text: "" }],
+            template: (_value, row) => {
+                const { id } = row
+                return `<i class="material-icons" style="font-size:16px" onclick="editTask('${id}')">edit</i>`;
+            },
+            align: 'center',
+            htmlEnable: true,
+        },
+        { id: "TEXT", header: [{ text: "Nội dung" }] },
+        { id: "userPerformer", header: [{ text: "Người thực hiện" }] },
+        // { id: "userAprove", header: [{ text: "Người phê duyệt" }] },
+        { id: "statusName", header: [{ text: "Tình trạng" }] },
+        { id: "priorityName", header: [{ text: "Độ ưu tiên" }] },
+        //{
+        //    id: "action-detail", header: [{ text: "#" }],
+        //    template: (value, task) => {
+        //        return `<i class="fa fa-edit p-r-5" onclick="viewDetail('${task.ProjectStructId}')"></i>`
+        //    },
+        //    htmlEnable: true,
+        //    width: 50,
+        //    align: 'center'
+        //},
+        { id: "START_DATE", header: [{ text: "Ngày bắt đầu" }], type: "date", format: "%d/%m/%Y" },
+        { id: "FINISH_DATE", header: [{ text: "Ngày kết thúc" }], type: "date", format: "%d/%m/%Y" },
+    ]
+    //$('#@gridId').width($('#rightContentGanttDetail').width() - 55);
+
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        autoHeight: true,
+        adjust: true,
+        resizable: true,
+        data: gridData,
+    });
+
+    function editTask(taskId) {
+        console.log(taskStatuses)
+        console.log(taskPriorities)
+        Forms.LoadAjaxModal(`@Url.Action("Edit")?id=${taskId}`)
+    }
+
+    function RefreshTask(taskId) {
+        const ajaxParams = {
+            url: `@Url.Action("GetDetail")?id=${taskId}`,
+            type: "GET",
+            dataType: 'json',
+            success: (x) => {
+                const updatedTask = {
+                    ...x,
+                    START_DATE: moment(x.START_DATE).toDate(),
+                    FINISH_DATE: moment(x.FINISH_DATE).toDate(),
+                    statusName: _.find(taskStatuses, ["Value", x.STATUS])?.Text,
+                    priorityName: _.find(taskPriorities, ["Value", x.PRIORITY])?.Text,
+                    userPerformer: x.UserPerformer?.USER_NAME,
+                    //userAprove: x.UserAprove?.USER_NAME,
+                    id: x.ID
+                }
+                grid.data.update(taskId, updatedTask)
+            }
+        }
+        Forms.AjaxWithoutLoading(ajaxParams)
+    }
+    </script>

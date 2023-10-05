@@ -1,0 +1,38 @@
+﻿@model SMO.Service.PS.TaskService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId, "#divResultTask"), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.ACTIVITY_PARENT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <div class="tab-content">
+                        <div class=" p-b-10 page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdAdd", "Tạo mới task list", string.Format("Forms.LoadAjaxModal('{0}');",
+                           @Url.Action("Create", new {projectId=Model.ObjDetail.PROJECT_ID, activityParentId=Model.ObjDetail.ACTIVITY_PARENT_ID})), "Alt+N", "add")
+                        </div>
+                        <div id="divResultTask">
+                        </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>

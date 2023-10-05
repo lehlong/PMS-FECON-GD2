@@ -1,0 +1,68 @@
+﻿@model SMO.Service.AD.OrganizeService
+@using SMO.Repository.Implement.MD;
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th class="align-center">Tên đơn vị</th>
+                <th class="align-center">Loại đơn vị</th>
+                <th class="align-center">Company code</th>
+                <th class="align-center">Cost center code</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.NAME))
+            {
+                var index = Model.ObjList.IndexOf(item);
+                <input type="hidden" name="ObjList[@index].PKID" value="@item.PKID" />
+                <input type="hidden" name="ObjList[@index].PARENT" value="@item.PARENT" />
+                <input type="hidden" name="ObjList[@index].C_ORDER" value="@item.C_ORDER" />
+                <tr>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].NAME" class="form-control" value="@item.NAME" />
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <select name="ObjList[@index].TYPE"
+                                    data-live-search="true" data-show-subtext="true"
+                                    class="selectpicker show-tick dropdown form-control">
+                                <option value="">-</option>
+                                @foreach (var type in SelectListUtilities.GetDictionary(Domain.ORGANIZE_TYPE.ToString()))
+                                {
+                                    <option value="@type.Value" @((item.TYPE == type.Value) ? "selected" : "")>
+                                        @type.Text
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].COMPANY_CODE" class="form-control" value="@item.COMPANY_CODE" />
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].COST_CENTER_CODE" class="form-control" value="@item.COST_CENTER_CODE" />
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+

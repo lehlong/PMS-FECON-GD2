@@ -1,0 +1,240 @@
+﻿@model IEnumerable<SMO.Service.PS.Models.Report.SummaryProject.SummaryProjectReportData>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var gridId = Guid.NewGuid().ToString();
+    var searchModel = ViewBag.SearchModel as SMO.Service.PS.Models.Report.SummaryProject.SummaryProjectReportModel;
+    var display = ConfigHideColumn.BAO_CAO_TONG_HOP_DU_AN.GetValue().ToString();
+
+}
+
+<style>
+    .row-bold .dhx_grid-cell {
+        font-weight: bold
+    }
+
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
+
+    .fade-report {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+
+<div class="fade-report">
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+    <div class="dropdown-hide-column">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+        <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+        </select>
+        <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+    </div>
+    <div style="height: calc(100vh - 180px)" id="@gridId"></div>
+    <script type="text/javascript">
+
+    function displayNumber(value) {
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[000]')
+    }
+    function displayPercentage(value) {
+        return numeral(isNaN(value) || !_.isFinite(value) ? 0 : value).format('0,0.[000]%')
+    }
+    function displayNumberRounded(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0')
+    }
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+    const gridData = rawData.map(row => {
+        const { contractTotal, totalCost, accumulatedPlannedRevenue, accumulatedPlanCost, accumulatedPerformanceValue, accumulatedPerformanceRevenue, accumulatedImplementedCosts, accumulatedVolumeWorkCosts } = row
+        const accumulatedProfitPlan = accumulatedPlannedRevenue - accumulatedPlanCost
+        const accumulatedProfitImplement = accumulatedPerformanceValue - accumulatedVolumeWorkCosts
+        const accumulatedPlanRate = (contractTotal - totalCost) / contractTotal
+        const accumulatedPerformanceRate = accumulatedProfitImplement / accumulatedPerformanceValue
+        return {
+            ...row,
+            accumulatedProfitImplement,
+            accumulatedPerformanceRate,
+            accumulatedPlanRate,
+            accumulatedProfitPlan
+        }
+    })
+    const columns = [
+        { id: "index", header: [{ text: "STT", rowspan: 2}], width: 66, align: 'center' },
+        { id: "projectName", header: [{ text: "Dự án", align: 'center' }, { content: "selectFilter" }], width: 200 },
+        { id: "customer", header: [{ text: "Khách hàng", align: 'center' }, { content: "selectFilter" }], width: 200 },
+        { id: "signedDate", header: [{ text: "Ngày ký HĐ", align: 'center', rowspan: 2 }], width: 105 },
+        { id: "contractCode", header: [{ text: "Số HĐ", align: 'center', rowspan: 2 }], width: 105 },
+        { id: "contractTotal", header: [{ text: "Giá trị HĐ (chưa VAT) ", align: 'center', rowspan: 2 }], align: 'right',  template: displayNumberRounded, width: 138 },
+        {
+            id: "inPeriodPlanValue", header: [
+                { text: "TRONG KỲ", colspan: 10, align: 'center' },
+                { text: 'GTSL kế hoạch (Chưa VAT)', align: 'center' }
+            ], align: 'right',  template: displayNumberRounded, width: 163,
+        },
+        { id: "inPeriodPerformanceValue", header: ["", { text: "GTSL thực hiện (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 165 },
+        { id: "inPeriodPlannedRevenue", header: ["", { text: "Doanh thu kế hoạch (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 190 },
+        { id: "inPeriodPerformanceRevenue", header: ["", { text: "Doanh thu thực hiện (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 192 },
+        { id: "inPeriodPlanCosts", header: ["", { text: "Chi phí kế hoạch (Chưa VAT)", align: 'center' }], align: 'right', template: displayNumberRounded, width: 171 },
+        { id: "inPeriodVolumeWorkCosts", header: ["", { text: "Chi phí thực hiện (Chưa VAT)", align: 'center' }], align: 'right', template: displayNumberRounded, width: 172 },
+        { id: "inPeriodImplementedCosts", header: ["", { text: "Giá trị nghiệm thu thầu phụ (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 172 },
+        { id: "inPeriodPlannedProceeds", header: ["", { text: "Tiền thu kế hoạch (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 180 },
+        { id: "inPeriodProceedsMadeMoney", header: ["", { text: "Tiền thu thực tế (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 152 },
+        { id: "inPeriodPlanSpentMoney", header: ["", { text: "Tiền chi kế hoạch (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 176 },
+        { id: "inPeriodImplementedSpentMoney", header: ["", { text: "Tiền chi thực tế (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 179 },
+        {
+            id: "duringYearPerformanceValue", header: [
+                { text: "PHÁT SINH TRONG NĂM", colspan: 5, align: 'center' },
+                { text: 'GTSL thực hiện (Chưa VAT)', align: 'center' }
+            ], align: 'right',  template: displayNumberRounded, width: 165,
+        },
+        { id: "duringYearPerformanceRevenue", header: ["", { text: "Doanh thu thực hiện (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 192 },
+        { id: "duringYearVolumeWorkCosts", header: ["", { text: "Chi phí thực hiện (Chưa VAT)", align: 'center' }], align: 'right', template: displayNumberRounded, width: 172 },
+        { id: "duringYearImplementedCosts", header: ["", { text: "Giá trị nghiệm thu thầu phụ (Chưa VAT)", align: 'center' }], align: 'right', template: displayNumberRounded, width: 172 },
+        { id: "duringYearProceedsMadeMoney", header: ["", { text: "Tiền thu thực hiện (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 152 },
+        { id: "duringYearImplementedSpentMoney", header: ["", { text: "Tiền chi thực hiện (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 179 },
+        {
+            id: "accumulatedPlannedValue", header: [
+                { text: "LŨY KẾ TỚI KỲ BÁO CÁO", colspan: 11, align: 'center' },
+                { text: 'GTSL kế hoạch (Chưa VAT)', align: 'center' }
+            ], align: 'right',  template: displayNumberRounded, width: 165,
+        },
+        { id: "accumulatedPerformanceValue", header: ["", { text: "GTSL thực hiện (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 192 },
+        { id: "accumulatedPlannedRevenue", header: ["", { text: "Doanh thu kế hoạch", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 192 },
+        { id: "accumulatedPerformanceRevenue", header: ["", { text: "Doanh thu thực hiện (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 192 },
+        { id: "accumulatedPlanCost", header: ["", { text: "Chi phí kế hoạch", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 172 },
+        { id: "accumulatedVolumeWorkCosts", header: ["", { text: "Chi phí thực hiện (Chưa VAT)", align: 'center' }], align: 'right', template: displayNumberRounded, width: 172 },
+        { id: "accumulatedImplementedCosts", header: ["", { text: "Giá trị nghiệm thu thầu phụ (Chưa VAT)", align: 'center' }], align: 'right', template: displayNumberRounded, width: 172 },
+        { id: "accumulatedProceedsMadeMoney", header: ["", { text: "Tiền thu thực hiện (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 152 },
+        { id: "accumulatedImplementedSpentMoney", header: ["", { text: "Tiền chi thực hiện (Có VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 179 },
+        { id: "accumulatedProfitPlan", header: ["", { text: "Lợi nhuận kế hoạch (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 190 },
+        { id: "accumulatedProfitImplement", header: ["", { text: "Lợi nhuận thực hiện (Chưa VAT)", align: 'center' }], align: 'right',  template: displayNumberRounded, width: 191 },
+        { id: "accumulatedPlanRate", header: ["", { text: "TSLN kế hoạch", align: 'center' }], align: "right", width: 129, template: displayPercentage },
+        { id: "accumulatedPerformanceRate", header: ["", { text: "TSLN thực hiện", align: 'center' }], align: "right", width: 142, template: displayPercentage },
+        { id: "phongBan", header: [{ text: "Ban dự án phụ trách", align: 'center', rowspan: 2 }], width: 112 },
+        { id: "giamDocDuAn", header: [{ text: "Lãnh đạo phụ trách", align: 'center', rowspan: 2 }], width: 124 },
+        { id: "projectManager", header: [{ text: "PM dự án", align: 'center', rowspan: 2 }], width: 107 },
+        { id: "level", header: [{ text: "Cấp dự án", align: 'center', rowspan: 2 }], width: 111 },
+        { id: "type", header: [{ text: "Loại dự án", align: 'center', rowspan: 2 }], width: 102 },
+        { id: "donVi", header: [{ text: "Công ty", align: 'center', rowspan: 2 }], width: 114 },
+        { id: "status", header: [{ text: "Trạng thái dự án", align: 'center', rowspan: 2 }], width: 131 },
+    ]
+
+    gridData.unshift({
+        index: 0,
+        contractTotal: _.sumBy(gridData, "contractTotal"),
+        inPeriodPlanValue: _.sumBy(gridData, "inPeriodPlanValue"),
+        inPeriodPerformanceValue: _.sumBy(gridData, "inPeriodPerformanceValue"),
+        inPeriodPlannedRevenue: _.sumBy(gridData, "inPeriodPlannedRevenue"),
+        inPeriodPerformanceRevenue: _.sumBy(gridData, "inPeriodPerformanceRevenue"),
+        inPeriodPlanCosts: _.sumBy(gridData, "inPeriodPlanCosts"),
+        inPeriodVolumeWorkCosts: _.sumBy(gridData, "inPeriodVolumeWorkCosts"),
+        inPeriodImplementedCosts: _.sumBy(gridData, "inPeriodImplementedCosts"),
+        inPeriodPlannedProceeds: _.sumBy(gridData, "inPeriodPlannedProceeds"),
+        inPeriodProceedsMadeMoney: _.sumBy(gridData, "inPeriodProceedsMadeMoney"),
+        inPeriodPlanSpentMoney: _.sumBy(gridData, "inPeriodPlanSpentMoney"),
+        inPeriodImplementedSpentMoney: _.sumBy(gridData, "inPeriodImplementedSpentMoney"),
+        duringYearPerformanceValue: _.sumBy(gridData, "duringYearPerformanceValue"),
+        duringYearPerformanceRevenue: _.sumBy(gridData, "duringYearPerformanceRevenue"),
+        duringYearVolumeWorkCosts: _.sumBy(gridData, "duringYearVolumeWorkCosts"),
+        duringYearImplementedCosts: _.sumBy(gridData, "duringYearImplementedCosts"),
+        duringYearProceedsMadeMoney: _.sumBy(gridData, "duringYearProceedsMadeMoney"),
+        duringYearImplementedSpentMoney: _.sumBy(gridData, "duringYearImplementedSpentMoney"),
+        accumulatedPlannedValue: _.sumBy(gridData, "accumulatedPlannedValue"),
+        accumulatedPerformanceValue: _.sumBy(gridData, "accumulatedPerformanceValue"),
+        accumulatedPlannedRevenue: _.sumBy(gridData, "accumulatedPlannedRevenue"),
+        accumulatedPerformanceRevenue: _.sumBy(gridData, "accumulatedPerformanceRevenue"),
+        accumulatedPlanCost: _.sumBy(gridData, "accumulatedPlanCost"),
+        accumulatedVolumeWorkCosts: _.sumBy(gridData, "accumulatedVolumeWorkCosts"),
+        accumulatedImplementedCosts: _.sumBy(gridData, "accumulatedImplementedCosts"),
+        accumulatedProceedsMadeMoney: _.sumBy(gridData, "accumulatedProceedsMadeMoney"),
+        accumulatedImplementedSpentMoney: _.sumBy(gridData, "accumulatedImplementedSpentMoney"),
+        accumulatedProfitPlan: _.sumBy(gridData, "accumulatedProfitPlan"),
+        accumulatedProfitImplement: _.sumBy(gridData, "accumulatedProfitImplement"),
+        accumulatedPlanRate: _.sumBy(gridData, "accumulatedPlanRate"),
+        accumulatedPerformanceRate: _.sumBy(gridData, "accumulatedPerformanceRate"),
+        projectName: 'TỔNG CỘNG',
+    })
+
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        leftSplit: 6,
+        autoHeight: true,
+        resizable: true,
+        data: _.orderBy(gridData, ['index', 'asc']),
+        selection: "cell",
+        keyNavigation: true,
+    });
+
+    const rowId = grid.data.getId(0);
+    grid.addRowCss(rowId, "row-bold");
+
+    function ExportExcel() {
+        grid.export.xlsx({
+            name: "BC_TONG_HOP_DU_AN.xlsx",
+            url: "@Url.Action("ExportExcelSummaryProject", new { searchModel=JsonConvert.SerializeObject(searchModel)})"
+        });
+    }
+
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+
+        function updateHideColumn() {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+        }
+    $(function () {
+        for (i = 0; i < columns.length; i++) {
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+    });
+    </script>
+</div>

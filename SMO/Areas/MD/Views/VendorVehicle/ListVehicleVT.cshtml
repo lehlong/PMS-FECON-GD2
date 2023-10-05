@@ -1,0 +1,35 @@
+﻿@model SMO.Service.MD.VendorVehicleService
+@{
+    var number = 1;
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Mã phương tiện</th>
+                <th>Đơn vị tính</th>
+                <th>Tổng dung tích</th>
+                <th>Thông tin ngăn</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                <tr>
+                    <td>@item.Vehicle.CODE</td>
+                    <td>@item.Vehicle.UNIT</td>
+                    <td>@item.Vehicle.CAPACITY.ToStringVN()</td>
+                    <td>
+                        @foreach (var compartment in item.Vehicle.ListCompartment)
+                        {
+                            <span>Ngăn @compartment.SEQ_NUMBER.Trim('0')</span><b>: @compartment.CAPACITY.ToStringVN()</b><span>&nbsp;&nbsp;&nbsp;</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+

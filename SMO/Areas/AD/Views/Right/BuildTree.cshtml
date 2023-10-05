@@ -1,0 +1,21 @@
+﻿
+<input type="hidden" id="hddParent" value="" />
+<ul id="treeRight" class="ztree"></ul>
+
+<script type="text/javascript">
+    var zNodes = jQuery.parseJSON('@Html.Raw(ViewBag.zNode)');
+    $(function () {
+        $.fn.zTree.init($("#treeRight"), setting, zNodes);
+        var zTree = $.fn.zTree.getZTreeObj("treeRight");
+        setTimeout(function () {
+            var selected = "@ViewBag.RightSelected";
+            if (selected != null && selected !== "") {
+                var node = zTree.getNodesByParam("id", selected, null);
+                if (node != null) {
+                    $("#hddParent").val(node[0].pId);
+                    zTree.selectNode(node[0]);
+                }
+            }
+        }, 500);
+    });
+</script>

@@ -1,0 +1,19 @@
+﻿
+<ul id="treeConfig" class="ztree"></ul>
+
+<script type="text/javascript">
+    var zNodes = jQuery.parseJSON('@Html.Raw(ViewBag.zNode)');
+    $(function () {
+        $.fn.zTree.init($("#treeConfig"), setting, zNodes);
+        var zTree = $.fn.zTree.getZTreeObj("treeConfig");
+        setTimeout(function () {
+            var selected = "@ViewBag.Selected";
+            if (selected != null && selected !== "") {
+                var node = zTree.getNodesByParam("id", selected, null);
+                if (node != null) {
+                    zTree.selectNode(node[0]);
+                }
+            }
+        }, 500);
+    });
+</script>

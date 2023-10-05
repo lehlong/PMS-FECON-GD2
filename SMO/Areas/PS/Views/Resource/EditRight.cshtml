@@ -1,0 +1,93 @@
+﻿@model SMO.Service.PS.ProjectResourceService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var userName = ViewBag.UserName as string;
+    var user = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.T_AD_USER>().FirstOrDefault(x => x.USER_NAME == userName);
+}
+<div class="card" id="@Model.ViewId">
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">settings</i> <span class="title-name"><b>QUYỀN TRONG DỰ ÁN</b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="Forms.CloseRightContent();"><i class="material-icons">close</i></div>
+    </div>
+    <div class="body" style="padding-top: 0px;">
+        <div class="tab-content">
+            <div class="page-function">
+                <div class="page-function-button m-r-20">
+                    @Html.MyButton("cmdSave", "Cập nhật quyền", "UpdateRight();", "Alt+N", "done_all")
+                </div>
+            </div>
+
+            <div>
+                <label class="p-l-10">Người dùng: @user.FULL_NAME</label>
+                <ul id="treeRight" class="ztree"></ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var settingRight = {
+            check: {
+                enable: true,
+                chkboxType: { "Y": "ps", "N": "ps" }
+            },
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false,
+                fontCss: GetFont
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            }
+        };
+
+        function GetFont(treeId, node) {
+            if (node.isRemove == "1") {
+                return { color: "red" };
+            }
+
+            if (node.isAdd == "1") {
+                return { color: "blue" };
+            }
+        }
+
+        function UpdateRight() {
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var nodeChange = zTree.getChangeCheckedNodes(true);
+            var userName = "@ViewBag.UserName";
+            var projectId = "@ViewBag.ProjectId";
+            var arrRight = [];
+            var arrStatus = [];
+            $.each(nodeChange, function (i, val) {
+                arrRight.push(nodeChange[i].id);
+                arrStatus.push(nodeChange[i].checked);
+            });
+
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateRight")',
+                type: "POST",
+                data: { userName: userName, projectId: projectId, rightList: arrRight.join("|"), statusList: arrStatus.join("|")},
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        var zNodes = jQuery.parseJSON('@Html.Raw(ViewBag.zNode)');
+        $(function () {
+            $.fn.zTree.init($("#treeRight"), settingRight, zNodes);
+        });
+    </script>
+</div>
+
+

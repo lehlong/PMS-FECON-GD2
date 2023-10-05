@@ -1,0 +1,44 @@
+﻿@model SMO.Service.PS.ContractService
+@{
+    var viewId = Guid.NewGuid().ToString();
+}
+
+<div id='@viewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">style</i> <span class="title-name"><b>@Model.ObjDetail.NAME.ToUpper()</b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent()", @viewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                <li role="presentation" class="active"><a href="#general-infomation-contract" data-toggle="tab">THÔNG TIN HỢP ĐỒNG</a></li>
+                <li role="presentation"><a href="#treeContract" data-toggle="tab"  onclick="onClickJob()">HẠNG MỤC CÔNG VIỆC</a></li>
+                <li role="presentation"><a href="#dotthanhtoan" data-toggle="tab">ĐỢT THANH TOÁN</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="general-infomation-contract">
+                    @{
+                        Html.RenderPartial("EditGeneralInformation", Model);
+                    }
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="treeContract">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+            });
+
+            function onClickJob() {
+                $('#@viewId #treeContract').html("");
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"TreeContract",
+                                   new { id = Model.ObjDetail.ID }))', htmlTarget: '#@viewId #treeContract' });
+                }, 50)
+            }
+        </script>
+    </div>
+</div>
+

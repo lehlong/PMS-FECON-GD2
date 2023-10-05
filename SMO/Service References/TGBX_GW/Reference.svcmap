@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="d97e5b23-d1f8-4777-9a40-6bf62392a329" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="https://tgbx.petrolimexsg.com.vn/SMO/GW_SMO.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="GW_SMO.xsd" MetadataType="Schema" ID="12dff9d0-6005-4185-bdef-6a2229414bb8" SourceId="1" SourceUrl="https://tgbx.petrolimexsg.com.vn/SMO/GW_SMO.svc?xsd=xsd0" />
+    <MetadataFile FileName="GW_SMO.disco" MetadataType="Disco" ID="9073eb05-c944-4157-a4fb-395dca201240" SourceId="1" SourceUrl="https://tgbx.petrolimexsg.com.vn/SMO/GW_SMO.svc?disco" />
+    <MetadataFile FileName="GW_SMO1.xsd" MetadataType="Schema" ID="6a02419e-9b47-4b86-a951-6a71a292cf1c" SourceId="1" SourceUrl="https://tgbx.petrolimexsg.com.vn/SMO/GW_SMO.svc?xsd=xsd2" />
+    <MetadataFile FileName="GW_SMO2.xsd" MetadataType="Schema" ID="e6afc9d1-037f-41b8-b31d-6f66cfb1a9e6" SourceId="1" SourceUrl="https://tgbx.petrolimexsg.com.vn/SMO/GW_SMO.svc?xsd=xsd1" />
+    <MetadataFile FileName="Service1.wsdl" MetadataType="Wsdl" ID="b74ad281-da18-4d39-851d-c8f243154507" SourceId="1" SourceUrl="https://tgbx.petrolimexsg.com.vn/SMO/GW_SMO.svc?wsdl" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

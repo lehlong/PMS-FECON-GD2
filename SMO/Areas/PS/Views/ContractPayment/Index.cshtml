@@ -1,0 +1,77 @@
+﻿@model SMO.Service.PS.ContractPaymentService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var contract = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_CONTRACT>().FirstOrDefault(x => x.ID == Model.ObjDetail.CONTRACT_ID);
+
+    var editable = false;
+    if (contract.IS_SIGN_WITH_CUSTOMER && AuthorizeUtilities.CheckUserRightProject("RP3.2", contract.PROJECT_ID))
+    {
+        editable = true;
+    }
+
+    if (!contract.IS_SIGN_WITH_CUSTOMER && AuthorizeUtilities.CheckUserRightProject("RP4.2", contract.PROJECT_ID))
+    {
+        editable = true;
+    }
+
+    var project = SMOUtilities.GetProject(contract.PROJECT_ID);
+
+    if(project.STATUS == "04")
+    {
+        editable = false;
+    }
+    //var statusProjectEditable = contract.IS_SIGN_WITH_CUSTOMER || project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue();
+
+}
+<div id='@Model.ViewId'  class="row">
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.CONTRACT_ID)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <div class="tab-content">
+                    <div class="page-function p-b-10  p-t-10">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-contract\").click();$(\"#li-general-infomation-edit a\").click();"), "Alt+N", "arrow_back")
+                            @if (editable)
+                            {
+                                @Html.MyButton("cmdAdd", "Tạo mới đợt thanh toán", string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create", new { contractId = Model.ObjDetail.CONTRACT_ID })), "Alt+N", "payment")
+                                @Html.MyButton("cmdDelete", "Xóa đợt thanh toán", string.Format("Forms.DeleteItems('{0}','chkItem');", @Url.Action("Delete")), "Alt+D", "delete")
+                            }
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 col-xs-12">
+                            <label>Giá trị hợp đồng sau thuế</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control decimal" data-val="False" readonly value="@contract.CONTRACT_VALUE_VAT"
+                                           data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function SubmitIndexContractPayment() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            $(".decimal").inputmask({ "removeMaskOnSubmit": true });
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>

@@ -1,0 +1,156 @@
+﻿I. Cách gọi một lệnh ajax
+1. Gọi url --> cập nhật vào mainContent
+	Ví dụ : Forms.LoadAjax('/Home/Index1')
+	- Chỉ cần truyền vào đường dẫn url
+	- Trong nội dung của view được gọi đến, cần làm như sau
+		+ Cần lệnh này để tạo id cho màn hình này.
+		@{ 
+			var screenId = Guid.NewGuid().ToString();
+		}
+
+		+ Tạo một thẻ <div id= '@screenId'> bao hết toàn bộ nội dung của view này
+
+2. Gọi url --> cập nhật vào một element bất kỳ
+	Ví dụ :
+		var params = { url: '/Home/Index1', htmlTarget: '#divTarget' };
+		Forms.LoadAjax(params);
+	- Tham số htmlTarget, nếu để trống thì hệ thống sẽ cập nhật vào '#mainContent'. Giá trị của nó có thể là một id ("#divTarget"), hoặc một class (".divTarget")
+	- Các params có thể truyền vào hàm LoadAjax bao gồm (các giá trị dưới đây là mặc định)
+		url: '',
+        data: {},
+        dataType: "html",
+        type: 'GET',
+        contentType: 'application/json; charset=UTF-8',
+        timeout: 120000,
+        statusCode: {},
+        jsonp: false,
+        jsonpCallback: null,
+        crossDomain: false,
+        success: Forms.AjaxLoadSuccessHandler,
+        error: Forms.AjaxErrorHandler,
+        complete: Forms.AjaxCompleteHandler,
+        htmlTarget : Forms.defaultHtmlTarget
+
+3. Close màn hình được gọi ở 2 trường hợp trên
+Thực thi câu lệnh javascript : Forms.Close('@viewId');
+
+II. Cách sử dụng Ajax.BeginForm
+	@{ 
+		Model.ViewId = Guid.NewGuid().ToString();
+		Model.FormId = Guid.NewGuid().ToString();
+	}
+
+	@using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.HiddenFor(m => m.FormId)
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="card">
+                    <div class="header page-heading">
+                        <i class="material-icons" style="float:left">person_outline</i>
+                        Tạo mới người dùng
+                    </div>
+                    <div class="body ">
+                        <div class="page-function">
+                            <button type="button" class="btn btn-default waves-effect" onclick="Forms.Close('@Model.ViewId');">
+                                <i class="material-icons">keyboard_arrow_left</i>
+                                <span>Quay lại</span>
+                            </button>
+                            <button type="button" class="btn btn-info waves-effect" onclick="Forms.SubmitForm('@Model.FormId');">
+                                <i class="material-icons">add</i>
+                                <span>Tìm kiếm</span>
+                            </button>
+                        </div>
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+	- Bắt buộc phải có dòng lệnh này : @Html.HiddenFor(m => m.FormId) thì phân trang mới hoạt động
+
+	- Hàm FormDataUtils.GetAjaxOptions có 2 tham số :
+		+ viewId --> Tham số này có thể để trống. Nếu để trống thì hệ thống sẽ cập nhật vào nhưng element nào map với updateTargetId.
+		Nếu không để trống thì giá trị của nó là element parent chứa updateTargetId
+		+ updateTargetId --> Tham số này có thể để trống. Nếu để trống thì hệ thống sẽ cập nhật vào element : '#divResult'
+		Giá trị của nó có thể là một id ("#divResult"), hoặc một class (".divResult")
+	
+	- Để submit Ajax.BeginForm, gán sự kiện onclick với hàm javascript sau
+		Forms.SubmitForm('@Model.FormId');
+
+III. Gọi hàm ajax để load dữ liệu vào một modal (dialog)
+1. Forms.LoadAjaxModal(params, isNotRemoveModalOrther)
+- Nếu : isNotRemoveModalOrther = true thì các modal load trước đó sẽ không bị xóa đi
+- Hàm này sẽ hiển thị một modal với kích thước bình thường
+- Params có thể là một url hoặc tập hợp các data sau
+	var params = {
+        url: '',
+        data: {},
+        dataType: "html",
+        type: 'GET',
+        contentType: 'application/json; charset=UTF-8',
+        timeout: 120000,
+        statusCode: {},
+        jsonp: false,
+        jsonpCallback: null,
+        crossDomain: false,
+        success: Forms.AjaxLoadSuccessHandler,
+        error: Forms.AjaxErrorHandler,
+        complete: Forms.AjaxCompleteHandler,
+        htmlTarget : Forms.defaultHtmlTarget
+    };
+
+2. Nếu muốn một modal với kích thước lớn nhất, full màn hình, sử dụng hàm sau
+- Forms.LoadAjaxModalLarge(params)
+
+3. 2 hàm trên load sẵn đoạn html sau
+
+<div class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            
+        </div>
+    </div>
+</div>
+
+
+- Trong các view của url được load cần có đủ nội dung sau
+
+<div class="modal-header">
+    <h4 class="modal-title">Modal title</h4>
+</div>
+<div class="modal-body">
+    
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+</div>
+
+
+IV. Show một nội dung có sẵn lên một modal
+1. Gọi hàm : Forms.ShowModal(html, title, icon)
+2. Nếu muốn một modal lớn full màn hình thì gọi hàm
+- Forms.ShowModalLarge(html, title, icon)
+
+
+V. Gọi một lệnh AJAX, trả về một TransferObject
+
+lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+var ajaxParams = {
+    url: "@Url.Action("AddUserToGroup")",
+    type: 'POST',
+    dataType : 'json',
+    data: { lstUser: lstSelected, userGroupCode: '@Model.ObjDetail.CODE' }
+};
+Forms.Ajax(ajaxParams);
+
+VI. Bảo mật Ajax Post
+1. Đối với các lệnh ajax gọi qua Ajax.BeginForm
+- Cần có lệnh : @Html.AntiForgeryToken() bên trong 
+- Sử dụng : [ValidateAntiForgeryToken] trong Action
+
+2. Đối với các lệnh ajax gọi qua jquery $.ajax
+- Sử dụng : [MyValidateAntiForgeryToken] trong Action

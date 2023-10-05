@@ -1,0 +1,20 @@
+﻿using SMO.Core.Entities.PS;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SMO.Repository.Mapping.PS
+{
+    public class T_PS_CONFIG_HIDE_COLUMN_Map : BaseMapping<T_PS_CONFIG_HIDE_COLUMN>
+    {
+        public T_PS_CONFIG_HIDE_COLUMN_Map()
+        {
+            CompositeId().KeyProperty(x => x.USER_NAME);
+            Map(x => x.TYPE_DISPLAY);
+            Map(x => x.DETAILS);
+            Map(x => x.PROJECT_ID);
+        }
+    }
+}

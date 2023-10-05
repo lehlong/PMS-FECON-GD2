@@ -1,0 +1,273 @@
+﻿@model SMO.Service.PS.ContractService
+@using SMO.Core.Entities.PS
+@using SMO.Core.Entities
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var parentContract = new T_PS_CONTRACT();
+    var canEditContractCode = ViewBag.CanEditContractCode as bool?;
+    if (Model.ObjDetail.PARENT_CODE != null)
+    {
+        parentContract = Model.UnitOfWork.GetSession().Query<T_PS_CONTRACT>().FirstOrDefault(x => x.ID == Model.ObjDetail.PARENT_CODE);
+    }
+    var editable = false;
+    if (Model.ObjDetail.IS_SIGN_WITH_CUSTOMER && AuthorizeUtilities.CheckUserRightProject("RP3.1", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+
+    if (!Model.ObjDetail.IS_SIGN_WITH_CUSTOMER && AuthorizeUtilities.CheckUserRightProject("RP4.1", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    var statusProjectEditable = Model.ObjDetail.IS_SIGN_WITH_CUSTOMER || project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue();
+    if(project.STATUS == "04" || project.STATUS == "05")
+    {
+        editable = false;
+    }
+}
+<div class="card">
+    <div class="body" style="padding-top: 0px;">
+        <div class="tab-content">
+            <div class="page-function p-t-10">
+                <div class="page-function-button m-r-20">
+                    @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-contract\").click();$(\"#li-general-infomation-edit a\").click();"), "Alt+N", "arrow_back")
+                    @if (editable && statusProjectEditable)
+                    {
+                        @Html.MyButton("cmdSave", "Lưu thông tin hợp đồng", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                    }
+                </div>
+            </div>
+            @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+            {
+                @Html.AntiForgeryToken();
+                @Html.HiddenFor(m => m.ObjDetail.ID)
+                @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+                @Html.HiddenFor(m => m.ObjDetail.PARENT_CODE)
+                @Html.HiddenFor(m => m.ObjDetail.CUSTOMER_CODE)
+                @Html.HiddenFor(m => m.ObjDetail.VENDOR_CODE)
+                @Html.HiddenFor(m => m.ObjDetail.IS_SIGN_WITH_CUSTOMER)
+
+                <div class="row" style="margin-top:20px;">
+                    <div class="col-lg-1"></div>
+                    <div class="col-lg-5">
+                        @if (Model.ObjDetail.PARENT_CODE != null)
+                        {
+                            @Html.LabelFor(x => x.ObjDetail.NAME, "Hợp đồng gốc")
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control" type="text" readonly value="@(parentContract?.NAME)">
+                                </div>
+                            </div>
+                        }
+
+                        @Html.LabelFor(x => x.ObjDetail.NAME, "Tên hợp đồng")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                        </div>
+
+                        @Html.LabelFor(x => x.ObjDetail.PROJECT_ID, "Dự án")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.PROJECT_ID, SelectListUtilities.GetProjects(),
+                                new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "true" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PROJECT_ID)
+                        </div>
+
+                        @Html.LabelFor(x => x.ObjDetail.CONTRACT_NUMBER, "Số hợp đồng")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.CONTRACT_NUMBER)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.CONTRACT_NUMBER)
+                        </div>
+
+                        @Html.LabelFor(x => x.ObjDetail.PO_SO_NUMBER, "Số PO/SO")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.PO_SO_NUMBER)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PO_SO_NUMBER)
+                        </div>
+
+                        @Html.LabelFor(x => x.ObjDetail.CONTRACT_TYPE, "Loại hợp đồng")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.CONTRACT_TYPE, SelectListUtilities.GetContractTypes(Model.ObjDetail.IS_SIGN_WITH_CUSTOMER),
+                                new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.CONTRACT_TYPE)
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Ngày bắt đầu</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.START_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.START_DATE)
+                            </div>
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Ngày kết thúc</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.FINISH_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.FINISH_DATE)
+                            </div>
+                        </div>
+
+                        <label>Ngày gia hạn</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.EXTEND_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        @if (Model.ObjDetail.IS_SIGN_WITH_CUSTOMER)
+                        {
+                            @Html.LabelFor(x => x.ObjDetail.CUSTOMER_CODE, "Khách hàng")
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.CUSTOMER_CODE, SelectListUtilities.GetCustomers(),
+                                   new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "true" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CUSTOMER_CODE)
+                            </div>
+                        }
+                        else
+                        {
+                            @Html.LabelFor(x => x.ObjDetail.VENDOR_CODE, "Nhà thầu")
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.VENDOR_CODE, SelectListUtilities.GetAllVendors(),
+                                   new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "true" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.VENDOR_CODE)
+                            </div>
+                        }
+
+
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 5">
+                                <div class="form-line">
+                                    <label>Giá trị hợp đồng (trước thuế)</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CONTRACT_VALUE, new { @class = "decimal", id = "txtValue", 
+                                   @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true", 
+                                   onchange = "CalValue(this);" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CONTRACT_VALUE)
+                            </div>
+                            <div style="flex: 2">
+                                <div class="form-line">
+                                    <label>VAT %</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.VAT, new { @class = "decimal",id = "txtVAT", 
+                                   @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true", 
+                                   onchange = "CalValue(this);" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.VAT)
+                            </div>
+                            <div style="flex: 5">
+                                <div class="form-line">
+                                    <label>Giá trị hợp đồng(sau thuế)</label>
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CONTRACT_VALUE_VAT, new { @class = "decimal", id = "txtGiaTriSauThue", 
+                                   @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true"})
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CONTRACT_VALUE_VAT)
+                            </div>
+                        </div>
+
+                        <label>Người phụ trách</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.NGUOI_PHU_TRACH,
+                                 SelectListUtilities.GetProjectResources(Model.ObjDetail.PROJECT_ID),
+                                 new { @data_live_search = "true", @class = "selectpicker" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.NGUOI_PHU_TRACH)
+                        </div>
+
+                        <label>Trạng thái hợp đồng</label>
+                        <div class="form-group">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.PAYMENT_STATUS, SelectListUtilities.GetContractStatus(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PAYMENT_STATUS)
+                        </div>
+
+                        @Html.LabelFor(x => x.ObjDetail.REPRESENT_A, "Đại diện bên A")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.REPRESENT_A)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.REPRESENT_A)
+                        </div>
+
+                        @Html.LabelFor(x => x.ObjDetail.REPRESENT_B, "Đại diện bên B")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.REPRESENT_B)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.REPRESENT_B)
+                        </div>
+
+                        @Html.LabelFor(x => x.ObjDetail.NOTES, "Ghi chú")
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.NOTES)
+                        </div>
+                    </div>
+
+                </div>
+            }
+
+            <hr style="margin:0;" />
+
+            <div class="p-t-10 row">
+                <div class="title-header"> <i class="material-icons">attachment</i> <span class="title-name">FILE ĐÍNH KÈM</span> </div>
+                <div class="col-lg-3"></div>
+                <div class="col-lg-6">
+                    @if (editable && statusProjectEditable)
+                    {
+                        <span class="waves-effect btn-default btn btn-border" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new {@area = "CM", referenceId = Model.ObjDetail.REFERENCE_FILE_ID }))"
+                              style="width: 100%; padding: 6px 10px 15px 10px !important;">
+                            <i class="material-icons col-orange" style="font-size: 24px; top: 6px;">cloud_upload</i><span>Thêm file đính kèm</span>
+                        </span>
+                    }
+
+                    @if (Model.ObjDetail.REFERENCE_FILE_ID != null)
+                    {
+                        Html.RenderAction("ListFiles", "ReferenceFile", new { @area = "CM", referenceId = Model.ObjDetail.REFERENCE_FILE_ID });
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function CalValue(e) {
+            var value = Inputmask.unmask($("#txtValue").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            if (e.id === "txtValue") {
+                $('#@Model.FormId #ObjDetail_CONTRACT_VALUE').val(value);
+            }
+            var vat = Inputmask.unmask($("#txtVAT").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            var valueVAT = Number(value) + Number(value) * Number(vat) / 100;
+            if (!isNaN(value)) {
+                $("#txtGiaTriSauThue").val(Math.round(valueVAT));
+            }
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+            $(".decimal").inputmask({ "removeMaskOnSubmit": true });
+
+            if ("@editable" == "False") {
+                $("#@Model.FormId *").prop("disabled", true);
+            }
+        });
+    </script>
+</div>

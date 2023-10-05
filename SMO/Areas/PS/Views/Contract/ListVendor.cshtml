@@ -1,0 +1,101 @@
+﻿@model SMO.Service.PS.ContractService
+@{ 
+    var number = 0;
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP4.1", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    var statusProjectEditable = (project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue()) && project.STATUS != "04" && project.STATUS != "05";
+
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th class="align-center">STT</th>
+                <th>Tên hợp đồng</th>
+                <th>Số hợp đồng</th>
+                <th>Tên NCC/TP</th>
+                <th>Giá trị (chưa VAT)</th>
+                <th>Loại hợp đồng</th>
+                <th>Hợp đồng gốc</th>
+                <th>Số PO</th>
+                <th class="align-center">Ngày bắt đầu</th>
+                <th class="align-center">Ngày kết thúc</th>
+                @if (editable && statusProjectEditable)
+                {
+                    <th class="align-center">#</th>
+                }
+                <th class="align-center" width="50px">FILE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+                <td></td>
+                <td style="font-weight: bold; font-size:12px">TỔNG CỘNG</td>
+                <td></td>
+                <td></td>
+                <td style="font-weight: bold;">@Model.ObjList.Sum(x => x.CONTRACT_VALUE).ToStringVN()</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                @if (editable && statusProjectEditable)
+                {
+                    <td ></td>
+                }
+                <td ></td>
+            </tr>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.IS_SIGN_WITH_CUSTOMER).ThenBy(x => x.PARENT_CODE))
+            {
+                number++;
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = item.ID, modulName = @ViewBag.ModulName }));
+                <tr>
+                    <td align="center">
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.ID)" modelId="@item.ID" style="margin:0;" />
+                        <label for="@("chkItem" + item.ID)"></label>
+                    </td>
+                    <td class="align-center">@number</td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.NAME</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.CONTRACT_NUMBER</td>
+                    <td ondblclick="@vdbclickAction">@(item.Vendor?.NAME)</td>
+                    <td ondblclick="@vdbclickAction">@(item.CONTRACT_VALUE.ToStringVN())</td>
+                    <td ondblclick="@vdbclickAction">@(item.ContractType?.NAME)</td>
+                    <td ondblclick="@vdbclickAction">@(item.ParentContract?.CONTRACT_NUMBER)</td>
+                    <td ondblclick="@vdbclickAction">@item.PO_SO_NUMBER</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.START_DATE.Value.ToString(Global.DateToStringFormat))</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.FINISH_DATE.Value.ToString(Global.DateToStringFormat))</td>
+                    @if (editable && statusProjectEditable)
+                    {
+                        <td class="align-center">
+                            @if (item.PARENT_CODE == null || item.PARENT_CODE == Guid.Empty)
+                            {
+                                @Html.MyButton("cmdAdd", "Tạo phụ lục HĐ", string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create", new { projectId = item.PROJECT_ID, parentCode = item.ID })), "Alt+N", "style")
+                            }
+                        </td>
+                    }
+
+                    <td class="align-center">
+                        <a href="#" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new {@area = "CM", referenceId = item.REFERENCE_FILE_ID }))">
+                            <i class="material-icons col-blue" style="cursor:pointer;">attachment</i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+

@@ -1,0 +1,67 @@
+﻿@model SMO.Service.PS.PlanProgressService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    var project = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT>()
+        .FirstOrDefault(x => x.ID == Model.ObjDetail.PROJECT_ID);
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>@project.NAME.ToUpper() - @(Model.ObjDetail.IS_CUSTOMER ? "KẾ HOẠCH KHÁCH HÀNG" : "KẾ HOẠCH THẦU PHỤ") </b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent()", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                @*<li role="presentation"><a href="#" onclick="Forms.Close('@Model.ViewId');" >THÔNG TIN DỰ ÁN</a></li>*@
+                <li role="presentation" class="active"><a href="#progress" onclick="onClickProgress();" data-toggle="tab">TIẾN ĐỘ</a></li>
+                <li role="presentation"><a href="#cost" data-toggle="tab" onclick="onClickCost();">CHI PHÍ</a></li>
+                <li role="presentation"><a href="#quantity" data-toggle="tab" onclick="onClickQuantity();">SẢN LƯỢNG</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="progress">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="cost">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="quantity">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+                onClickProgress();
+            });
+
+            function onClickProgress() {
+                emptyTab();
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexPlanProgressView",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID, isCustomer = Model.ObjDetail.IS_CUSTOMER}))', htmlTarget: '#@Model.ViewId #progress' });
+                }, 50)
+            }
+            function onClickCost() {
+                emptyTab();
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexPlanCostView", "PlanCost",
+                               new { projectId = Model.ObjDetail.PROJECT_ID, isCustomer = Model.ObjDetail.IS_CUSTOMER }))', htmlTarget: '#@Model.ViewId #cost' });
+                }, 50)
+            }
+            function onClickQuantity() {
+                emptyTab();
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexPlanQuantityView", "PlanQuantity",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID, isCustomer = Model.ObjDetail.IS_CUSTOMER }))', htmlTarget: '#@Model.ViewId #quantity' });
+                }, 50)
+            }
+            function emptyTab() {
+                $('#@Model.ViewId #progress').html("");
+                $('#@Model.ViewId #cost').html("");
+                $('#@Model.ViewId #quantity').html("");
+
+            }
+        </script>
+    </div>
+</div>
+

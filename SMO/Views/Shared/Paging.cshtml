@@ -1,0 +1,66 @@
+﻿@model SMO.Service.BaseService
+@{
+    int intNumberPage = 0;
+    if (Model.TotalRecord % Model.NumerRecordPerPage == 0)
+    {
+        intNumberPage = Model.TotalRecord / Model.NumerRecordPerPage;
+    }
+    else
+    {
+        intNumberPage = (Model.TotalRecord / Model.NumerRecordPerPage) + 1;
+    }
+    if (Model.TotalRecord == 0) { intNumberPage = 1; }
+
+    List<string> vObjPage = new List<string>();
+    for (int i = 1; i <= intNumberPage; i++)
+    {
+        vObjPage.Add(i.ToString());
+    }
+}
+
+<div class="divPaging">
+    <ul class="pagination">
+        <li>
+            <a style="margin-top:3px; position: relative;">
+                <span style="margin-top: -10px;position: absolute;top: 15px;left: -5px;">∑</span> @Model.TotalRecord
+            </a>
+        </li>
+        <li>
+            <a href="javascript:void(0);" class="waves-effect" onclick="Paging.FirstPage('@Model.FormId');">
+                <i class="material-icons">first_page</i>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:void(0);" class="waves-effect" onclick="Paging.PrePage('@Model.FormId');">
+                <i class="material-icons">chevron_left</i>
+            </a>
+        </li>
+
+        <li style="float:left; min-width: 40px;">
+            @Html.DropDownList("Page", new SelectList(vObjPage.ToArray()), new { @data_live_search = "true", @class = "form-control show-tick selectpicker", @data_container = "body", @onChange = string.Format("Paging.ChangePage('{0}');", Model.FormId), @id = "Page" })
+        </li>
+
+        <li>
+            <a href="javascript:void(0);" class="waves-effect" onclick="Paging.NextPage('@Model.FormId');">
+                <i class="material-icons">chevron_right</i>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:void(0);" class="waves-effect" onclick="Paging.LastPage('@Model.FormId');">
+                <i class="material-icons">last_page</i>
+            </a>
+        </li>
+
+        <li style="float:left; min-width: 40px;">
+            @Html.DropDownList("NumerRecordPerPage", new SelectList(new[] { "10", "15", "20", "30", "40", "50", "100", "1000", "100000" }), new { @class = "form-control show-tick selectpickerNumerRecordPerPage", @data_container = "body", @id = "NumerRecordPerPage", @onChange = string.Format("Paging.ChangeRecordPerPage('{0}');", Model.FormId)})
+        </li>
+
+    </ul>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('.selectpicker').selectpicker('render');
+        $('.selectpickerNumerRecordPerPage').selectpicker('mobile');
+    });
+</script>

@@ -1,0 +1,62 @@
+﻿@model SMO.Service.PS.VolumeAcceptService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_STRUCT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.IS_CUSTOMER)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">description</i>THÊM THÔNG TIN NGHIỆM THU</a></li>
+                </ul>
+                <div class="title-close" title="Đóng màn hình" onclick="" data-dismiss="modal"><i class="material-icons">close</i></div>
+
+                <div class="tab-content">
+                    <div class="page-function p-t-10">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", "Tạo mới", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="row m-t-30">
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.ObjDetail.VALUE, "Giá trị nghiệm thu")
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.VALUE)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.VALUE)
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày nghiệm thu</label>
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.ACCEPT_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.ACCEPT_DATE)
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.ObjDetail.ACCEPT_DATE, "Ghi chú")
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.NOTES)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+
+        $(function () {
+            Forms.CompleteUI();
+        });
+
+
+    </script>
+</div>

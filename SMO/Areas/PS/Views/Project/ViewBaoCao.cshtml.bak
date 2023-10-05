@@ -1,0 +1,65 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header">
+            <i class="material-icons">content_copy</i> <span class="title-name"><b>@Model.ObjDetail.CODE - @Model.ObjDetail.NAME.ToUpper()</b></span>
+            @*<span class="title-nav">
+                    DANH SÁCH DỰ ÁN - HỢP ĐỒNG - THẦU PHỤ
+                </span>*@
+        </div>
+
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent(); goToGeneralInformationTab();", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist" id="ulNavTabs">
+                <li role="presentation" id="li-dash-board"><a href="#div-dashboard" data-toggle="tab" onclick="onClickDashboard();">DASHBOARD</a></li>
+                <li role="presentation" id="li-list-bao-cao"><a href="#div-list-bao-cao" data-toggle="tab" onclick="onClickListBaoCao();">BÁO CÁO CHI TIẾT</a></li>
+                <li role="presentation" id="li-dashboard-beta"><a href="#div-dashboard-beta" data-toggle="tab" onclick="onClickDashboardBeta();">DASHBOARD MỚI</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade" id="div-dashboard">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="div-list-bao-cao">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="div-dashboard-beta">
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+            $("#@Model.ViewId #li-dash-board a").click();
+        });
+
+        function onClickDashboard() {
+            $('#@Model.ViewId #div-dashboard').html("");
+            setTimeout(() => {
+                Forms.LoadAjax({ url: '@Url.Action("ViewDashboard",
+                                   new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #div-dashboard' });
+            }, 150)
+        }
+
+        function onClickListBaoCao() {
+            $('#@Model.ViewId #div-list-bao-cao').html("");
+            setTimeout(() => {
+                Forms.LoadAjax({ url: '@Url.Action("ViewListBaoCao",
+                                   new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #div-list-bao-cao' });
+            }, 150)
+        }
+        function onClickDashboardBeta() {
+            $('#@Model.ViewId #div-dashboard-beta').html("");
+            setTimeout(() => {
+                Forms.LoadAjax({ url: '@Url.Action("ViewDashboardCode",
+                                   new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #div-dashboard-beta' });
+            }, 150)
+        }
+    </script>
+</div>

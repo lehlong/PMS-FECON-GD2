@@ -1,0 +1,181 @@
+﻿@model SMO.Service.CF.ConfigService
+@using SMO.Core.Entities
+@{ 
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+@{
+    var dsResult = new System.Data.DataSet();
+    var lstSelect = new List<SqlSelectMutil>();
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_CUSTOMER_OLD", Where = string.Format(" COMPANY_CODE = '{0}' AND Active = 'Y'", Model.CompanyCode)});
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_SALEOFFICE", Where = " Active = 'Y'" });
+
+    dsResult = SMOUtilities.GetMultilpleTable(lstSelect);
+    List<T_MD_CUSTOMER_OLD> lstCustomer = UtilsCore.ConvertDataToListExtends<T_MD_CUSTOMER_OLD>(dsResult.Tables["T_MD_CUSTOMER_OLD"]);
+    List<T_MD_SALEOFFICE> lstSaleOffice = UtilsCore.ConvertDataToListExtends<T_MD_SALEOFFICE>(dsResult.Tables["T_MD_SALEOFFICE"]);
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.CompanyCode)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <span class="page-header-icon" onclick="Forms.CloseRightContent();" style="float:right;">
+                    <i class="material-icons">arrow_forward</i>
+                </span>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">add</i> TẠO MỚI THÔNG TIN CẤU HÌNH</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="row m-t-20">
+                        <div class="col-xs-12">
+                            <label>Công ty</label>
+                            <div class="form-group">
+                                <span>@Model.ObjOrganize.NAME</span>
+                            </div>
+
+                            <label>Loại cấu hình</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ConfigType, SelectListUtilities.GetDictionary(Domain.CONFIG_TYPE.ToString()), new { @id = "ddlConfigType", @onChange = "OnChangeConfigType();", @class = "selectpicker show-tick" })
+                            </div>
+
+                            <div id="divConfigModul" style="display:none;">
+                                <label>Chọn modul</label>
+                                <div class="form-group">
+                                    @Html.MyDropDownListFor(m => m.ModulType, SelectListUtilities.GetAllModulType(), new { @id = "ddlModulType", @onChange = "OnChangeModulType();", @class = "selectpicker show-tick" })
+                                </div>
+
+                                <div id="divConfigModulDCCH" style="display:none;">
+
+                                </div>
+
+                                <div id="divConfigModulDCNB" style="display:none;">
+
+                                </div>
+
+                                <div id="divConfigModulXBTX" style="display:none;">
+
+                                </div>
+
+                                <div id="divConfigModulXBND" style="display:none;">
+
+                                </div>
+
+                                <div id="divConfigModulMHGL" style="display:none;">
+
+                                </div>
+
+                                <div id="divConfigModulXTHG" style="display:none;">
+
+                                </div>
+                            </div>
+
+                            <div id="divConfigDetail" style="display:none;">
+                                <label>Chọn modul</label>
+                                <div class="form-group">
+                                    @Html.MyDropDownListFor(m => m.ModulTypeOfDetail, SelectListUtilities.GetModulTypeOfCompany(Model.ObjListConfigModul), new { @id = "ddlModulTypeOfDetail", @onChange = "OnChangeModulTypeOfDetail();", @class = "selectpicker show-tick"})
+                                </div>
+                                <div id="divConfigDetailDCCH" style="display:none;">
+                                    <label>Chọn cửa hàng</label>
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjConfigDCCH.SALEOFFICE_CODE, SelectListUtilities.GetSaleOffice(lstSaleOffice), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_dropup_auto = "false" })
+                                    </div>
+
+                                    <label>DocType</label>
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjConfigDCCH.DOC_TYPE)
+                                    </div>
+                                </div>
+
+                                <div id="divConfigDetailDCNB" style="display:none;">
+                                    <div class="col-xs-12">
+                                        <h4>DCNB Detail</h4>
+                                    </div>
+                                </div>
+
+                                <div id="divConfigDetailXBND" style="display:none;">
+                                    <div class="col-xs-12">
+                                        <h4>XBND Detail</h4>
+                                    </div>
+                                </div>
+
+                                <div id="divConfigDetailXBTX" style="display:none;">
+                                    <div class="col-xs-12">
+                                        <h4>XBTX Detail</h4>
+                                    </div>
+                                </div>
+
+                                <div id="divConfigDetailMHGL" style="display:none;">
+                                    <div class="col-xs-12">
+                                        <h4>MHGL Detail</h4>
+                                    </div>
+                                </div>
+
+                                <div id="divConfigDetailXTHG" style="display:none;">
+                                    <div class="col-xs-12">
+                                        <h4>XTHG Detail</h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        function OnChangeConfigType() {
+            $("#divConfigModul").hide();
+            $("#divConfigDetail").hide();
+            var configType = $("#ddlConfigType").val();
+            if (configType == "MODUL") {
+                $("#divConfigModul").show();
+            }
+            else if (configType == "DETAIL") {
+                $("#divConfigDetail").show();
+            }
+        }
+
+        function OnChangeModulType() {
+            $("#divConfigModulDCCH").hide();
+            $("#divConfigModulDCNB").hide();
+            $("#divConfigModulXBND").hide();
+            $("#divConfigModulXBTX").hide();
+            $("#divConfigModulXTHG").hide();
+            $("#divConfigModulMHGL").hide();
+            var modulType = $("#ddlModulType").val();
+            $("#divConfigModul" + modulType).show();
+        }
+
+        function OnChangeModulTypeOfDetail() {
+            $("#divConfigDetailDCCH").hide();
+            $("#divConfigDetailDCNB").hide();
+            $("#divConfigDetailXBND").hide();
+            $("#divConfigDetailXBTX").hide();
+            $("#divConfigDetailXTHG").hide();
+            $("#divConfigDetailMHGL").hide();
+            var modulType = $("#ddlModulTypeOfDetail").val();
+            $("#divConfigDetail" + modulType).show();
+        }
+
+        $(function () {
+            OnChangeConfigType();
+            OnChangeModulType();
+            OnChangeModulTypeOfDetail();
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SMO.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SMO_SMS_GW_SendShortMessageFromExternal" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://sms.petrolimexsg.com.vn/SendShortMessageFromExternal.asmx</Value>
+    </Setting>
+    <Setting Name="SMO_EGAS_GW_EGASWebService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://10.59.254.102:923/EGASWebService.asmx</Value>
+    </Setting>
+    <Setting Name="SMO_SMS_VNPT_GW_bsmsws" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://221.132.39.104:8083/bsmsws.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

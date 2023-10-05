@@ -1,0 +1,40 @@
+﻿@model SMO.Service.PS.ContractService
+
+
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Tên hợp đồng</th>
+                <th>Hợp đồng gốc</th>
+                <th>Số hợp đồng</th>
+                <th>Loại hợp đồng</th>
+                <th>Tên đối tác</th>
+                <th class="align-center">Ngày bắt đầu</th>
+                <th class="align-center">Ngày kết thúc</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.IS_SIGN_WITH_CUSTOMER).ThenBy(x => x.PARENT_CODE))
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Detail", new { id = item.ID }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.NAME</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@(item.ParentContract?.NAME)</td>
+                    <td ondblclick="@vdbclickAction">@item.CONTRACT_NUMBER</td>
+                    <td ondblclick="@vdbclickAction">@(item.ContractType?.NAME)</td>
+                    <td ondblclick="@vdbclickAction">@(item.IS_SIGN_WITH_CUSTOMER ? item.Customer?.NAME : item.Vendor?.NAME)</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.START_DATE.ToString(Global.DateToStringFormat))</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.FINISH_DATE.ToString(Global.DateToStringFormat))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+

@@ -1,0 +1,46 @@
+﻿@model SMO.Service.MD.TransUnitService
+@{
+    var frmFormCode = "frmTransUnitIndex";
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th>@LanguageUtilities.LangText("lbl_CODE", frmFormCode)</th>
+                <th>@LanguageUtilities.LangText("lbl_TEXT", frmFormCode)</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var toggleAction = string.Format("Forms.ToggleActive('{0}',{1}, this);", Url.Action("ToggleActive"), "{ id : '" + item.CODE + "' }");
+                <tr>
+                    <td>@item.CODE</td>
+                    <td>@item.TEXT</td>
+                    <td class="align-center" style="width:20px; vertical-align: middle">
+                        @if (item.ACTIVE)
+                        {
+                            <input onclick="@toggleAction" id="@chkActive" type="checkbox" class="filled-in chk-col-light-blue" checked="checked" />
+                            <label for="@chkActive"></label>
+                        }
+                        else
+                        {
+                            <input onclick="@toggleAction" id="@chkInActive" type="checkbox" class="filled-in chk-col-light-blue" />
+                            <label for="@chkInActive"></label>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

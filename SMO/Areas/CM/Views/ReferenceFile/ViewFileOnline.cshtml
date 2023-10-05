@@ -1,0 +1,42 @@
+﻿@model SMO.Service.CM.FileUploadService
+@{ 
+    Uri uri = new Uri(Request.Url.AbsoluteUri);
+    string pathQuery = uri.PathAndQuery;
+    string hostName = uri.ToString().Replace(pathQuery, "");
+    string urlDownloadFile = hostName + "/" + "/CM/ReferenceFile/DownloadFile?id=" + Model.ObjDetail.PKID;
+    string urlViewFile = "";
+    Model.ObjDetail.FILE_EXT = Model.ObjDetail.FILE_EXT.ToLower();
+
+    if (Model.ObjDetail.FILE_EXT == ".xlsx" || Model.ObjDetail.FILE_EXT == ".xls" ||
+        Model.ObjDetail.FILE_EXT == ".docx" || Model.ObjDetail.FILE_EXT == ".doc" ||
+        Model.ObjDetail.FILE_EXT == ".pptx" || Model.ObjDetail.FILE_EXT == ".ppt" ||
+        Model.ObjDetail.FILE_EXT == ".csv" 
+        )
+    {
+        urlViewFile = "https://view.officeapps.live.com/op/embed.aspx?src=" + HttpUtility.UrlEncode(urlDownloadFile);
+    }
+    else if (Model.ObjDetail.FILE_EXT == ".pdf" ||
+        Model.ObjDetail.FILE_EXT == ".jpg" || Model.ObjDetail.FILE_EXT == ".png" ||
+        Model.ObjDetail.FILE_EXT == ".bmp" || Model.ObjDetail.FILE_EXT == ".jpeg")
+    {
+        urlViewFile = urlDownloadFile + "&isViewFile=1";
+    }
+}
+
+<div class="view-file-online__header">
+    <img src="\Content\IconFileType\@SMOUtilities.GetIconOfFile(Model.ObjDetail.FILE_EXT)">
+    <div class="view-file-online__file-info">
+        <div class="file-name">@Model.ObjDetail.FILE_OLD_NAME</div>
+        <div class="file-size">@SMOUtilities.BytesToSize((double) Model.ObjDetail.FILE_SIZE)</div>
+    </div>
+
+    <button type="button" class="btn btn-link waves-effect view-file-online__btn-close col-fecon" onclick="$(this).parent().parent().remove();">✖</button>
+    <i class="material-icons col-fecon view-file-online__btn-download" onclick="DownloadFile('@Model.ObjDetail.PKID')">cloud_download</i>
+</div>
+
+
+<div class="view-file-online__main">
+    <iframe scrolling="yes" style="width: 100%; height: calc(100vh - 60px);" frameborder="0" src="@urlViewFile"></iframe>
+</div>
+
+

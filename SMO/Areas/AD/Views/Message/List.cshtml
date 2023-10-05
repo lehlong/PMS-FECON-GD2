@@ -1,0 +1,48 @@
+﻿@model SMO.Service.AD.MessageService
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th>Mã</th>
+                <th>Ngôn ngữ</th>
+                <th>Nội dung</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.CODE))
+            {
+                <tr>
+                    <td style="vertical-align:middle">
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItem" + item.PKID)"></label>
+                    </td>
+                    <td style="vertical-align:middle" width="100px">@item.CODE</td>
+                    <td style="vertical-align:middle"  width="100px">@item.LANGUAGE</td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => item.MESSAGE, new { @onchange = string.Format("UpdateMessage('{0}', this);", item.PKID) })
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+</script>

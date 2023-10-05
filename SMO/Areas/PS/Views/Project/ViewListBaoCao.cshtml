@@ -1,0 +1,65 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div class="card" id="@Model.ViewId">
+    <div class="body" style="padding-top: 30px;">
+        @if (AuthorizeUtilities.CheckUserRight("R5.8") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Báo cáo tổng hợp dự án", string.Format("Forms.LoadAjax('{0}');", @Url.Action("SummaryProjectIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+
+        @if (AuthorizeUtilities.CheckUserRight("R5.9") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Báo cáo kiểm soát chi phí dự án", string.Format("Forms.LoadAjax('{0}');", @Url.Action("ProjectCostControlIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+
+        @if (AuthorizeUtilities.CheckUserRight("R5.6") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Báo cáo thực hiện hợp đồng khách hàng", string.Format("Forms.LoadAjax('{0}');", @Url.Action("CustomerContractIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+
+        @if (AuthorizeUtilities.CheckUserRight("R5.7") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Xuất dữ liệu chi tiết dự án (BOQ)", string.Format("Forms.LoadAjax('{0}');", @Url.Action("ProjectDetailDataBoqIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+
+        @if (AuthorizeUtilities.CheckUserRight("R5.3") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Báo cáo khối lượng thầu phụ", string.Format("Forms.LoadAjax('{0}');", @Url.Action("VendorVolumeIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+
+        @if (AuthorizeUtilities.CheckUserRight("R5.4") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Báo cáo theo dõi thầu phụ", string.Format("Forms.LoadAjax('{0}');", @Url.Action("VendorMonitoringIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+
+        @if (AuthorizeUtilities.CheckUserRight("R5.5") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Xuất dữ liệu chi tiết dự án (chi phí)", string.Format("Forms.LoadAjax('{0}');", @Url.Action("ProjectDetailDataCostIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+
+        @if (AuthorizeUtilities.CheckUserRight("R5.5") || AuthorizeUtilities.CheckUserRight("R00"))
+        {
+            <div class="m-b-5">
+                @Html.MyButton("cmdAdd", "Báo cáo tổng hợp nhân sự", string.Format("Forms.LoadAjax('{0}');", @Url.Action("ProjectResourceIndex", "Report", new { projectId = Model.ObjDetail.ID })), "Alt+N", "sort")
+            </div>
+        }
+    </div>
+</div>
+

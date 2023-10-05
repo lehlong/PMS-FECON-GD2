@@ -1,0 +1,548 @@
+﻿@using Newtonsoft.Json;
+
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var projectId = ViewBag.ProjectId;
+    var currentUser = ViewBag.CurrentUser;
+
+    var units = SelectListUtilities.GetPsUnits();
+    var boqs = SelectListUtilities.GetBoqInProject(projectId, isAddBlank: false);
+    var statuses = SelectListUtilities.GetProjectStructStatus(isAddBlank: false);
+    var project = SMOUtilities.GetProject(projectId);
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.2", projectId))
+    {
+        editable = true;
+    }
+    if(project.STATUS == "04" || project.STATUS == "05")
+    {
+        editable = false;
+    }
+}
+<style>
+    .fade-struct {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div id="@viewId" class="fade-struct">
+    <link href="/Theme/plugins/select2/select2.min.css" rel="stylesheet" />
+    <script src="/Theme/plugins/select2/select2.min.js"></script>
+    <style>
+        .gantt_last_cell {
+            overflow: inherit !important;
+        }
+
+        .bg-gantt-green {
+            background-color: #BEE4BE !important;
+        }
+
+        .checked_label .material-icons {
+            position: relative;
+            top: 6px;
+            right: 2px;
+            color: rgba(0,0,0,0.54);
+        }
+
+            .checked_label .material-icons.icon_color {
+                color: #0288D1;
+            }
+    </style>
+    <link href="~/Content/gantt-chart.css" rel="stylesheet" />
+    <link href="~/Properties/dhtmlx-gantt/codebase/dhtmlxgantt.min.css?v=7.1.7"
+          rel="stylesheet" type="text/css" />
+    @*<script src="~/Properties/dhtmlx-gantt/codebase/dhtmlxgantt.min.js?v=7.1.7"></script>*@
+    <script src="~/Scripts/GanttChart/dhtmlxgantt.js?v=7.1.8"></script>
+    <script type="text/javascript" src="~/Scripts/GanttChart/nav_menu.js?v=7.1.7"></script>
+    <script type="text/javascript" src="~/Scripts/GanttChart/zoom.js?v=7.1.7"></script>
+    <div class="gantt-demo-header">
+        <ul class="gantt-controls">
+            <li class="gantt-menu-item">
+                <a data-action="collapseAll">
+                    <span class="material-icons">keyboard_arrow_up</span>Thu gọn
+                </a>
+            </li>
+            <li class="gantt-menu-item gantt-menu-item-last">
+                <a data-action="expandAll">
+                    <span class="material-icons">keyboard_arrow_down</span>Mở rộng
+                </a>
+            </li>
+            <li class="gantt-menu-item gantt-menu-item-last">
+                <div class="form-group" style="width: 350px; margin:0;">
+                    <div class="form-line">
+                        <input name="structureName" id="structure-name" class="form-control" placeholder="Tìm kiếm theo tên hạng mục" />
+                    </div>
+                </div>
+            </li>
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a data-action="fullscreen">
+                    <span class="material-icons">zoom_out_map</span>
+
+                </a>
+            </li>
+
+            <li class="gantt-menu-item gantt-menu-item-right p-r-10">
+                <label class="checked_label">
+                    <input type="checkbox" name="showTimeline" value="showTimeline" class="showTimeline" />
+                    <i class="material-icons icon_color">check_box_outline_blank</i>Show Timeline
+                </label>
+            </li>
+
+            <li class="gantt-menu-item gantt-menu-item-right p-r-10">
+                <a title="Xuất dữ liệu" href="@Url.Action("ExportExcelDataBOQ", "Project", new {@area="PS", projectId=projectId})" target="_blank">
+                    <img src="Theme/images/excel.png" height="25" width="25" />
+                </a>
+            </li>
+
+            @if (editable)
+            {
+                <li class="gantt-menu-item gantt-menu-item-right">
+                    <a title="Upload cây cấu trúc từ file excel" data-action="importFile" data-project-id="@projectId" data-structure-type="@((int)ProjectStructureType.BOQ)"
+                       data-disabled="@(project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue())">
+                        <span class="material-icons">publish</span>
+                    </a>
+                </li>
+            }
+
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a title="Tải file cấu trúc mẫu" href="@Url.Action("ExportExcelTemplateBOQ", "Project", new {@area="PS"})" target="_blank">
+                    <span class="material-icons">file_download</span>
+                </a>
+            </li>
+
+            @if (editable)
+            {
+                <li class="gantt-menu-item gantt-menu-item-right">
+                    <a data-action="changeStatus" title="Thay đổi trạng thái">
+                        <span class="material-icons">check_circle</span>Đổi trạng thái
+                    </a>
+                </li>
+                <li class="gantt-menu-item gantt-menu-item-right" id="enable-edit">
+                    <a title="Bật chế độ chỉnh sửa" onclick="enableEdit();">
+                        <span class="material-icons">edit</span>
+                    </a>
+                </li>
+            }
+
+
+            <li class="gantt-menu-item gantt-menu-item-right" style="display:none" id="disable-edit">
+                <a title="Bật chế độ chỉ xem" onclick="disableEdit();">
+                    <span class="material-icons">visibility</span>
+                </a>
+            </li>
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a title="Thông tin dự án" onclick="$('#close-struct').click();">
+                    <span class="material-icons">arrow_back</span>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+    <div>
+        <div id="gantt-chart" style="width: 100%; height: calc(100vh - 200px);"></div>
+    </div>
+
+    <script type="text/template" id="tmplUnit">
+        <select class="selectUnit">
+            @foreach (var item in units)
+            {
+                <option value="@item.Value">@item.Value - @item.Text</option>
+            }
+        </select>
+    </script>
+
+    <script type="text/template" id="tmplStatus">
+        <select class="selectStatus">
+            @foreach (var item in statuses)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+    </script>
+
+    @{
+        Html.RenderPartial("~/Areas/GC/Views/Shared/CustomForm.cshtml");
+    }
+
+<script>
+    var structType = "BOQ";
+    function refreshData(taskId) {
+        gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=false", function () { //specifying the callback function
+            if (taskId) {
+                updateTaskTotalInDb(taskId)
+            }
+        });
+    }
+    const boqs = @Html.Raw(JsonConvert.SerializeObject(boqs));
+    function refreshGC() {
+        gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=false", function () { //specifying the callback function
+            for (i = 0; i < boqs.length; i++) {
+                updateTaskTotalInDb(boqs[i].Value)
+            }
+        });
+    }
+    refreshGC();
+
+    $('.masked-input-date').inputmask('dd/mm/yyyy', { placeholder: '__/__/____' });
+    //autosize
+    autosize($('.autosize'));
+    // initiating data loading
+    gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=false");
+    // initializing gantt
+    // attach event handler to update filters object and refresh data (so filters will be applied)
+    $('#@viewId ul.gantt-controls .showTimeline').on('change', function () {
+        if (this.value === 'showTimeline') {
+            gantt.config.show_chart = !gantt.config.show_chart;
+            gantt.render()
+        }
+        updIcon(this);
+    })
+    $('#@viewId input#structure-name').on('change', function () {
+        gantt.render()
+    })
+    // prevent moving to another type:
+    //gantt.attachEvent("onBeforeTaskMove", function (id) {
+    //    const task = gantt.getTask(id);
+    //    const parent = task.parent
+    //    if (parent === 0) {
+    //        return false;
+    //    }
+    //    const parentTask = gantt.getTask(parent);
+    //    if (_.isNil(task) || _.isNil(parentTask)) {
+    //        return false;
+    //    }
+    //    const parentType = parentTask.type;
+    //    if (task.type === "BOQ") {
+    //        return parentType === "BOQ" || parentType === "PROJECT";
+    //    }
+    //    if (task.type === "WBS") {
+    //        return parentType === "WBS" || parentType === "PROJECT";
+    //    }
+    //    if (task.type === "ACTIVITY") {
+    //        return parentType === "WBS";
+    //    }
+    //    return false;
+    //});
+    //or
+    gantt.attachEvent("onBeforeRowDragEnd", function (id) {
+        const task = gantt.getTask(id);
+        const parent = task.parent
+        if (parent === 0) {
+            return false;
+        }
+        const parentTask = gantt.getTask(parent);
+        if (_.isNil(task) || _.isNil(parentTask)) {
+            return false;
+        }
+        const parentType = parentTask.type;
+        if (task.type === "BOQ") {
+            return parentType === "BOQ" || parentType === "PROJECT";
+        }
+        if (task.type === "WBS") {
+            return parentType === "WBS" || parentType === "PROJECT";
+        }
+        if (task.type === "ACTIVITY") {
+            return parentType === "WBS";
+        }
+        return false;
+    });
+
+    gantt.config.show_chart = false;
+    gantt.config.drag_links = false;
+    gantt.config.order_branch = true;
+        gantt.config.order_branch_free = true;
+        gantt.config.keyboard_navigation_cells = true;
+    //gantt.config.order_branch = "marker";
+
+    const units = @Html.Raw(JsonConvert.SerializeObject(units));
+    const statuses = @Html.Raw(JsonConvert.SerializeObject(statuses));
+    gantt.serverList("unit", _.map(units, ({ Value, Text }) => ({ key: Value, label: Text })));
+    gantt.serverList("statuses", _.map(statuses, ({ Value, Text }) => ({ key: Value, label: Text })));
+
+    gantt.attachEvent("onBeforeTaskDisplay", function (id, task) {
+        const filterStructureNameValue = $('#@viewId #structure-name').val();
+        if (filterStructureNameValue) {
+            return task.text.toLowerCase().includes(filterStructureNameValue.toLowerCase())
+        }
+        return true;
+    })
+    function updIcon(el) {
+        //el.parentElement.classList.toggle("checked_label");
+
+        var iconEl = el.parentElement.querySelector("i"),
+            checked = "check_box",
+            unchecked = "check_box_outline_blank",
+            className = "icon_color";
+
+        iconEl.textContent = iconEl.textContent == checked ? unchecked : checked;
+        iconEl.classList.toggle(className);
+    }
+    gantt.plugins({
+        tooltip: false,
+        fullscreen: true,
+        marker: true,
+        undo: true
+    });
+    const formatFunc = gantt.date.date_to_str("%d/%m/%Y");
+
+    const id = gantt.addMarker({
+        start_date: new Date(),
+        text: "Today",
+        title: formatFunc(new Date())
+    });
+    setInterval(function () {
+        const today = gantt.getMarker(id);
+        if (today) {
+
+            today.start_date = new Date();
+            today.title = formatFunc(today.start_date);
+            gantt.updateMarker(id);
+        }
+    }, 1000 * 60);
+    gantt.plugins({
+        keyboard_navigation: true
+    });
+    gantt.config.keyboard_navigation = true;
+    gantt.config.keyboard_navigation_cells = true;
+
+    gantt.config.readonly = true;
+
+    function enableEdit() {
+        $("#disable-edit").show();
+        $("#enable-edit").hide();
+        gantt.config.readonly = false;
+    }
+    function disableEdit() {
+        $("#disable-edit").hide();
+        $("#enable-edit").show();
+        gantt.config.readonly = true;
+    }
+
+    gantt.init("gantt-chart");
+
+    gantt.projectId = "@projectId"
+    gantt.user = '@(ProfileUtilities.User?.USER_NAME)';
+    gantt.projectCode = "@project.CODE";
+    gantt.structType = structType
+
+    var router = function (entity, action, data, id) {
+        // entity: task / link
+        // action: create, update, delete,
+        // id: task id
+        // data:
+        data.projectId = '@projectId';
+        data.user = '@(ProfileUtilities.User?.USER_NAME)';
+
+        const server = "api";
+        switch (action) {
+            case "create":
+                if (entity === 'task') {
+
+                    return gantt.ajax.post(
+                        server + '/' + entity,
+                        data
+                    ).then(function (response) {
+                        var res = JSON.parse(response.responseText);
+                        if (res && res.status === 'success') {
+                            // response is ok
+                            gantt.changeTaskId(data.id, res.tid);
+                            //setSavedCheckList();
+                            showMessage('infor', `Create new ${entity} successful!`);
+                            if (res.executeMethod) {
+                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
+                            }
+                            updateTasksTotalSilent(id);
+                        } else if (res && res.status === 'error') {
+                            showMessage('error', 'Something went wrong! ' + res.message);
+                            gantt.deleteTask(data.id);
+                        } else {
+                            showMessage('error', 'Something went wrong!');
+                            gantt.deleteTask(data.id);
+                        }
+                    });
+
+                }
+                else {
+                    data.SourceTaskId = data.source;
+                    data.TargetTaskId = data.target;
+                    data.Type = data.type;
+                    data.CREATE_BY = data.user;
+                    // create link
+                    return gantt.ajax.post(
+                        server + '/' + entity + '/CreateLink',
+                        data
+                    ).then(function (response) {
+                        var res = JSON.parse(response.responseText);
+                        if (res && res.status === 'success') {
+                            // response is ok
+                            gantt.changeLinkId(data.id, res.tid);
+                            showMessage('infor', `Create new ${entity} successful!`);
+                            if (res.executeMethod) {
+                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
+                            }
+                            updateTasksTotalSilent(id);
+                        } else if (res && res.status === 'error') {
+                            showMessage('error', 'Something went wrong! ' + res.message);
+                            gantt.deleteTask(data.id);
+                        } else {
+                            showMessage('error', 'Something went wrong!');
+                            gantt.deleteTask(data.id);
+                        }
+                    });
+                }
+                break;
+            case "update":
+                if (entity === 'link') {
+                    showMessage('warning', 'Cannot update link');
+                }
+                if (!isNaN(id)) {
+                    return;
+                }
+                return gantt.ajax.post(
+                    server + '/' + entity + '/' + id,
+                    data
+                ).then(function (response) {
+                    var res = JSON.parse(response.responseText);
+                    if (res && res.status === 'success') {
+                        // response is ok
+                        showMessage('infor', `Update ${entity} successful!`);
+                        if (res.executeMethod) {
+                            Message.func.ExecuteFunctionByName(res.executeMethod, window);
+                        }
+                        updateTasksTotalSilent(id);
+                    } else if (res && res.status === 'error') {
+                        alert(res.message);
+                    } else {
+                        alert('error', 'Something went wrong!');
+                    }
+                });
+
+                break;
+            case "delete":
+                if (!id.toString().includes("-")) {
+                    return;
+                }
+                if (entity === 'task') {
+                    return gantt.ajax.del(
+                        server + '/' + entity + '/' + id
+                    ).then(function (response) {
+                        var res = JSON.parse(response.responseText);
+                        if (res && res.status === 'success') {
+                            // response is ok
+                            showMessage('infor', `Delete ${entity} successfully!`);
+                            if (res.executeMethod) {
+                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
+                            }
+                            updateTasksTotalSilent(id);
+                        } else if (res && res.status === 'error') {
+                            alert(res.message);
+                            refreshData()
+                        } else if (!ress || res.status !== 'ok') {
+                            showMessage('error', 'Something went wrong!');
+                        }
+                    });
+                } else {
+                    return gantt.ajax.del(
+                        server + '/' + entity + `/${id}`
+                    ).then(function (response) {
+                        var res = JSON.parse(response.responseText);
+                        if (res && res.status === 'success') {
+                            // response is ok
+                            showMessage('infor', `Delete ${entity} successfully!`);
+                            if (res.executeMethod) {
+                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
+                            }
+                            updateTasksTotalSilent(id);
+                        } else if (res && res.status === 'error') {
+                            alert(res.message);
+                        } else if (!ress || res.status !== 'ok') {
+                            showMessage('error', 'Something went wrong!');
+                        }
+                    });
+                }
+                break;
+        }
+    }
+    var dp = gantt.createDataProcessor(router);
+    gantt.attachEvent("onBeforeGanttRender", function () {
+        gantt.getGridColumn("vendorName").hide = true;
+        gantt.getGridColumn("referenceBoqId").hide = true;
+        gantt.silent(() => {
+            updateTasksTotal();
+        });
+    });
+    dp.init(gantt);
+    ganttModules.menu.setup();
+    function updateTasksTotalSilent(taskId) {
+        gantt.silent(() => {
+            updateTasksTotal();
+        });
+        gantt.render();
+        updateTaskTotalInDb(taskId)
+    }
+    function updateTaskTotalInDb(taskId) {
+        const currentTask = gantt.getTask(taskId)
+        const data = [{ id: taskId, total: currentTask?.total, projectId: gantt.projectId }]
+        let parentId = currentTask?.parent
+        while (parentId) {
+            const parentTask = gantt.getTask(parentId)
+            data.push({ id: parentTask?.id, total: parentTask?.total })
+            parentId = parentTask?.parent
+        }
+        const server = "api";
+        const entity = "task";
+        const ajaxParams = {
+            url: `${server}/${entity}/UpdateTasksTotal?isCustomer=true`,
+            type: "POST",
+            data
+        }
+        Forms.AjaxWithoutLoading(ajaxParams)
+    }
+    function updateTasksTotal() {
+        const ganttData = _.reverse(gantt.json.serialize().data);
+        gantt.batchUpdate(() => {
+            $.each(ganttData, (_index, row) => {
+                const { quantity, price, id } = row || {};
+                if (!(quantity && price)) {
+                    const children = gantt.getTaskBy(task => task.parent == id);
+                    const total = _.chain(children)
+                        .map(({ quantity, price, total }) => {
+                            const calculateTotal = roundNumber(quantity * price);
+                            return calculateTotal > 0 ? calculateTotal : Number(total);
+                        })
+                        .sum()
+                        .value();
+                    gantt.updateTask(id, { total });
+                } else {
+                    gantt.updateTask(id, { total: roundNumber(quantity * price) ?? 0 });
+                }
+            });
+        }, true);
+    }
+    function updateTasksOrder() {
+        const taskIds = _.map(gantt.json.serialize().data, "id");
+        const server = "api";
+        const entity = "task";
+        const data = { "taskIds": taskIds, projectId: gantt.projectId }
+        const ajaxParams = {
+            url: `${server}/${entity}/UpdateOrder`,
+            type: "POST",
+            data
+        }
+        Forms.AjaxWithoutLoading(ajaxParams)
+    }
+</script>
+    <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
+</div>

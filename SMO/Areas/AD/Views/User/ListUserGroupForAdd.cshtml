@@ -1,0 +1,32 @@
+﻿@model SMO.Service.AD.UserService
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllUserGroupForAdd" onclick="Forms.CheckAll('chkItemUserGroupForAdd', '#chkAllUserGroupForAdd')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllUserGroupOfUser"></label>
+                </th>
+                <th>Mã nhóm</th>
+                <th>Tên nhóm</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListUserGroup)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemUserGroupForAdd" name="chkItemUserGroupForAdd" id="@("chkItemUserGroupForAdd" + item.CODE)" modelId="@item.CODE" style="margin:0;" />
+                        <label for="@("chkItemUserGroupForAdd" + item.CODE)"></label>
+                    </td>
+                    <td>@item.CODE</td>
+                    <td>@item.NAME</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

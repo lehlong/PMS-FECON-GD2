@@ -1,0 +1,23 @@
+﻿<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+@{ 
+    var lstImage = ViewBag.ListImage as List<string>;
+}
+
+@foreach (var image in lstImage)
+{
+    <a href="#" class="returnImage" data-url="@Request.Url.GetLeftPart(UriPartial.Authority)@image">
+        <img src="@image" id="#image" data-source="@image" width="300"/>
+    </a>
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".returnImage").click("click", function (e) {
+            var urlImage = $(this).attr("data-url");
+            //window.opener.CKEDITOR.tools.callFunction(1, urlImage);
+            //$("label:contains('URL')").next().firstChild().firstChild().val(urlImage);
+            window.opener.document.getElementById('cke_77_textInput').value = urlImage;
+            //window.opener.UpdateValue("cke_72_textInput", urlImage);
+            window.close();
+        });
+    });
+</script>

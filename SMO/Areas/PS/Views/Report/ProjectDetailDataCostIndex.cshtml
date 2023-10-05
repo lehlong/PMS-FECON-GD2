@@ -1,0 +1,144 @@
+﻿@model SMO.Service.PS.Models.Report.ProjectDetailDataCost.ProjectDetailDataCostModel
+@using SMO.Core.Entities.MD;
+
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var formId = Guid.NewGuid().ToString();
+    var lstOrg = SMOUtilities.GetAllCompanies();
+    var projects = SMOUtilities.GetAllProjects();
+    var vendors = ViewBag.Vendors as IEnumerable<T_MD_VENDOR>;
+}
+<div id='@viewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("ProjectDetailDataCostReport", null, FormDataUtils.GetAjaxOptions(viewId), new { @id = formId }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">description</i> XUẤT DỮ LIỆU CHI TIẾT DỰ ÁN (CHI PHÍ)</a></li>
+                    <li role="presentation" style="float: right; color: black">
+                        <a onclick="@string.Format("Forms.Close('{0}');", viewId)">
+                            <strong>
+                                <i class="material-icons">close</i>
+                            </strong>
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="page-function p-t-10">
+                        <div class="page-function-button m-r-20" style="display: flex">
+                            @Html.MyButton("cmdSave", "Xem báo cáo", $"$('#parameter').css('display','none');Forms.SubmitForm('{formId}')", "Alt+N", "done_all")
+                            @Html.MyButton("cmdSave", "Xuất Excel", $"ExportDataExcel()", "Alt+N", "file_download")
+                            @Html.MyButton("expand_more", "", "$('.parameter').css('display','block');$('#expand_less').toggle();$('#expand_more').toggle();", "Alt+N", "expand_more")
+                            @Html.MyButton("expand_less", "", "$('.parameter').css('display','none');$('#expand_less').toggle();$('#expand_more').toggle();", "Alt+N", "expand_less")
+                        </div>
+
+                    </div>
+
+                    <div class="page-search-advance row m-b-0" id="parameter">
+                        <div class="col-md-3 col-xs-12 m-b-0">
+                            <label>Công ty phụ trách</label>
+                            <select name="@Html.NameFor(m => m.CompanyId)" id="dllCompany" data-val="true"
+                                    data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany(this);"
+                                    class="selectpicker show-tick dropdown form-control" multiple data-max-options="1">
+                                @foreach (var company in lstOrg.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
+                                {
+                                    var selected = "";
+                                    if (company.PKID == Model.CompanyId)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected value="@company.PKID">
+                                        @company.NAME
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-group">
+
+                            @Html.ValidationMessageFor(m => m.CompanyId)
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-xs-12 m-b-0">
+                            <label class="required">Dự án</label>
+                            <select name="@Html.NameFor(m => m.ProjectId)" id="dllProject" data-val="true"
+                                    data-live-search="true" data-show-subtext="true" data-val-required="Dự án bắt buộc nhập"
+                                    class="selectpicker show-tick dropdown form-control" data-hide-disabled="true">
+                                <option selected="selected" value=""> - </option>
+                                @foreach (var project in projects.OrderBy(x => x.NAME))
+                                {
+                                    var selected = "";
+                                    if (project.ID == Model.ProjectId)
+                                    {
+                                        selected = "selected";
+                                    }
+                                    <option @selected value="@project.ID" data-company="@project.DON_VI" data-subtext="@($"{project.CODE}")">
+                                        @project.NAME
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-group">
+
+                                @Html.ValidationMessageFor(m => m.ProjectId)
+                            </div>
+
+                        </div>
+                        <div class="col-md-4 col-xs-12 m-b-0">
+                            <label>Nhà thầu</label>
+                            <div class="form-group">
+                                <select class="form-control  selectpicker show-tick" data-live-search="true" data-val="true" data-show-subtext="true"
+                                        name="@Html.NameFor(x => x.Vendor)" data-hide-disabled="true">
+                                    <option selected="selected" value=""> - </option>
+                                    @foreach (var item in vendors)
+                                    {
+                                        <option data-subtext="@($"{item.CODE} - {item.MST}")" value="@item.CODE">@item.NAME - @item.SHORT_NAME</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="clearfix"></div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+<script type="text/javascript">
+        function OnChangeCompany(e) {
+            var companyCode = $("#@viewId #dllCompany").find(':selected').val();
+            if (e) {
+                $("#@viewId #dllProject").val("@Guid.Empty");
+            }
+
+            $("#@viewId #dllProject option").removeAttr('disabled');
+
+            $("#@viewId #dllProject option").each(function () {
+                if ($(this).data('company') != companyCode) {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+            $("#@viewId #dllProject").selectpicker('refresh');
+    }
+    $(function () {
+        Forms.CompleteUI();
+        Forms.SubmitByEnter("@formId");
+        @if (Model.ProjectId != Guid.Empty)
+        {
+            <text>
+        OnChangeCompany();
+        </text>
+        }
+        $('.parameter').css('display', 'none');
+        $('#expand_less').css('display', 'none');
+    });
+        function ExportDataExcel() {
+            try {
+                ExportExcel()
+            } catch (e) {
+                alert("Cần nhấn xem báo cáo trước khi xuất.")
+            }
+        }
+</script>
+</div>

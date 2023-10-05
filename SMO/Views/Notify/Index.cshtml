@@ -1,0 +1,26 @@
+﻿@model SMO.Service.CM.NotifyService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = "frmViewAllNotify";
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", Model.ViewId), "", "arrow_back")
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        <div id="divResult">
+
+        </div>
+    }
+
+    <script type="text/javascript">
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+

@@ -1,0 +1,132 @@
+﻿@model SMO.Service.AD.UserService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.MD
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var dsResult = new System.Data.DataSet();
+    var lstSelect = new List<SqlSelectMutil>();
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_AD_ORGANIZE", Where = " 1 = 1 ORDER BY C_ORDER" });
+    lstSelect.Add(new SqlSelectMutil() { Table = "T_MD_VENDOR" });
+    dsResult = SMOUtilities.GetMultilpleTable(lstSelect);
+    List<T_AD_ORGANIZE> lstOrganize = UtilsCore.ConvertDataToListExtends<T_AD_ORGANIZE>(dsResult.Tables["T_AD_ORGANIZE"]);
+    List<T_MD_VENDOR> lstVendor = UtilsCore.ConvertDataToListExtends<T_MD_VENDOR>(dsResult.Tables["T_MD_VENDOR"]);
+
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> DANH SÁCH NGƯỜI DÙNG</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-b-10 p-t-10">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdAdd", "Thêm mới", string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create")), "Alt+N", "person_add")
+                            @*@Html.MyButton("cmdDelete", "Xóa", string.Format("Forms.DeleteItems('{0}','chkItem');", @Url.Action("Delete")), "Alt+D", "delete")*@
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME, new { placeholder = "Tìm theo tên đăng nhập hoặc họ tên", @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Tìm theo các chỉ tiêu khác" id="spShowMore" onclick="$('#spHideMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_more</i>
+                            </span>
+                            <span class="input-group-addon" title="Ẩn các chỉ tiêu tìm kiếm khác" style="display:none;" id="spHideMore" onclick="$('#spShowMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_less</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="page-search-advance row m-l-0 m-r-0 m-b-10" style="display:none;">
+                        <div class="col-md-3 col-xs-12">
+                            <label>Đơn vị</label>
+                            <div class="form-group">
+                                <select name="@Html.NameFor(m => m.ObjDetail.COMPANY_ID)" id="dllCompany"
+                                        data-live-search="true" data-show-subtext="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var company in lstOrganize)
+                                    {
+                                        <option value="@company.PKID">
+                                            @company.NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-xs-12">
+                            <label>Nhà thầu</label>
+                            <div class="form-group">
+                                <select name="@Html.NameFor(m => m.ObjDetail.VENDOR_CODE)"
+                                        data-live-search="true" data-show-subtext="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var vendor in lstVendor)
+                                    {
+                                        <option value="@vendor.CODE">
+                                            @vendor.NAME - @vendor.SHORT_NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-xs-12">
+                            <label>Kiểu người dùng</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.USER_TYPE, SelectListUtilities.GetUserType(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                @Html.ValidationMessageFor(m => m.ObjDetail.USER_TYPE)
+                            </div>
+                        </div>
+                    </div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+
+    <script type="text/javascript">
+        function ShowHistory(userName) {
+            var params = {
+                url: '/AD/UserHistory',
+                data: { userName: userName }
+            };
+            Forms.LoadAjaxModalLarge(params);
+        }
+
+        function OnChangeCompany(obj) {
+
+        }
+
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            SubmitIndex();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+

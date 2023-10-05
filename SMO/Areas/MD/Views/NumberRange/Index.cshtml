@@ -1,0 +1,124 @@
+﻿@model SMO.Service.MD.NumberRangeService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> PROJECT PROFILE</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function  p-t-10 p-b-10">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdAdd", "Thêm mới", "AddItem();", "Alt+N", "add")
+                            @Html.MyButton("cmdSave", "Lưu thông tin", "UpdateItem();", "Alt+N", "done_all")
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.CHARACTER, new { placeholder = "Thông tin tìm kiếm", @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/html" id="TemplateItem">
+        <tr id="trItem__Index">
+            <td>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-line">
+                        <input type="text" name="ObjList[_Index].CHARACTER" maxlength="10" class="form-control" value="" />
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-line">
+                        <input type="number" name="ObjList[_Index].CURRENT_NUMBER" maxlength="10" class="form-control" value="" />
+                    </div>
+                </div>
+            </td>
+            <td style="vertical-align:middle; padding-top: 11px;" class="align-center">
+                <input type="hidden" id="delItem__Index" name="ObjList[_Index].IS_DELETE" value="" />
+                <i class="material-icons col-red" onclick="RemoveItem(this, '_Index');" style="cursor:pointer">remove_circle_outline</i>
+            </td>
+        </tr>
+    </script>
+    <script type="text/javascript">
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        function UpdateItem() {
+            $(".inputMask").inputmask('remove');
+            if (!$('#@Model.FormId').valid()) {
+                return;
+            }
+
+            var formData = new FormData($('#@Model.FormId')[0]);
+
+            Forms.ShowLoading();
+
+            var headers = {
+                'RequestVerificationToken': $('#antiForgeryToken').val(),
+            };
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("UpdateItem")",
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                },
+                error: Forms.AjaxErrorHandler
+            });
+        }
+
+        function AddItem() {
+            var html = $('#TemplateItem').html();
+            html = html.replace(/_Index/g, numberCurrent);
+
+            numberCurrent++;
+            $("#bodyListItem").prepend(html);
+            Forms.CompleteUI();
+        }
+        function RemoveItem(obj, index) {
+            $("#trItem_" + index).hide();
+            $("#delItem_" + index).val("1");
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+
+
+

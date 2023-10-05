@@ -1,0 +1,123 @@
+﻿@model SMO.Service.PS.ProjectResourceOtherService
+@{
+    Model.FormId = Guid.NewGuid().ToString();
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.3", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    if (project.STATUS == "04"|| project.STATUS == "05")
+    {
+        editable = false;
+    }
+}
+<div class="table-responsive" style="overflow-x: unset" id="@Model.FormId">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Họ và tên</th>
+                <th class="align-center">Các bên liên quan</th>
+                <th class="align-center">Số CMND/CCCD</th>
+                <th class="align-center">Số điện thoại</th>
+                <th class="align-center">Email</th>
+                <th class="align-center">Từ ngày</th>
+                <th class="align-center">Đến ngày</th>
+                <th class="align-center">Vai trò dự án</th>
+                @if (editable)
+                {
+                    <th class="align-center">#</th>
+                }
+            </tr>
+        </thead>
+        <tbody id="bodyListOther">
+            @foreach (var item in Model.ObjList)
+            {
+                var index = Model.ObjList.IndexOf(item);
+                <input type="hidden" name="ObjList[@index].ID" value="@item.ID" />
+                <input type="hidden" name="ObjList[@index].PROJECT_ID" value="@item.PROJECT_ID" />
+                <tr id="trOther_@index">
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].FULL_NAME" class="form-control" value="@item.FULL_NAME" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].VENDOR_CODE" class="form-control" value="@item.VENDOR_CODE" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].CMT" class="form-control" value="@item.CMT" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].PHONE" class="form-control" value="@item.PHONE" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].EMAIL" class="form-control" value="@item.EMAIL" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].FROM_DATE" class="form-control datepicker" value="@item.FROM_DATE" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].TO_DATE" class="form-control datepicker" value="@item.TO_DATE" />
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].VAI_TRO" class="form-control" value="@item.VAI_TRO" />
+                            </div>
+                        </div>
+                    </td>
+                    @if (editable)
+                    {
+                        <td style="vertical-align:middle; padding-top: 11px;" class="align-center">
+                            <input type="hidden" id="delOther_@index" name="ObjList[@index].IS_DELETE" value="" />
+                            <i class="material-icons col-red" onclick="RemoveOther(this, @index);" style="cursor:pointer">remove_circle_outline</i>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+
+
+
+<script type="text/javascript">
+    var numberCurrent = @(Model.ObjList.Count);
+    $(function () {
+        Forms.CompleteUI();
+        if ("@editable" == "False") {
+            $("#@Model.FormId *").prop("disabled", true);
+        }
+    });
+</script>

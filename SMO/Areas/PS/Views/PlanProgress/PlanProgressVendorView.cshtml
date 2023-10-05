@@ -1,0 +1,42 @@
+﻿@model IList<SMO.Service.PS.Models.PlanProgressModel>
+@using Newtonsoft.Json;
+@{
+    var gridId = Guid.NewGuid().ToString();
+}
+
+<div style="height: calc(100vh - 200px)">
+    <div style="height: 100%; width: 100%" id="@gridId"></div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        const rawDataPlan = @Html.Raw(JsonConvert.SerializeObject(Model));
+        const gridDataPlan = _.map(rawDataPlan, (x) => (
+            {
+                ...x,
+                START_DATE: moment(x.START_DATE).toDate(),
+                FINISH_DATE: moment(x.FINISH_DATE).toDate(),
+                id: x.Id,
+                parent: x.Parent ?? undefined
+            }))
+        const columnsPlan = [
+            { id: "TEXT", header: [{ text: "Hạng mục công việc" }] },
+            { id: "TYPE", header: [{ text: "Loại đối tượng" }] },
+            //{ id: "CODE", header: [{ text: "MÃ" }] },
+            { id: "UNIT_NAME", header: [{ text: "Đơn vị tính" }] },
+            { id: "CONTRACT_VALUE", header: [{ text: "Khối lượng hợp đồng" }], type: "number", format: "#,#" },
+            { id: "START_DATE", header: [{ text: "Ngày bắt đầu" }], type: "date", format: "%d/%m/%Y" },
+            { id: "FINISH_DATE", header: [{ text: "Ngày kết thúc" }], type: "date", format: "%d/%m/%Y" },
+        ]
+
+        var gridPlan = new dhx.TreeGrid("@gridId", {
+            columns: columnsPlan,
+            autoWidth: true,
+            autoHeight: true,
+            leftSplit: 2,
+            adjust: true,
+            resizable: true,
+            data: gridDataPlan,
+            id: null
+        });
+    });
+</script>

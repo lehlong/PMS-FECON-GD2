@@ -1,0 +1,58 @@
+﻿@model SMO.Service.MD.NumberRangeService
+@{
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th class="align-center">CHARACTER</th>
+                <th class="align-center">CURRENT NUMBER</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody id="bodyListItem">
+            @foreach (var item in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+            {
+                var index = Model.ObjList.IndexOf(item);
+                <input type="hidden" name="ObjList[@index].ID" value="@item.ID" />
+                <tr id="trItem_@index">
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="text" name="ObjList[@index].CHARACTER" maxlength="10" class="form-control" value="@item.CHARACTER" />
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                <input type="number" name="ObjList[@index].CURRENT_NUMBER" maxlength="10" class="form-control" value="@item.CURRENT_NUMBER" />
+                            </div>
+                        </div>
+                    </td>
+                    <td style="vertical-align:middle; padding-top: 11px;" class="align-center">
+                        <input type="hidden" id="delItem_@index" name="ObjList[@index].IS_DELETE" value="" />
+                        <i class="material-icons col-red" onclick="RemoveItem(this, @index);" style="cursor:pointer">remove_circle_outline</i>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    var numberCurrent = @(Model.ObjList.Count);
+
+
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>
+
+

@@ -1,0 +1,174 @@
+﻿@model Guid
+@*<script>*@
+    function onClickNotAccept() {
+        Swal.fire({
+            title: 'Không xác nhận dữ liệu?',
+            text: "Bạn có chắc muốn Không xác nhận dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            inputValidator: (value) => {
+                return new Promise((resolve) => {
+                    if (value) {
+                        resolve()
+                    } else {
+                        resolve('Ý kiến không được để trống.')
+                    }
+                })
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Không xác nhận',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus('@ProjectWorkVolumeAction.KHONG_XAC_NHAN.GetValue()', result.value)
+            }
+        })
+    }
+    function onClickTrinhDuyet() {
+        Swal.fire({
+            title: 'Gửi dữ liệu?',
+            text: "Bạn có chắc muốn Gửi dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Gửi',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus('@ProjectWorkVolumeAction.GUI.GetValue()', result.value)
+            }
+        })
+    }
+    function onClickAccept() {
+        Swal.fire({
+            title: 'Xác nhận dữ liệu?',
+            text: "Bạn có chắc muốn Xác nhận dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus('@ProjectWorkVolumeAction.XAC_NHAN.GetValue()', result.value)
+            }
+        })
+    }
+    function onClickPheDuyet() {
+        Swal.fire({
+            title: 'Phê duyệt dữ liệu?',
+            text: "Bạn có chắc muốn Phê duyệt dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Phê duyệt',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus('@ProjectWorkVolumeAction.PHE_DUYET.GetValue()', result.value)
+            }
+        })
+    }
+    function onClickTuChoi() {
+        Swal.fire({
+            title: 'Từ chối dữ liệu?',
+            text: "Bạn có chắc muốn Từ chối dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputValidator: (value) => {
+                return new Promise((resolve) => {
+                    if (value) {
+                        resolve()
+                    } else {
+                        resolve('Ý kiến không được để trống.')
+                    }
+                })
+            },
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Từ chối',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus('@ProjectWorkVolumeAction.TU_CHOI.GetValue()', result.value)
+            }
+        })
+    }
+    function onClickHuyPheDuyet() {
+        Swal.fire({
+            title: 'Hủy phê duyệt dữ liệu?',
+            text: "Bạn có chắc muốn Hủy phê duyệt dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Hủy phê duyệt',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateStatus('@ProjectWorkVolumeAction.HUY_PHE_DUYET.GetValue()', result.value)
+            }
+        })
+    }
+
+    function updateStatus(status, note) {
+        Forms.ShowLoading();
+        var ajaxParams = {
+            url: '@Url.Action("UpdateStatus")',
+            type: "POST",
+            data: {
+                action: status,
+                id: '@Model',
+                note
+            },
+            dataType: 'json',
+            success: function (response) {
+                Message.execute(response);
+                if(response.Data) {
+                    updateGridCurrentStatus(response.Data);
+                }
+            }
+        };
+        Forms.Ajax(ajaxParams)
+    }
+
+function viewReferenceFile(referenceFileId, taskId) {
+        if (referenceFileId && referenceFileId !== 'null' && referenceFileId !== 'undefined') {
+            Forms.LoadAjaxModal(`CM/ReferenceFile?referenceId=${referenceFileId}`)
+        } else {
+            const task = grid.data.getItem(taskId);
+            const ajaxParams = {
+                url: '@Url.Action("GetReferenceFileId")',
+                type: "GET",
+                data: {
+                    ...task,
+                    isCustomer: false,
+                },
+                dataType: 'json',
+                success: function (response) {
+                    const fileId = response.Data;
+                    grid.data.update(taskId, { referenceFileId: fileId });
+                    Forms.LoadAjaxModal(`CM/ReferenceFile?referenceId=${fileId}`)
+                }
+            };
+            Forms.AjaxWithoutLoading(ajaxParams)
+        }
+    }
+
+@*</script>*@

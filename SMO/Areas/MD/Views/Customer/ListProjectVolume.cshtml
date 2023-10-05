@@ -1,0 +1,40 @@
+﻿@model SMO.Service.MD.CustomerService
+    @{ 
+        var controller = Model.IsAccept ? "VolumeAccept" : "VolumeWork";
+        var htmlTarget = Model.IsAccept ? "accept-volume" : "action-volume";
+    }
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Tên ngắn gọn</th>
+                <th>Mã số thuế</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var vdbclickAction = $"Forms.LoadAjax({{url: '{Url.Action("UpdateTimesIndex", controller, new { @area = "PS", partnerCode = item.CODE, isCustomer=true, projectId = Model.ProjectId })}', htmlTarget: '#{htmlTarget}' }});";
+            <tr>
+                <td ondblclick="@vdbclickAction">
+                    <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                </td>
+                <td ondblclick="@vdbclickAction">@item.NAME</td>
+                <td ondblclick="@vdbclickAction">@item.SHORT_NAME</td>
+                <td ondblclick="@vdbclickAction">@item.MST</td>
+                <td ondblclick="@vdbclickAction">@item.EMAIL</td>
+                <td ondblclick="@vdbclickAction">@item.PHONE</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

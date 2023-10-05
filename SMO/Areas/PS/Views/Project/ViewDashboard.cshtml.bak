@@ -1,0 +1,15 @@
+﻿@model SMO.Service.PS.ProjectService
+
+<script type='text/javascript' src='https://pmsbi.fecon.com.vn/javascripts/api/viz_v1.js'></script>
+<div class='tableauPlaceholder' style='width: 1500px; height: 847px;'><object class='tableauViz' width='1500'
+        height='847' style='display:none;'>
+        <param name='host_url' value='https%3A%2F%2Fpmsbi.fecon.com.vn%2F' />
+        <param name='embed_code_version' value='3' />
+        <param name='site_root' value='' />
+        <param name='name' value='Fecon_PMS_Dashboard_16511182592260&#47;Dashboard1' />
+        <param name='tabs' value='no' />
+        <param name='toolbar' value='no' />
+        <param name="ticket" value="@ViewBag.Ticket" />
+            <param name='showAppBanner' value='false' />
+            <param name='filter' value='MA_DA=@Model.ObjDetail.CODE' />
+    </object></div>

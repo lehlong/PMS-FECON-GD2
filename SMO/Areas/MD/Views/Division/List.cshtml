@@ -1,0 +1,46 @@
+﻿@model SMO.Service.MD.DivisionService
+@{ 
+    var frmFormCode = "frmDivisionIndex";
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    @Html.CheckBox("chkAll", new { @id = "chkAll", onclick = "Forms.CheckAll()", @style = "margin:0;" })
+                </th>
+                <th>@LanguageUtilities.LangText("lbl_COMPANY_CODE", frmFormCode)</th>
+                <th>@LanguageUtilities.LangText("lbl_CODE", frmFormCode)</th>
+                <th>@LanguageUtilities.LangText("lbl_TEXT", frmFormCode)</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var toggleAction = string.Format("Forms.ToggleActive('{0}',{1}, this);", Url.Action("ToggleActive"), "{ id : '" + item.CODE + "' }");
+                <tr>
+                    <td>
+                        @Html.CheckBox("chkItem", false, new { @modelId = item.CODE, @class = "chkItem", @style = "margin:0;" })
+                    </td>
+                    <td>@item.COMPANY_CODE</td>
+                    <td>@item.CODE</td>
+                    <td>@item.TEXT</td>
+                    <td class="align-center" width="50px">
+                        @Html.MyButton("cmdActive", "Active", toggleAction, "Active", "check", "", item.ACTIVE ? false : true)
+                        @Html.MyButton("cmdInActive", "InActive", toggleAction, "InActive", "check_box_outline_blank", "", item.ACTIVE ? true : false)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

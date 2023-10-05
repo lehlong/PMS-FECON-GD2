@@ -1,0 +1,106 @@
+﻿@model SMO.Service.PS.ContractService
+@using SMO.Service.PS.Models;
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+
+@{
+    var treeContractProjectStructs = ViewBag.TreeContractProjectStructs as IList<TreeContractProjectStruct>;
+    var gridId = Guid.NewGuid().ToString();
+    var viewId = Guid.NewGuid().ToString();
+
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+
+    var psUnits = SelectListUtilities.GetPsUnits(isAddBlank: false);
+}
+@Html.AntiForgeryToken()
+
+<div class="row" style="height: calc(100vh - 210px)" id="@viewId">
+    <div class="p-t-10" style="height: 100%; width: 100%" id="@gridId"></div>
+</div>
+<script type="text/javascript">
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(treeContractProjectStructs, jsonSerializeSettings));
+    const psUnitsData = @Html.Raw(JsonConvert.SerializeObject(psUnits, jsonSerializeSettings));
+    function formatNumber(value) {
+        return Number(value).toLocaleString("en-US", { maximumFractionDigits: 3 })
+    }
+    const columns = [
+        { id: "name", header: [{ text: "Hạng mục công việc" }], width: 250, minWidth: 150 },
+        { id: "contractName", header: [{ text: "Hợp đồng đã gán" }], minWidth: 150 },
+        {
+            id: "isEnable", header: [{ text: "#" }], editable: true, type: "boolean", width: 90
+        },
+        { id: "unitName", header: [{ text: "Đơn vị" }], editable: true, editorType: "combobox", options: _.map(psUnitsData, ({text}) => text) },
+        {
+            id: "volume", header: [{ text: "Khối lượng" }], editable: true, width: 150, minWidth: 150,
+            tempalte: formatNumber
+        },
+        { id: "unitPrice", header: [{ text: "Đơn giá" }], editable: true, tempalte: formatNumber, width: 150, minWidth: 150},
+        {
+            id: "total", header: [{ text: "Thành tiền" }],
+            tempalte: function (value, row) {
+                const { volume, unitPrice } = row
+                const value = volume * unitPrice;
+                return formatNumber(value)
+            }, width:250 },
+    ]
+
+    const gridData = _.map(rawData, x => ({
+        ...x,
+        parent: x.parent ?? undefined,
+        isEnable: x.enabled,
+        total: x.volume * x.unitPrice
+    }))
+    const grid = new dhx.TreeGrid("@gridId", {
+            columns,
+            autoWidth: true,
+            autoHeight: true,
+            leftSplit: 1,
+            adjust: true,
+            resizable: true,
+        keyNavigation: true,
+        selection: "complex",
+        editing: true,
+            data: gridData
+    });
+    _.forEach(grid.data.serialize(), (data) => {
+        const { available, id, parent } = data;
+        if (!available || parent === "@gridId") {
+            grid.addRowCss(id, 'dhx-cell-disabled');
+        }
+
+    });
+        grid.events.on("beforeEditEnd", function (value, row, column) {
+            if (column.editorType === "combobox") {
+                return true;
+            }
+            return !isNaN(value);
+        });
+    grid.events.on("beforeEditStart", function (row, col) {
+        if (!row.available || row.parent === "@gridId" || !row.isEnable && col.id !== "isEnable") {
+                return false;
+            }
+            return true;
+        });
+
+    //grid.events.enableEditEvents(true, true, true);
+    grid.events.on("afterEditEnd", function (value, row, column) {
+        const ajaxParams = {
+            url: '@Url.Action("UpdateInformation")',
+            type: "POST",
+            data: {
+                projectId: '@Model.ObjDetail.PROJECT_ID',
+                contractId: '@Model.ObjDetail.ID',
+                data: {
+                    ...row,
+                    projectStructId: row.id,
+                    unitCode: _.find(psUnitsData, ["text", row.unitName])?.value
+                }
+            },
+            dataType: 'json',
+            success: function (response) {
+                Message.execute(response);
+            }
+        };
+        Forms.AjaxWithoutLoading(ajaxParams)
+    });
+</script>

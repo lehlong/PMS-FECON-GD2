@@ -1,0 +1,88 @@
+﻿@model SMO.Service.AD.UserService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("ListCustomerForAdd", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.USER_NAME)
+            @Html.HiddenFor(m => m.ObjDetail.Organize.COMPANY_CODE)
+            @Html.HiddenFor(m => m.FormId)
+            <div class="card">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons">clear_all</i> THÊM MỚI KHÁCH HÀNG CHO NGƯỜI DÙNG</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdSelect", "Thêm khách hàng", "AddCustomerToUser();", "Alt+N", "add")
+                            </div>
+                            <div class="input-group page-function-search">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjCustomer.CUSTOMER_CODE, new { placeholder = "Tìm theo mã hoặc tên", @class = "align-center", @data_val = false })
+                                </div>
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                    <i class="material-icons">refresh</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        }
+
+        <script type="text/javascript">
+            function AddCustomerToUser() {
+                var lstSelected = '';
+                $('.chkItemCustomerForAdd').each(function () {
+                    if (this.checked) {
+                        lstSelected += $(this).attr('modelId') + ',';
+                    }
+                });
+                if (lstSelected == '') {
+                    alert("Bạn hãy chọn ít nhất một khách hàng!");
+                    return;
+                }
+
+                lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+                var ajaxParams = {
+                    url: "@Url.Action("AddCustomerToUser")",
+                    type: 'POST',
+                    dataType : 'json',
+                    data: { lstCustomer: lstSelected, userName: '@Model.ObjDetail.USER_NAME', companyCode : '@Model.ObjDetail.Organize.COMPANY_CODE' }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+
+            function SubmitListCustomerForAdd() {
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                SubmitListCustomerForAdd();
+                Forms.CompleteUI();
+                Forms.SubmitByEnter("@Model.FormId");
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>

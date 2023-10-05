@@ -1,0 +1,97 @@
+﻿@media print {
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+
+.btnPrint {
+    width: 80px;
+    height: 30px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+@page {
+    size: auto;
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12px;
+    /*padding-top: 40px;
+    padding-bottom: 40px;*/
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.gachduoi {
+    border-bottom: black dotted 1px;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.content table {
+    width: 100%;
+    border-spacing: unset;
+}
+
+.header table {
+    width: 100%;
+}
+
+.border_top {
+    border-top: black solid 1px;
+}
+
+.border_right {
+    border-right: black solid 1px;
+}
+
+.border_left {
+    border-left: black solid 1px;
+}
+
+.border_botton {
+    border-bottom: black solid 1px;
+}
+
+.border_right_dotted {
+    border-right: black dotted 1px;
+}
+
+.border_botton_dotted {
+    border-bottom: black dotted 1px;
+}
+
+table{
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+table tbody tr td{
+    padding: 2px;
+}
+
+.table-bordered tbody tr td, .table-bordered thead tr th {
+    padding: 2px;
+    border: 1px solid;
+    vertical-align: middle;
+}
+
+.table-bordered thead tr th{
+    text-align:center;
+}

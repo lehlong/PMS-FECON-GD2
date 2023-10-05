@@ -1,0 +1,43 @@
+﻿@model SMO.Service.MD.DictionaryService
+
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th>Mã domain</th>
+                <th>Mã dictionary</th>
+                <th>Ngôn ngữ</th>
+                <th>Giá trị</th>
+                <th>Mặc định</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.FK_DOMAIN).OrderBy(x => x.C_ORDER))
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = item.PKID }));
+            <tr>
+                <td>
+                    <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.CODE)" modelId="@item.CODE" style="margin:0;" />
+                    <label for="@("chkItem" + item.CODE)"></label>
+                </td>
+                <td ondblclick="@vdbclickAction">@item.FK_DOMAIN</td>
+                <td ondblclick="@vdbclickAction">
+                    <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                </td>
+                <td ondblclick="@vdbclickAction">@item.LANG</td>
+                <td ondblclick="@vdbclickAction">@item.C_VALUE</td>
+                <td ondblclick="@vdbclickAction">@item.C_DEFAULT</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

@@ -1,0 +1,130 @@
+﻿@model SMO.Service.PS.ProjectResourceService
+
+@{
+    Model.FormId = Guid.NewGuid().ToString();
+    //Model.ObjList = Model.ObjList.Where(x => x.User.USER_TYPE == UserType.Fecon).ToList();
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.3", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    if(project.STATUS == "04" || project.STATUS == "05")
+    {
+        editable = false;
+    }
+}
+<div class="table-responsive" style="overflow-x: unset" id="@Model.FormId">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                @if (editable)
+                {
+                    <th class="align-center">Quyền</th>
+                }
+                <th>Tên đăng nhập</th>
+                <th>Họ và tên</th>
+                <th>Chức danh</th>
+                <th>Phòng ban</th>
+                <th>Số điện thoại</th>
+                <th>Email</th>
+                <th>Vai trò dự án</th>
+                <th>Loại nhân sự</th>
+                <th>Từ ngày</th>
+                <th>Đến ngày</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Model.ObjList.Count; i++)
+            {
+                var item = Model.ObjList[i];
+                @Html.HiddenFor(x => x.ObjList[i].ID)
+                @Html.HiddenFor(x => x.ObjList[i].PROJECT_ID)
+                @Html.HiddenFor(x => x.ObjList[i].USER_NAME)
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.ID)" modelId="@item.ID" style="margin:0;" />
+                        <label for="@("chkItem" + item.ID)"></label>
+                    </td>
+                    @if (editable)
+                    {
+                        <td class="align-center">
+                            <a onclick="EditRight('@item.PROJECT_ID','@item.USER_NAME')" href="#">Sửa</a>
+                        </td>
+                    }
+                    
+                    <td>
+                        @item.USER_NAME
+                    </td>
+                    <td>
+                        @(item.User?.FULL_NAME)
+                    </td>
+                    <td>@(item.User?.Title?.NAME)</td>
+                    <td>@(item.User?.Organize?.NAME)</td>
+                    <td>@(item.User?.PHONE)</td>
+                    <td>@(item.User?.EMAIL)</td>
+                    <td>
+                        @*@Html.MyDropDownListFor(x => x.ObjList[i].PROJECT_ROLE_ID, SelectListUtilities.GetPsRoles(false, selected: item.PROJECT_ROLE_ID),
+                       new { @data_live_search = "true", @class = "selectpicker show-tick", @value = item.PROJECT_ROLE_ID, @multiple = true })*@
+
+                        <select name="@Html.NameFor(m => m.ObjList[i].PROJECT_ROLE_ID)"
+                                data-live-search="true" multiple
+                                class="selectpicker show-tick dropdown form-control">
+                            <option value="">-</option>
+                            @foreach (var role in SelectListUtilities.GetPsRoles(false))
+                            {
+                                var selected = "";
+                                if (!string.IsNullOrEmpty(item.PROJECT_ROLE_ID))
+                                {
+                                    var lstProjectId = item.PROJECT_ROLE_ID.Split(',');
+                                    if (lstProjectId.Contains(role.Value))
+                                    {
+                                        selected = "selected";
+                                    }
+                                }
+                                <option value="@role.Value" @selected>
+                                    @role.Text
+                                </option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        @Html.MyDropDownListFor(x => x.ObjList[i].PROJECT_USER_TYPE_CODE, SelectListUtilities.GetProjectUserTypes(selected: item.PROJECT_USER_TYPE_CODE),
+                       new { @data_live_search = "true", @class = "selectpicker show-tick", @value = item.PROJECT_USER_TYPE_CODE })
+                    </td>
+                    <td>
+                        @Html.MyTextBoxFor(x => x.ObjList[i].FROM_DATE, new { @class = "datepicker", @autocomplete = "off", @value = item.FROM_DATE?.ToString("dd/MM/yyyy") })
+                    </td>
+                    <td>
+                        @Html.MyTextBoxFor(x => x.ObjList[i].TO_DATE, new { @class = "datepicker", @autocomplete = "off", @value = item.FROM_DATE?.ToString("dd/MM/yyyy") })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+
+<script type="text/javascript">
+    function EditRight(projectId, userName) {
+        var url = "@Url.Action("EditRight")";
+            var ajaxParams = {
+                url: url,
+                data: { projectId: projectId, userName: userName }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+    }
+    $(function () {
+        Forms.CompleteUI();
+        if ("@editable" == "False") {
+            $("#@Model.FormId *").prop("disabled", true);
+        }
+    });
+</script>

@@ -1,0 +1,102 @@
+﻿@model Guid
+
+@{
+    var refreshData = ViewBag.RefreshData as string;
+
+    var project = SMOUtilities.GetProject(Model);
+    string currentStatus = project.STATUS_STRUCT_PLAN;
+    if (string.IsNullOrEmpty(currentStatus))
+    {
+        currentStatus = ProjectStructureProgressStatus.KHOI_TAO.GetValue();
+    }
+    var projectStructureType = "project";
+}
+<script type="text/javascript">
+    function refreshProjectStructureStatusData() {
+        @refreshData
+    }
+</script>
+@{
+    Html.RenderPartial("_ProjectStructureProgressScript");
+}
+@{
+    switch (currentStatus.GetEnum<ProjectStructureProgressStatus>())
+    {
+        case ProjectStructureProgressStatus.KHOI_TAO:
+            if (AuthorizeUtilities.CheckUserRightProject("RP5.4", project.ID))
+            {
+                @Html.MyButton("cmdSave", "Trình duyệt", "onClickTrinhDuyet_" + projectStructureType.ToString() + "();", "Alt+N", "send");
+            }
+            <script type="text/javascript">
+            function onClickTrinhDuyet_@(projectStructureType.ToString())() {
+                const data = {
+
+                    action: @((int)ProjectStructureProgressAction.GUI),
+                    projectId: '@Model'
+                }
+                TrinhDuyet(data);
+            }
+            </script>
+            break;
+        case ProjectStructureProgressStatus.CHO_PHE_DUYET:
+            if (AuthorizeUtilities.CheckUserRightProject("RP5.5", project.ID))
+            {
+                @Html.MyButton("cmdSave", "Phê duyệt", "onClickPheDuyet_" + projectStructureType.ToString() + "();", "Alt+N", "done");
+                @Html.MyButton("cmdSave", "Từ chối", "onClickTuChoi_" + projectStructureType.ToString() + "();", "Alt+N", "close");
+            }
+
+            <script type="text/javascript">
+            function onClickPheDuyet_@(projectStructureType.ToString())() {
+                const data = {
+
+                    action: @((int)ProjectStructureProgressAction.PHE_DUYET),
+                    projectId: '@Model'
+                }
+                PheDuyet(data);
+            }
+            function onClickTuChoi_@(projectStructureType.ToString())() {
+                const data = {
+
+                    action: @((int)ProjectStructureProgressAction.TU_CHOI),
+                    projectId: '@Model'
+                }
+                TuChoi(data)
+            }
+            </script>
+            break;
+        case ProjectStructureProgressStatus.PHE_DUYET:
+            if (AuthorizeUtilities.CheckUserRightProject("RP5.5", project.ID))
+            {
+                @Html.MyButton("cmdSave", "Hủy phê duyệt", "onClickHuyPheDuyet_" + projectStructureType.ToString() + "();", "Alt+N", "cancel");
+            }
+            <script type="text/javascript">
+            function onClickHuyPheDuyet_@(projectStructureType.ToString())() {
+                const data = {
+
+                    action: @((int)ProjectStructureProgressAction.HUY_PHE_DUYET),
+                    projectId: '@Model'
+                }
+                HuyPheDuyet(data);
+            }
+            </script>
+            break;
+        case ProjectStructureProgressStatus.TU_CHOI:
+            if (AuthorizeUtilities.CheckUserRightProject("RP5.4", project.ID))
+            {
+                @Html.MyButton("cmdSave", "Trình duyệt", "onClickTrinhDuyet_" + projectStructureType.ToString() + "();", "Alt+N", "send");
+            }
+            <script type="text/javascript">
+            function onClickTrinhDuyet_@(projectStructureType.ToString())() {
+                const data = {
+
+                    action: @((int)ProjectStructureProgressAction.GUI),
+                    projectId: '@Model'
+                }
+                TrinhDuyet(data);
+            }
+            </script>
+            break;
+        default:
+            break;
+    }
+}

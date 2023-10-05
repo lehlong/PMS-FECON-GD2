@@ -1,0 +1,47 @@
+﻿@model SMO.Service.PS.ContractService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    var project = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT>().FirstOrDefault(x => x.ID == Model.ObjDetail.PROJECT_ID);
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>@project.NAME.ToUpper() - DANH SÁCH HỢP ĐỒNG </b></span> 
+            <span class="title-nav">
+                DANH SÁCH DỰ ÁN - HỢP ĐỒNG
+            </span>
+        </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}')", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                <li role="presentation" class="active"><a href="#contact-customer" onclick="onClickContractCustomer();" data-toggle="tab">HỢP ĐỒNG KHÁCH HÀNG</a></li>
+                <li role="presentation"><a href="#contract-vendor" onclick="onClickContractVendor();" data-toggle="tab">HỢP ĐỒNG NCC/TP</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="contact-customer">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="contract-vendor">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+                onClickContractCustomer();
+            });
+
+            function onClickContractCustomer() {
+                Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexCustomer",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID }))', htmlTarget: '#@Model.ViewId #contact-customer' });
+            }
+            function onClickContractVendor() {
+                Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexVendor",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID }))', htmlTarget: '#@Model.ViewId #contract-vendor' });
+            }
+        </script>
+    </div>
+</div>
+

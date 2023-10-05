@@ -1,0 +1,86 @@
+﻿@model SMO.Service.AD.UserService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div class="modal-close">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>
+<div class="modal-body">
+    <div id='@Model.ViewId' class="content">
+        @using (Ajax.BeginForm("ListRoleForAdd", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.ObjDetail.USER_NAME)
+            <div class="card">
+                <div class="body" style="padding-top: 0px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a style="padding-left:0px"><i class="material-icons">clear_all</i> THÊM MỚI ROLE CHO NGƯỜI DÙNG</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="page-function">
+                            <div class="page-function-button m-r-20" style="float:left">
+                                @Html.MyButton("cmdSelect", "Thêm role", "AddRoleToUser();", "Alt+N", "add")
+                            </div>
+                            <div class="input-group page-function-search">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjRole.CODE, new { placeholder = "Tìm theo mã hoặc tên", @class = "align-center", @data_val = false })
+                                </div>
+                                <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                    <i class="material-icons">refresh</i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="divResult">
+
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        }
+
+        <script type="text/javascript">
+            function AddRoleToUser() {
+                var lstSelected = '';
+                $('.chkItemRoleForAdd').each(function () {
+                    if (this.checked) {
+                        lstSelected += $(this).attr('modelId') + ',';
+                    }
+                });
+                if (lstSelected == '') {
+                    alert("Bạn hãy chọn ít nhất một role!");
+                    return;
+                }
+
+                lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+                var ajaxParams = {
+                    url: "@Url.Action("AddRoleToUser")",
+                    type: 'POST',
+                    dataType : 'json',
+                    data: { lstRole: lstSelected, userName: '@Model.ObjDetail.USER_NAME' }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+
+            function SubmitListRoleForAdd() {
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                SubmitListRoleForAdd();
+                Forms.CompleteUI();
+                Forms.SubmitByEnter("@Model.FormId");
+            });
+        </script>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">Đóng</button>
+</div>

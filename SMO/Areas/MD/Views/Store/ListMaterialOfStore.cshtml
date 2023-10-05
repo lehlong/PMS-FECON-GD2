@@ -1,0 +1,37 @@
+﻿@model SMO.Service.MD.StoreService
+@{ 
+    var frmFormCode = "frmStoreDetail";
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllMaterialOfStore" onclick="Forms.CheckAll('chkItemMaterialOfStore', '#chkAllMaterialOfStore')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllMaterialOfStore"></label>
+                </th>
+                <th>Mã hàng hóa</th>
+                <th>Tên hàng hóa</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjDetail.ListStoreMaterial)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemMaterialOfStore" name="chkItemMaterialOfStore" id="@("chkItemMaterialOfStore" + item.MATERIAL_CODE)" modelId="@item.MATERIAL_CODE" style="margin:0;" />
+                        <label for="@("chkItemMaterialOfStore" + item.MATERIAL_CODE)"></label>
+                    </td>
+                    <td>@item.Material.CODE.Substring(11)</td>
+                    <td>@item.Material.TEXT</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+

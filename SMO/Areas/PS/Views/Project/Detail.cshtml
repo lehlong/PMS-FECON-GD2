@@ -1,0 +1,131 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>@Model.ObjDetail.NAME.ToUpper()</b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent()", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                @if (AuthorizeUtilities.CheckUserRightProject("R101", Model.ObjDetail.ID))
+                {
+                    <li role="presentation" class="active"><a href="#general-infomation-detail" onclick="onClickGeneralInformation_Detail();" data-toggle="tab">THÔNG TIN</a></li>
+                }
+
+                @if (AuthorizeUtilities.CheckUserRightProject("R102", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#contract-detail" onclick="onClickContract_Detail();" data-toggle="tab">HỢP ĐỒNG</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("R103", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#resource-detail" data-toggle="tab" onclick="onClickResource_Detail();">NHÂN SỰ</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("R104", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#tree-detail" data-toggle="tab" onclick="onClickProjectStruct_Detail();">CẤU TRÚC DỰ ÁN</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("R111", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#value-detail" data-toggle="tab" onclick="onClickProjectValue_Detail();">GIÁ TRỊ SL,DT,DT</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("R105", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#vendor-plan-detail" data-toggle="tab" onclick="onClickVendorPlan_Detail();">K.HOẠCH TH.PHỤ</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("R106", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#customer-plan-detail" data-toggle="tab" onclick="onClickCustomerPlan_Detail();">K.HOẠCH KH.HÀNG</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("R107,R108", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#vendor-volume-detail" data-toggle="tab" onclick="onClickVendorVolume_Detail();">C.VIỆC TH.PHỤ</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("R109,R110", Model.ObjDetail.ID))
+                {
+                    <li role="presentation"><a href="#customer-volume-detail" data-toggle="tab" onclick="onClickCustomerVolume_Detail();">C.VIỆC KH.HÀNG</a></li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="general-infomation-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade in active" id="contract-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="tree-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="resource-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="value-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="vendor-plan-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="customer-plan-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="vendor-volume-detail">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="customer-volume-detail">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+                onClickGeneralInformation_Detail();
+            });
+
+            function onClickResource_Detail() {
+                Forms.LoadAjax({ url: '@Url.Action("IndexView", "Resource",
+                               new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #resource-detail' });
+            }
+
+            function onClickProjectStruct_Detail() {
+                Forms.LoadAjax('@Url.Action("StructureView",
+                               new { projectId = Model.ObjDetail.ID })');
+            }
+
+            function onClickGeneralInformation_Detail() {
+                Forms.LoadAjax({ url: '@Url.Action("ViewGeneralInformation",
+                               new { id = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #general-infomation-detail' });
+            }
+
+            function startProject_Detail() {
+                Forms.LoadAjax({ url: '@Url.Action("StartProject", new { id = Model.ObjDetail.ID })', type: "POST", success: Forms.AjaxSuccessHandler, htmlTarget: '', dataType: "json" })
+            }
+
+            function onClickContract_Detail() {
+                $('#@Model.ViewId #contract').html("");
+                Forms.LoadAjax({ url: '@Url.Action("IndexView", "Contract",
+                               new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #contract-detail' });
+            }
+
+            function onClickProjectValue_Detail() {
+                $('#@Model.ViewId #value').html("");
+                Forms.LoadAjax({ url: '@Url.Action("Detail", "ProjectSlDt",
+                               new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #value-detail' });
+            }
+
+            function onClickCustomerPlan_Detail() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("IndexView", "PlanProgress",
+                               new { projectId = Model.ObjDetail.ID, isCustomer=true }))');
+            }
+
+            function onClickVendorPlan_Detail() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("IndexView", "PlanProgress",
+                               new { projectId = Model.ObjDetail.ID, isCustomer=false }))');
+            }
+            function onClickVendorVolume_Detail() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("IndexView", "VolumeWork",
+                               new { projectId = Model.ObjDetail.ID, isCustomer = false }))');
+            }
+            function onClickCustomerVolume_Detail() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("IndexView", "VolumeWork",
+                               new { projectId = Model.ObjDetail.ID, isCustomer = true }))');
+            }
+        </script>
+    </div>
+</div>
+

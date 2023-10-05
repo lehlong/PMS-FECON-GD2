@@ -1,0 +1,183 @@
+﻿@model IList<SMO.Service.PS.Models.Report.ResourceReport.ProjectResourceData>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var gridId = Guid.NewGuid().ToString();
+    var searchModel = ViewBag.SearchModel as SMO.Service.PS.Models.Report.ResourceReport.ProjectResourceModel;
+    searchModel.BoldRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.Stt == null).Select(x => x.index).ToList();
+    var display = ConfigHideColumn.BAO_CAO_DANH_SACH_NHAN_SU_DU_AN.GetValue().ToString();
+    var config = ViewBag.Config as SMO.Core.Entities.PS.T_PS_CONFIG_HIDE_COLUMN;
+
+}
+<style>
+    .row-bold .dhx_grid-cell {
+        font-weight: bold
+    }
+
+    .grid .dhx_grid-cell {
+        word-break: break-word
+    }
+
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
+
+    .fade-report {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+
+<div class="fade-report">
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+    <div class="dropdown-hide-column">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+        <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+        </select>
+        <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+    </div>
+    <div style="height: calc(100vh - 180px)" id="@gridId" class="grid"></div>
+
+    <script type="text/javascript">
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(Model.Distinct(), jsonSerializeSettings));
+
+        rawData.forEach(function (x) {
+                x.fromDate= x.fromDate==null?x.fromDate: moment(x.fromDate).format("DD/MM/YYYY"),
+                x.toDate = x.toDate == null ? x.toDate : moment(x.toDate).format("DD/MM/YYYY")
+        })
+        //var length = rawData.length
+        //for (var i = 0; i < length; i++) {
+        //    var x= rawData[i]
+        //    x.fromDate = x.fromDate == null ? x.fromDate : moment(x.fromDate).format("DD/MM/YYYY")
+        //    x.toDate = x.toDate == null ? x.toDate : moment(x.toDate).format("DD/MM/YYYY")
+        //}
+    const columns = [
+        { id: "stt", header: [{ text: "STT" }, { content: "inputFilter" }], width: 80 },
+        { id: "username", header: [{ text: "Họ và tên" }, { content: "inputFilter" }], width: 320 },
+        { id: "projectRole", header: [{ text: "Vai trò dự án" }, { content: "inputFilter" }], adjust: true },
+        { id: "phoneNumber", header: [{ text: "SĐT" }, { content: "inputFilter" }], adjust: true },
+        { id: "email", header: [{ text: "Email" }, { content: "inputFilter" }], adjust: true },
+        { id: "typeResource", header: [{ text: "Loại nhân sự" }, { content: "inputFilter" }], adjust: true },
+        { id: "otherResource", header: [{ text: "Bên liên quan" }, { content: "inputFilter" }], adjust: true },
+        { id: "department", header: [{ text: "Phòng ban" }, { content: "inputFilter" }], adjust: true },
+        { id: "titleResource", header: [{ text: "Chức danh" }, { content: "inputFilter" }], adjust: true },
+        { id: "numberCccd", header: [{ text: "Số CMND/CCCD" }, { content: "inputFilter" }], adjust: true },
+        { id: "fromDate", header: [{ text: "Từ ngày" }, { content: "inputFilter" }], adjust: true },
+        { id: "toDate", header: [{ text: "Đến ngày" }, { content: "inputFilter" }], adjust: true },
+
+    ]
+
+
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoHeight: true,
+        resizable: true,
+        data: rawData,
+        selection: "cell",
+        keyNavigation: true,
+        rowCss: function ({ stt }) { return stt === null || stt === '' ? "row-bold" : "" },
+    });
+
+    function ExportExcel() {
+        grid.export.xlsx({
+            name: "Template_BaoCaoNhanSu.xlsx",
+            url: "@Url.Action("ExportExcelProjectResource", new { searchModel=JsonConvert.SerializeObject(searchModel)})"
+        });
+    }
+
+
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+
+        function updateHideColumn() {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+
+            var ajaxParams = {
+                url: 'PS/Project/UpdateConfigHideColumn',
+                type: "POST",
+                data: {
+                    Display: '@display',
+                    Details: JSON.stringify(lstColumeHide)
+
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            }
+            Forms.Ajax(ajaxParams)
+        }
+
+    $(function () {
+
+        for (i = 0; i < columns.length; i++) {
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+
+        console.log(columns)
+        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config, jsonSerializeSettings));
+        var lstHideColumnData = JSON.parse(dataConfig.details);
+        var allColumn = [];
+        for (i = 0; i < columns.length; i++) {
+            allColumn.push(columns[i].id)
+        }
+        for (i = 0; i < columns.length; i++) {
+            grid.showColumn(columns[i].id)
+        }
+        for (i = 0; i < lstHideColumnData.length; i++) {
+            grid.hideColumn(lstHideColumnData[i]);
+        }
+
+        Forms.CompleteUI();
+
+    });
+    </script>
+</div>

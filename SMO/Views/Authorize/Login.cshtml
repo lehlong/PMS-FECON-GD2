@@ -1,0 +1,185 @@
+﻿@model SMO.Service.AuthorizeService
+@{ 
+    var isValidateCapcha = false;
+    var ip = System.Web.HttpContext.Current.Request.ServerVariables["REMOTE_ADDR"];
+    if (Global.ListIPLogin.ContainsKey(ip))
+    {
+        int count = 0;
+        Global.ListIPLogin.TryGetValue(ip, out count);
+        if (count > 5)
+        {
+            isValidateCapcha = true;
+        }
+    }
+}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>PMS - Đăng nhập</title>
+    <!-- Favicon-->
+    <link rel="icon" href="~/Content/pms-ico.png" type="image/x-icon">
+
+    <!-- Google Fonts -->
+    <link href="~/Theme/css/google_roboto.css" rel="stylesheet" type="text/css">
+    <link href="~/Theme/css/google_material_icon.css" rel="stylesheet" type="text/css">
+
+    <!-- Bootstrap Core Css -->
+    <link href="~/Theme/plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom Css -->
+    <link href="~/Theme/css/style.css" rel="stylesheet">
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?hl=vi" async defer></script>
+    <!-- Jquery Core Js -->
+    <style>
+        html,body{
+            height: 100%;
+            background-color: white;
+        }
+        .div-left {
+            background-image: url('https://fecon.com.vn/public/media/thumb/homepage/f866769d54e19dbfc4f0-1920x942.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: bottom;
+            height: 100%;
+        }
+        .div-right{
+            padding-top: 30px;
+            background-color: white;
+        }
+        .login-box{
+            /*border: 1px solid #D7D7D7;*/
+        }
+        .div-logo{
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .div-logo img{
+            width: 200px;
+        }
+        .div-smo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .div-smo label {
+            font-family: 'serif';
+            font-weight: bold;
+            margin-left: 10px;
+            font-size: 50px;
+            color: #0d5cab;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="col-lg-8 col-md-7 visible-lg visible-md div-left">
+    </div>
+    <div class="col-lg-4 col-md-5 div-right">
+        <div class="div-logo">
+            <img src="~/Content/logo_fecon.png" />
+        </div>
+
+        <div class="div-smo">
+            <label style="">PMS</label>
+        </div>
+        <div class="login-box">
+            <div class="card" style="margin: 10px;">
+                <div class="body" style="padding-top: 25px;">
+                    @using (Html.BeginForm("Login", "Authorize", FormMethod.Post, new { @id = "frmLogin", @class = "login-form" }))
+                    {
+                        @*@Html.AntiForgeryToken()*@
+                        @Html.HiddenFor(m => m.ReturnUrl)
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="material-icons">person</i>
+                            </span>
+                            <div class="form-line">
+                                @Html.TextBoxFor(model => model.ObjUser.USER_NAME, new { @id = "txtUserName", @onfocus = "$('#spClearUserName').show();", @class = "form-control", placeholder = "Tên đăng nhập", @required = "", @autofocus = "" })
+                            </div>
+                            <span class="input-group-addon" style="display:none; cursor: pointer;" id="spClearUserName" onclick="$('#txtUserName').val(''); $('#txtUserName').focus(); $(this).hide();">
+                                <i class="material-icons">clear</i>
+                            </span>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <i class="material-icons">lock</i>
+                            </span>
+                            <div class="form-line">
+                                @Html.TextBoxFor(model => model.ObjUser.PASSWORD, new { @id = "txtPassword", @onfocus = "$('#spClearPassword').show();", @class = "form-control", placeholder = "Mật khẩu", @type = "password", @required = "" })
+                            </div>
+                            <span class="input-group-addon" style="display:none; cursor: pointer;" id="spClearPassword" onclick="$('#txtPassword').val(''); $('#txtPassword').focus(); $(this).hide();">
+                                <i class="material-icons">clear</i>
+                            </span>
+                        </div>
+
+                        @*if (isValidateCapcha)
+                        {
+                            <center>
+                                <div class="g-recaptcha" data-sitekey="@System.Configuration.ConfigurationManager.AppSettings["RecaptchaPublicKey"]"></div>
+                            </center>
+                        }*@
+
+                        <div class="row m-t-20">
+                            <div class="col-xs-6" style="padding-left:3px;">
+                                <input type="checkbox" name="User.REMEMBER" id="User_REMEMBER" class="filled-in chk-col-pink" checked>
+                                <span style="position:absolute; top: 4px; font-weight:900">&nbsp;&nbsp; Ghi nhớ</span>
+                            </div>
+                            <div class="col-xs-12" style="padding-left:0; padding-right:0;">
+                                <button class="btn btn-block waves-effect" style="background-color: #f0682e; color: white; font-size: 15px !important;" type="submit">ĐĂNG NHẬP</button>
+
+                                @*@if (isValidateCapcha)
+                                {
+                                    <button class="btn btn-block waves-effect g-recaptcha" style="background-color: #0d5cab; color: white;" data-sitekey="@System.Configuration.ConfigurationManager.AppSettings["RecaptchaPublicKey"]" data-callback='onSubmit'>ĐĂNG NHẬP</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-block waves-effect" style="background-color: #0d5cab; color: white;" type="submit">ĐĂNG NHẬP</button>
+                                }*@
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+        <div class="copyright" style="font-weight: bold; text-align: center; position: fixed; bottom: 20px; right: 20px;">
+            &copy; 2018 <a href="http://d2s.com.vn" target="_blank">d2s.com.vn</a>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var error = "@ViewBag.Error";
+        if (error == "10") {
+            alert("Thông tin đăng nhập không đúng. Hãy kiểm tra lại thông tin tài khoản, hoặc có thể liên hệ với ban quản trị hệ thống");
+        } else if (error == "2") {
+            alert("Tài khoản đã bị khóa. Vui lòng liên hệ với ban quản trị hệ thống.");
+        }
+        else if (error == "3") {
+            alert("Xác thực recapcha không chính xác! Yêu cầu tích vào ô chọn 'Tôi không phải là người máy!'");
+        }
+        else if (error == "12") {
+            alert("Tài khoản AD chính xác, nhưng chưa gán với một tài khoản EBIDDING nào cả. Vui lòng liên hệ với ban quản trị!");
+        }
+        else if (error == "13") {
+            alert("Tài khoản AD không chính xác!");
+        }
+        else if (error == "14") {
+            alert("Kết nối đến hệ thống AD bị lỗi!");
+        }
+        function onSubmit(token) {
+            $("#frmLogin").submit();
+        }
+    </script>
+
+    <!-- Custom Js -->
+</body>
+
+</html>

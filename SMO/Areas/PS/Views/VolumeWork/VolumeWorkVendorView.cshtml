@@ -1,0 +1,81 @@
+﻿@model IList<SMO.Service.PS.Models.VolumeWorkViewModel>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@using SMO.Core.Entities.PS;
+@{
+    var gridId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var statusDict = new Dictionary<string, string>();
+
+    foreach (ProjectWorkVolumeStatus projectVolume in Enum.GetValues(typeof(ProjectWorkVolumeStatus)))
+    {
+        statusDict.Add(projectVolume.GetValue(), projectVolume.GetName());
+    }
+}
+
+<div class="row m-t-30" style="height: calc(100vh - 242px)">
+    <div style="height: 100%; width: 100%" id="@gridId"></div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+
+    function generateActiveText(activeStatus) {
+        return activeStatus ? '' : 'Đã tạm dừng';
+    }
+        const statuses = @Html.Raw(JsonConvert.SerializeObject(statusDict));
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+        const structGroup = _.chain(rawData)
+            .map(x => ({
+                ...x,
+                parent: x.parentId ?? undefined,
+                statusText: statuses[x.status],
+                activeText: generateActiveText(x.active),
+                finishedDate: x.finishedDate ? moment(x.finishedDate).toDate() : undefined,
+                onProgressVolume: (x.accumulatedVolume && x.accumulateAcceptedVolume) ? x.accumulatedVolume - x.accumulateAcceptedVolume : undefined
+            }))
+            .value();
+
+        const columns = [
+            { id: "projectStructureName", header: [{ text: "Hạng mục công việc" }, { content: "inputFilter" }] },
+            { id: "projectStructureType", header: [{ text: "Loại đối tượng" }] },
+            { id: "unitName", header: [{ text: "Đơn vị tính" }] },
+            { id: "contractVolume", header: [{ text: "Khối lượng hợp đồng" }], type: "number", format: "#,#" },
+            { id: "planVolume", header: [{ text: "Khối lượng kế hoạch" }], type: "number", format: "#,#" },
+            { id: "workVolume", header: [{ text: "Khối lượng thực hiện" }], type: "number", format: "#,#" },
+            { id: "accumulatedVolume", header: [{ text: "Lũy kế thực hiện" }], type: "number", format: "#,#" },
+            { id: "accumulateAcceptedVolume", header: [{ text: "Lũy kế xác nhận" }], type: "number", format: "#,#" },
+            { id: "onProgressVolume", header: [{ text: "Khối lượng dở dang" }], type: "number", format: "#,#" },
+            { id: "acceptVolume", header: [{ text: "Giá trị xác nhận" }], type: "number", format: "#,#", editable: true },
+            { id: "percentageDone", header: [{ text: "Tỷ lệ hoàn thành(%)" }] },
+            { id: "finishedDate", header: [{ text: "Ngày hoàn thành" }], type: "date", format: "%d/%m/%Y", editable: true },
+            { id: "notes", header: [{ text: "Ghi chú" }], editable: true },
+            { id: "statusText", header: [{ text: "Trạng thái" }, { content: "selectFilter" }] },
+            { id: "activeText", header: [{ text: "#" }, { content: "selectFilter" }] },
+            {
+                id: "referenceFileId", header: [{ text: "Đính kèm" }],
+                align: 'center',
+                template: (value, task) => {
+                    if (task.projectStructureType !== '@ProjectEnum.PROJECT.ToString()') {
+                        return `<i class="fa fa-paperclip p-r-5" onclick="viewReferenceFile('${value}', '${task.id}')"></i>`
+                    }
+                },
+                htmlEnable: true,
+            },
+        ]
+    const grid = new dhx.TreeGrid("@gridId", {
+            columns,
+            autoWidth: true,
+            autoHeight: true,
+            leftSplit: 3,
+            adjust: true,
+            resizable: true,
+            data: structGroup,
+    });
+    grid.events.on("beforeEditStart", function (row, col) {
+        return false;
+    });
+</script>
+

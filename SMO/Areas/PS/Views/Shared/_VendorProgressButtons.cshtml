@@ -1,0 +1,85 @@
+﻿@model Guid
+
+@{
+    var projectPlanType = ViewBag.ProjectPlanType as ProjectPlanType?;
+    var refreshData = ViewBag.RefreshData as string;
+
+    var project = SMOUtilities.GetProject(Model);
+    string currentStatus = String.Empty;
+    switch (projectPlanType.Value)
+    {
+        case ProjectPlanType.COST:
+            currentStatus = project.STATUS_VENDOR_PLAN_COST;
+            break;
+        case ProjectPlanType.PROGRESS:
+            currentStatus = project.STATUS_VENDOR_PLAN_PROGRESS;
+            break;
+        case ProjectPlanType.QUANTITY:
+            currentStatus = project.STATUS_VENDOR_PLAN_QUANTITY;
+            break;
+        default:
+            break;
+    }
+}
+<script type="text/javascript">
+    function refreshProjectPlanStatusData() {
+        @refreshData
+    }
+</script>
+@{
+    Html.RenderPartial("_ProjectProgressScript");
+}
+@{
+    if (string.IsNullOrEmpty(currentStatus) || currentStatus == ProjectPlanStatus.CHUA_TRINH_DUYET.GetValue()
+        || currentStatus == ProjectPlanStatus.TU_CHOI.GetValue() || currentStatus == ProjectPlanStatus.HUY_PHE_DUYET.GetValue())
+    {
+        @Html.MyButton("cmdSave", "Trình duyệt", "onClickTrinhDuyet()", "Alt+N", "send");
+        <script type="text/javascript">
+            function onClickTrinhDuyet() {
+                const data = {
+                    type: @((int)ProjectPartnerType.VENDOR),
+                    subType: @((int)projectPlanType.Value),
+                    projectId: '@Model'
+                }
+                TrinhDuyet(data);
+            }
+        </script>
+    }
+    else if (currentStatus == ProjectPlanStatus.CHO_PHE_DUYET.GetValue())
+    {
+        @Html.MyButton("cmdSave", "Phê duyệt", "onClickPheDuyet()", "Alt+N", "done");
+        @Html.MyButton("cmdSave", "Từ chối", "onClickTuChoi()", "Alt+N", "close");
+        <script type="text/javascript">
+                function onClickPheDuyet() {
+                    const data = {
+                        type: @((int)ProjectPartnerType.VENDOR),
+                        subType: @((int)projectPlanType.Value),
+                        projectId: '@Model'
+                    }
+                    PheDuyet(data);
+                }
+                function onClickTuChoi() {
+                    const data = {
+                        type: @((int)ProjectPartnerType.VENDOR),
+                        subType: @((int)projectPlanType.Value),
+                        projectId: '@Model',
+                    }
+                    TuChoi(data);
+                }
+        </script>
+    }
+    else if (currentStatus == ProjectPlanStatus.PHE_DUYET.GetValue())
+    {
+        @Html.MyButton("cmdSave", "Hủy phê duyệt", "onClickHuyPheDuyet()", "Alt+N", "cancel");
+        <script type="text/javascript">
+                function onClickHuyPheDuyet() {
+                    const data = {
+                        type: @((int)ProjectPartnerType.VENDOR),
+                        subType: @((int)projectPlanType.Value),
+                        projectId: '@Model'
+                    }
+                    HuyPheDuyet(data);
+                }
+        </script>
+    }
+}

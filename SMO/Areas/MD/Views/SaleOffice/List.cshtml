@@ -1,0 +1,75 @@
+﻿@model SMO.Service.MD.SaleOfficeService
+@{
+    var frmFormCode = "frmSaleOfficeIndex";
+    var number = 1;
+}
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Mã cửa hàng</th>
+                <th>Tên cửa hàng</th>
+                <th>Mã điểm đổ hàng</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var toggleAction = string.Format("Forms.ToggleActive('{0}',{1}, this);", Url.Action("ToggleActive"), "{ id : '" + item.CODE + "' }");
+                <tr>
+                    <td>@item.CODE</td>
+                    <td>@item.TEXT</td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => item.DISCHARD_POINT, new { @onchange = string.Format("UpdateDischard('{0}', this, 'dischard');", item.CODE) })
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0; width: 250px;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => item.EMAIL, new { @onchange = string.Format("UpdateDischard('{0}', this, 'email');", item.CODE) })
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0; width: 120px;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => item.PHONE, new { @onchange = string.Format("UpdateDischard('{0}', this, 'phone');", item.CODE) })
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-center" style="width:20px; vertical-align: middle">
+                        @if (item.ACTIVE)
+                        {
+                            <input onclick="@toggleAction" id="@chkActive" type="checkbox" class="filled-in chk-col-light-blue" checked="checked" />
+                            <label for="@chkActive"></label>
+                        }
+                        else
+                        {
+                            <input onclick="@toggleAction" id="@chkInActive" type="checkbox" class="filled-in chk-col-light-blue" />
+                            <label for="@chkInActive"></label>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>

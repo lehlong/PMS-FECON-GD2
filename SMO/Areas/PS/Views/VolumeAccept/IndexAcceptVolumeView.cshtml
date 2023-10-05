@@ -1,0 +1,80 @@
+﻿@model SMO.Service.PS.VolumeAcceptService
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var type = Model.ObjDetail.IS_CUSTOMER ? "Customer" : "Vendor";
+
+
+    var selectListStatus = new List<SelectListItem>();
+    foreach (ProjectWorkVolumeStatus projectVolume in Enum.GetValues(typeof(ProjectWorkVolumeStatus)))
+    {
+        selectListStatus.Add(new SelectListItem
+        {
+            Text = projectVolume.GetName(),
+            Value = projectVolume.GetValue()
+        });
+    }
+    foreach (ProjectWorkVolumeActiveStatus activeStatus in Enum.GetValues(typeof(ProjectWorkVolumeActiveStatus)))
+    {
+        selectListStatus.Add(new SelectListItem
+        {
+            Text = activeStatus.GetName(),
+            Value = activeStatus.GetValue()
+        });
+    }
+}
+<div id='@Model.ViewId'>
+    <style>
+        .bootstrap-select {
+            margin-left: 10px !important;
+            max-width: 200px;
+        }
+
+        .content .page-function-search {
+            max-width: 100%;
+        }
+    </style>
+    @using (Ajax.BeginForm($"AcceptVolume{type}View", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.IS_CUSTOMER)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+
+        <div class="page-function p-t-10">
+            <div class="page-function-button m-r-20">
+                <div class="input-group page-function-search" style="z-index: 1000; padding-bottom: 10px;">
+                    @if (!Model.ObjDetail.IS_CUSTOMER)
+                    {
+                        @Html.MyDropDownListFor(m => m.ObjDetail.Vendor, SelectListUtilities.GetVendors(Model.ObjDetail.PROJECT_ID),
+         new { @class = "selectpicker show-tick", @placeholder = "Tìm theo thầu phụ" })
+
+                        <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                            <i class="material-icons">search</i>
+                        </span>
+                        <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                            <i class="material-icons">refresh</i>
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="row m-t-30" id="divResult">
+        </div>
+    }
+
+</div>
+<script type="text/javascript">
+    function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+</script>
+

@@ -1,0 +1,31 @@
+﻿@model SMO.Service.CM.NotifyService
+
+@if (Model.ObjList.Count > 20)
+{
+    <div class="card p-t-10">
+        @{ Html.RenderPartial("Paging", Model); }
+    </div>
+            }
+<div class="table-responsive dropdown-menu all-notify">
+    <ul class="menu">
+        @foreach (var item in Model.ObjList)
+        {
+            if (item.IS_REAED)
+            {
+                <li id="@("li" + item.PKID)">
+                    @Html.Raw(item.CONTENTS)
+                </li>
+            }
+            else
+            {
+                <li id="@("li" + item.PKID)" class="li-is-not-readed" onclick="$(this).attr('class','')">
+                    @Html.Raw(item.CONTENTS)
+                </li>
+            }
+        }
+    </ul>
+</div>
+
+<div class="card">
+    @{ Html.RenderPartial("Paging", Model); }
+</div>

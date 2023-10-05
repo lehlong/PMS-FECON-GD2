@@ -1,0 +1,45 @@
+﻿@model SMO.Service.MD.StoreService
+
+@{
+    var frmFormCode = "frmStoreIndex";
+}
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th>Mã kho</th>
+                <th>Tên kho</th>
+                <th>Mặt hàng trong kho</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var lstMaterial = new List<string>();
+                foreach (var detail in item.ListStoreMaterial)
+                {
+                    lstMaterial.Add(detail.Material.TEXT);
+                }
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = item.CODE }));
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.CODE)" modelId="@item.CODE" style="margin:0;" />
+                        <label for="@("chkItem" + item.CODE)"></label>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.CODE</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.TEXT</td>
+                    <td ondblclick="@vdbclickAction">
+                        @(string.Join(" , ", lstMaterial))
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

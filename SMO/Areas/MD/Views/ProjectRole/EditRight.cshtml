@@ -1,0 +1,81 @@
+﻿@model SMO.Service.MD.ProjectRoleService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var projectRoleId = ViewBag.ProjectRoleId as string;
+    var projectRole = Model.CurrentRepository.Get(projectRoleId);
+}
+<div class="card" id="@Model.ViewId">
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">settings</i> <span class="title-name"><b>QUYỀN TRONG VAI TRÒ</b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="Forms.CloseRightContent();"><i class="material-icons">close</i></div>
+    </div>
+    <div class="body" style="padding-top: 0px;">
+        <div class="tab-content">
+            <div class="page-function">
+                <div class="page-function-button m-r-20">
+                    @Html.MyButton("cmdSave", "Cập nhật quyền", "UpdateRight();", "Alt+N", "done_all")
+                </div>
+            </div>
+
+            <div>
+                <label class="p-l-10">Vai trò: @projectRole.NAME</label>
+                <ul id="treeRight" class="ztree"></ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var settingRight = {
+            check: {
+                enable: true,
+                chkboxType: { "Y": "ps", "N": "ps" }
+            },
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            }
+        };
+
+        function UpdateRight() {
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var nodeChecked = zTree.getCheckedNodes(true);
+            var userName = "@ViewBag.UserName";
+            var projectRoleId = "@ViewBag.ProjectRoleId";
+            var arrRight = [];
+            $.each(nodeChecked, function (i, val) {
+                arrRight.push(nodeChecked[i].id);
+            });
+
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateRight")',
+                type: "POST",
+                data: { projectRoleId: projectRoleId, rightList: arrRight.join("|")},
+                dataType: "json",
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        var zNodes = jQuery.parseJSON('@Html.Raw(ViewBag.zNode)');
+        $(function () {
+            $.fn.zTree.init($("#treeRight"), settingRight, zNodes);
+        });
+    </script>
+</div>
+
+
+

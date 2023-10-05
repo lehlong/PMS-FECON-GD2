@@ -1,0 +1,114 @@
+﻿@model SMO.Service.PS.TaskService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.HiddenFor(m => m.ViewId)
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.ACTIVITY_PARENT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.ID)
+        @Html.AntiForgeryToken()
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">description</i> CẬP NHẬT CÔNG VIỆC</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-t-10">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                            @Html.MyButton("cmdSave", "Lưu", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="row m-t-30">
+                        <div class="col-xs-1 col-lg-3"></div>
+                        <div class="col-lg-6 col-xs-10">
+                            @Html.LabelFor(x => x.ObjDetail.TEXT, "Nội dung")
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.TEXT)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.TEXT)
+                            </div>
+
+                            @Html.LabelFor(x => x.ObjDetail.USER_PERFORMER, "Người thực hiện")
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.USER_PERFORMER,
+                                   SelectListUtilities.GetProjectResources(Model.ObjDetail.PROJECT_ID),
+                                   new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.USER_PERFORMER)
+                            </div>
+
+                            <div class="form-group input-daterange">
+                                <div class="form-line" style="float:left; width: 49%; margin-right:2px;">
+                                    @Html.LabelFor(x => x.ObjDetail.START_DATE, "Ngày bắt đầu")
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.START_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                </div>
+                                <div class="form-line" style="float:right; width: 49%;">
+                                    @Html.LabelFor(x => x.ObjDetail.FINISH_DATE, "Ngày kết thúc")
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.FINISH_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                </div>
+
+                                @Html.ValidationMessageFor(m => m.ObjDetail.START_DATE)
+                                @Html.ValidationMessageFor(m => m.ObjDetail.FINISH_DATE)
+                            </div>
+
+
+                            <label class="m-t-15">Tình trạng</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.STATUS, SelectListUtilities.GetListTaskStatuses(),
+                                   new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.STATUS)
+                            </div>
+                            <label>Độ ưu tiên</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.PRIORITY, SelectListUtilities.GetListTaskPriorities(),
+                                   new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.PRIORITY)
+                            </div>
+                            @Html.LabelFor(x => x.ObjDetail.DESCRIPTION, "Mô tả")
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextAreaFor(m => m.ObjDetail.DESCRIPTION)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.DESCRIPTION)
+                            </div>
+
+                            <label>Check list</label>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+
+            $('.input-daterange input').each(function () {
+                $(this).datepicker({
+                    format: "dd/mm/yyyy",
+                    maxViewMode: 2,
+                    autoclose: true,
+                    keyboardNavigation: false,
+                    todayBtn: "linked",
+                    clearBtn: true,
+                    todayHighlight: true,
+                });
+            });
+        });
+    </script>
+</div>

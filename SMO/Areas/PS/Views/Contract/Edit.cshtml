@@ -1,0 +1,69 @@
+﻿@model SMO.Service.PS.ContractService
+@{
+    var viewId = Guid.NewGuid().ToString();
+}
+
+<div id='@viewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">style</i> <span class="title-name"><b>@Model.ObjDetail.NAME.ToUpper()</b></span> </div>
+        <div class="title-close" id="close-contract" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent()", @viewId);"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                <li role="presentation" id="li-thong-tin"><a href="#general-infomation-contract" onclick="onClickInformation()" data-toggle="tab">THÔNG TIN HỢP ĐỒNG</a></li>
+                <li role="presentation" id="li-hang-muc"><a href="#lstTask" data-toggle="tab"  onclick="onClickListTask()">HẠNG MỤC CÔNG VIỆC</a></li>
+                <li role="presentation" id="li-dot-thanh-toan"><a href="#dotthanhtoan" data-toggle="tab" onclick="onClickDotThanhToan()">ĐỢT THANH TOÁN</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="general-infomation-contract">
+                    @*@{
+                        Html.RenderPartial("EditGeneralInformation", Model);
+                    }*@
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="lstTask">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="dotthanhtoan">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+                var moduleName = "@ViewBag.ModulName";
+                $("#@viewId #ulNavTabs li").removeClass("active");
+                if (moduleName == "PhamViCongViecHopDongThauPhu" || moduleName == "PhamViCongViecHopDongKhachHang") {
+                    $("#@viewId #li-hang-muc a").click();
+                } else if (moduleName == "ThanhToanHopDongThauPhu" || moduleName == "ThanhToanHopDongKhachHang") {
+                    $("#@viewId #li-dot-thanh-toan a").click();
+                } else {
+                    $("#@viewId #li-thong-tin a").click();
+                }
+            });
+
+            function onClickInformation() {
+                $('#@viewId #general-infomation-contract').html("");
+                Forms.LoadAjax({ url: '@Url.Action("EditGeneralInformation",
+                               new { id = Model.ObjDetail.ID })', htmlTarget: '#@viewId #general-infomation-contract' });
+            }
+
+            function onClickListTask() {
+                $('#@viewId #lstTask').html("");
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"ListTask",
+                                   new { id = Model.ObjDetail.ID }))', htmlTarget: '#@viewId #lstTask' });
+                }, 150)
+            }
+
+            function onClickDotThanhToan() {
+                $('#@viewId #dotthanhtoan').html("");
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"Index", "ContractPayment",
+                                   new { contractId = Model.ObjDetail.ID }))', htmlTarget: '#@viewId #dotthanhtoan' });
+                }, 50)
+            }
+        </script>
+    </div>
+</div>
+

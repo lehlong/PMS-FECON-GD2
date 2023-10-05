@@ -1,0 +1,37 @@
+﻿@model SMO.Service.AD.FormService
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllObject" onclick="Forms.CheckAll('chkItemObject', '#chkAllObject');" style="margin:0;" class="filled-in" />
+                    <label for="chkAllObject"></label>
+                </th>
+                <th>Mã</th>
+                <th>Loại object</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListObject.OrderBy(x => x.TYPE).OrderBy(x => x.OBJECT_CODE))
+            {
+                var vdbclickAction = string.Format("EditObject('{0}')", item.PKID);
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemObject" name="chkItemObject" id="@("chkItemObject" + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItemObject" + item.PKID)"></label>
+                    </td>
+                    <td>@item.OBJECT_CODE</td>
+                    <td>@item.TYPE</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+

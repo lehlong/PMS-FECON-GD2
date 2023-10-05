@@ -1,0 +1,62 @@
+﻿@model SMO.Service.MD.VehicleService
+@{
+    var frmFormCode = "frmVehicleIndex";
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Mã phương tiện</th>
+                <th>Đơn vị tính</th>
+                <th>Tổng dung tích</th>
+                <th>Loại hình VT</th>
+                <th>Thông tin ngăn</th>
+                <th class="align-center">#</th>
+                <th class="align-center">Thời gian cập nhật</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var toggleAction = string.Format("Forms.ToggleActive('{0}',{1}, this);", Url.Action("ToggleActive"), "{ id : '" + item.CODE + "' }");
+                <tr>
+                    <td>@item.CODE</td>
+                    <td>@item.UNIT</td>
+                    <td>@item.CAPACITY.ToStringVN()</td>
+                    <td>@item.TRANSMODE_CODE</td>
+                    <td>
+                        @foreach (var compartment in item.ListCompartment)
+                        {
+                            <span>@compartment.SEQ_NUMBER</span><b> : @compartment.CAPACITY.ToStringVN()</b><span>&nbsp;&nbsp;&nbsp;</span>
+                        }
+                    </td>
+                    <td class="align-center" style="width:20px; vertical-align: middle">
+                        @if (item.ACTIVE)
+                        {
+                            <input onclick="@toggleAction" id="@chkActive" type="checkbox" class="filled-in chk-col-light-blue" checked="checked" />
+                            <label for="@chkActive"></label>
+                        }
+                        else
+                        {
+                            <input onclick="@toggleAction" id="@chkInActive" type="checkbox" class="filled-in chk-col-light-blue" />
+                            <label for="@chkInActive"></label>
+                        }
+                    </td>
+                    <td>
+                        <div>Tạo: @(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</div>
+                        <div>Cập nhật: @(item.UPDATE_DATE.HasValue ? item.UPDATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

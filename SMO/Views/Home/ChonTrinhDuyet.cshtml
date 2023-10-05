@@ -1,0 +1,140 @@
+﻿@{ 
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>SMO - Quản lý đơn hàng trực tuyến</title>
+    <link rel="icon" href="~/Content/icon.png" type="image/x-icon">
+    <!-- Google Fonts -->
+    <link href="~/Theme/css/google_roboto.css" rel="stylesheet" type="text/css">
+    <link href="~/Theme/css/google_material_icon.css" rel="stylesheet" type="text/css">
+
+    <!-- Bootstrap Core Css -->
+    <link href="~/Theme/plugins/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom Css -->
+    <link href="~/Theme/css/style.css" rel="stylesheet">
+
+    <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
+    <link href="~/Theme/css/themes/theme-indigo.min.css" rel="stylesheet" />
+
+
+    <!-- Jquery Core Js -->
+    @*<script src="~/Theme/plugins/jquery/jquery.min.js"></script>*@
+
+    <link href="~/Theme/css/materialize.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-1.10.2.js?v=1.1"></script>
+    <style>
+        body{
+            background-color: white;
+            text-align: center;
+        }
+
+        .div-browser {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .div-browser img{
+            height: 120px;
+            cursor: pointer;
+        }
+
+        .div-browser img:hover{
+        }
+
+        .div-browser .browser{
+            margin: 20px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .div-browser .browser div{
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body class="theme-indigo">
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a href="javascript:void(0);" class="bars"></a>
+            <a class="navbar-brand" href="/">
+                <img src="~/Content/LogoSMO.png" style="width: 45px; float:left; margin-right:5px;" />
+                <b>SMO</b>
+            </a>
+            <div>
+                <a href="javascript:void(0);" class="dropdown-toggle navbar-icons" data-toggle="dropdown" role="button" style="float:right;" data-target="ulProfile">
+                    <i class="material-icons" style="margin-right: -7px;">person</i>
+                    <i class="material-icons">arrow_drop_down</i>
+                </a>
+                <ul class="dropdown-menu" style="right: 0;top: 80px !important; left: auto; width: 250px;" id="ulProfile">
+                    <li><a href="javascript:void(0);"><i class="material-icons">person_outline</i> @ProfileUtilities.User.FULL_NAME</a></li>
+                    <li><a href="#" onclick="Forms.LoadAjaxModal('/Authorize/ChangePassword')"><i class="material-icons">vpn_key</i> Đổi mật khẩu</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="/Authorize/Logout"><i class="material-icons">exit_to_app</i> Đăng xuất</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div style="text-align:center; margin-top: 30px; padding: 50px;">
+        <h2>
+            Chương trình SMO không hoạt động trên trình duyệt IE (Internet Explorer)
+        </h2>
+        <h2>
+            Vui lòng sử dụng các trình duyệt khác.
+        </h2>
+
+        <h5 style="font-size: 16px; margin-top: 30px; font-weight:normal;">
+            Bạn có thể sử dụng các trình duyệt dưới đây
+        </h5>
+
+        <div class="div-browser">
+            <div class="browser">
+                <a href="https://www.google.com/chrome/" target="_blank">
+                    <img src="~/Content/Images/icon_chrome.png" />
+                </a> 
+                <div>Chrome</div>
+            </div>
+
+            <div class="browser">
+                <a href="https://www.mozilla.org/en-US/firefox/new/" target="_blank">
+                    <img src="~/Content/Images/icon_firefox.png" />
+                </a>
+                <div>Firefox</div>
+            </div>
+
+            <div class="browser">
+                <a href="https://www.opera.com/download" target="_blank">
+                    <img src="~/Content/Images/icon_opera.png" />
+                </a>
+                <div>Opera</div>
+            </div>
+
+            <div class="browser">
+                <a href="https://coccoc.com/vi/" target="_blank">
+                    <img src="~/Content/Images/icon_coccoc.png" />
+                </a>
+                <div>Cốc cốc</div>
+            </div>
+
+            <div class="browser">
+                <a href="https://www.microsoft.com/en-us/download/details.aspx?id=48126" target="_blank">
+                    <img src="~/Content/Images/icon_edge.png" />
+                </a>
+                <div>Edge</div>
+            </div>
+
+            <div class="browser">
+                <a href="https://support.apple.com/downloads/safari" target="_blank">
+                    <img src="~/Content/Images/icon_safari.png" />
+                </a>
+                <div>Safari</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

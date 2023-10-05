@@ -1,0 +1,45 @@
+﻿@model SMO.Service.AD.LanguageService
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="100px">Mã</th>
+                <th width="100px">Kiểu</th>
+                <th width="100px">Ngôn ngữ</th>
+                <th width="100px">Form</th>
+                <th>Nội dung</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.LANG).OrderBy(x => x.FORM_CODE).OrderBy(x => x.OBJECT_TYPE).OrderBy(x => x.FK_CODE))
+            {
+                <tr>
+                    <td style="vertical-align:middle" width="100px">@item.FK_CODE</td>
+                    <td style="vertical-align:middle" width="100px">@item.OBJECT_TYPE</td>
+                    <td style="vertical-align:middle" width="100px">@item.LANG</td>
+                    <td style="vertical-align:middle" width="100px">@item.FORM_CODE</td>
+                    <td>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => item.VALUE, new { @onchange = string.Format("UpdateLanguage('{0}', this);", item.PKID) })
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+</script>
+

@@ -1,0 +1,39 @@
+﻿@model SMO.Service.AD.UserService
+@using SMO.Core.Entities
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllVendorOfUser" onclick="Forms.CheckAll('chkItemVendorOfUser', '#chkAllVendorOfUser')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllVendorOfUser"></label>
+                </th>
+                <th>Mã đơn vị</th>
+                <th>Tên đơn vị</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjDetail.ListUserVendor.OrderByDescending(x => x.ACTIVE))
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemVendorOfUser" name="chkItemVendorOfUser" id="@("chkItemVendorOfUser" + item.VENDOR_CODE)" modelId="@item.VENDOR_CODE" style="margin:0;" />
+                        <label for="@("chkItemVendorOfUser" + item.VENDOR_CODE)"></label>
+                    </td>
+                    <td>@item.Vendor.CODE</td>
+                    <td>@item.Vendor.TEXT</td>
+                    <td>@item.Vendor.ACTIVE</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+
+

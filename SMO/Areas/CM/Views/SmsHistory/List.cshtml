@@ -1,0 +1,58 @@
+﻿@model SMO.Service.CM.SmsHistoryService
+
+@{ Html.RenderPartial("Paging", Model); }
+
+<div class="table-responsive">
+    <table class="table table-condensed table-bordered">
+        <thead>
+            <tr>
+                <th class="align-center">TT</th>
+                <th class="align-center">Số điện thoại</th>
+                <th class="align-center">Loại</th>
+                <th class="align-center">Trạng thái</th>
+                <th class="align-center">Ngày gửi</th>
+                <th>Nội dung</th>
+                <th>Ghi chú</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                <tr>
+                    <td class="align-center">
+                        @(Model.ObjList.IndexOf(item) + 1)
+                    </td>
+                    <td class="align-center">
+                        @item.PHONE
+                    </td>
+                    <td class="align-center">
+                        @(item.TYPE == "1" ? "Thông báo" : "OTP")
+                    </td>
+                    <td class="align-center">
+                        @if (item.IS_SEND)
+                        {
+                            <span class="col-blue">Thành công</span>
+                        }
+                        else
+                        {
+                            <span class="col-red">Thất bại</span>
+                        }
+                        <br />
+                    </td>
+                    <td class="align-center">
+                        @(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")
+                    </td>
+                    <td>@item.CONTENTS</td>
+                    <td width="300px;">
+                        @Html.Raw(item.MESSAGE)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }
+
+<script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+</script>

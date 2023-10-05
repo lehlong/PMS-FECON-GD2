@@ -1,0 +1,28 @@
+﻿@model SMO.Service.AD.RequestService
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Mã yêu cầu</th>
+                <th>Người yêu cầu</th>
+                <th>Ngày giờ yêu cầu</th>
+                <th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListRequestTo.OrderByDescending(x => x.CREATE_DATE))
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("XuLy", new { requestID = item.REQUEST_ID, requestToId = item.PKID }));
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.Request.PKID</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.Request.USER_REQUEST</td>
+                    <td ondblclick="@vdbclickAction">@item.Request.REQUEST_DATE.ToString(Global.DateTimeToStringFormat)</td>
+                    <td ondblclick="@vdbclickAction">@item.STATUS</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

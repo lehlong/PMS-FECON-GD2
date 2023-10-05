@@ -1,0 +1,36 @@
+﻿@model SMO.Service.CF.ConfigTemplateNotifyService
+
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th>Trạng thái đơn hàng</th>
+                <th>SMS</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = item.PO_STATUS }));
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.PO_STATUS)" modelId="@item.PO_STATUS" style="margin:0;" />
+                        <label for="@("chkItem" + item.PO_STATUS)"></label>
+                    </td>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">
+                            <span class="badge @(PO_Status.GetStatusColorSaleManager(item.PO_STATUS))">@(PO_Status.GetStatusTextSaleManager(item.PO_STATUS))</span>
+                        </a>
+                    </td>
+                    <td>@Html.Raw(item.SMS_TEMPLATE)</td>
+                    <td>@Html.Raw(item.EMAIL_TEMPLATE)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

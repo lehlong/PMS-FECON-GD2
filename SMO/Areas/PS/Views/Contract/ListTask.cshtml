@@ -1,0 +1,402 @@
+﻿@model SMO.Service.PS.ContractService
+@using SMO.Service.PS.Models;
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@using System.Web;
+@using System.Web.Http;
+@using System.Web.Mvc;
+@using System.Web.Optimization;
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var treeContractProjectStructs = ViewBag.TreeContractProjectStructs as IList<TreeContractProjectStruct>;
+    var gridId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    jsonSerializeSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize;
+    jsonSerializeSettings.PreserveReferencesHandling = Newtonsoft.Json.PreserveReferencesHandling.Objects;
+
+    var psUnits = SelectListUtilities.GetPsUnits(isAddBlank: false);
+    var lstBoqRef = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT_STRUCT>().Where(x => x.TYPE == "BOQ" && x.PROJECT_ID == Model.ObjDetail.PROJECT_ID).ToList();
+    var lstWbsParent = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT_STRUCT>().Where(x => x.TYPE == "WBS" && x.PROJECT_ID == Model.ObjDetail.PROJECT_ID).ToList();
+
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    var statusProjectEditable = (Model.ObjDetail.IS_SIGN_WITH_CUSTOMER || project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue()) && AuthorizeUtilities.CheckUserRightProject("RP3.1,RP4.1", Model.ObjDetail.PROJECT_ID) && (project.STATUS != "04") && (project.STATUS != "05");
+}
+<style>
+    .dhx_popup-content {
+        width: 100% !important;
+    }
+</style>
+<div class="card">
+    <div class="body" style="padding-top: 0px;">
+        <div class="tab-content">
+            <div class="page-function p-t-10">
+                <div class="page-function-button m-r-20">
+                    @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-contract\").click();$(\"#li-general-infomation-edit a\").click();"), "Alt+N", "arrow_back")
+                    @if (statusProjectEditable && AuthorizeUtilities.CheckUserRightProject("RP3.1,RP4.1", Model.ObjDetail.PROJECT_ID))
+                    {
+                        @Html.MyButton("cmdSave", "Chọn hạng mục", string.Format("Forms.LoadAjaxModalLarge('{0}');", @Url.Action("AddTask", new { id = Model.ObjDetail.ID })), "Alt+N", "add")
+                        @Html.MyButton("cmdSave", "Bỏ chọn hạng mục", "removeTasks()", "Alt+N", "remove")
+
+                        if (!Model.ObjDetail.IS_SIGN_WITH_CUSTOMER)
+                        {
+                            @Html.MyButton("cmdSave", "Thêm hạng mục", string.Format("Forms.LoadAjaxModalLarge('{0}');", @Url.Action("AddNewTask", new { id = Model.ObjDetail.ID })), "Alt+N", "add_circle")
+                            @Html.MyButton("cmdSave", "Xoá hạng mục", "removeTasksInContractAndTree()", "Alt+N", "remove_circle")
+                            @Html.MyButton("cmdSave", "Lưu dữ liệu", "saveData()", "Alt+N", "done_all")
+                        }
+                    }
+                </div>
+            </div>
+            <div class="row" style="height: calc(100vh - 210px)">
+                <div class="p-t-10" style="height: 100%; width: 100%" id="@gridId"></div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        const lstBoq = @Html.Raw(JsonConvert.SerializeObject(lstBoqRef.OrderBy(x => x.C_ORDER), jsonSerializeSettings));
+        const lstWbs = @Html.Raw(JsonConvert.SerializeObject(lstWbsParent.OrderBy(x => x.C_ORDER), jsonSerializeSettings));
+        var optionBoq = [];
+        lstBoq.forEach(function (item) {
+            return optionBoq.push(`${item._implementation?.geN_CODE} - ${item._implementation?.text}`)
+        })
+        var optionWbs = [];
+        lstWbs.forEach(function (item) {
+            return optionWbs.push(`${item?.geN_CODE} - ${item?.text}`)
+        })
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(treeContractProjectStructs, jsonSerializeSettings));
+        const psUnitsData = @Html.Raw(JsonConvert.SerializeObject(psUnits, jsonSerializeSettings));
+
+        var editable = false;
+        if ("@Model.ObjDetail.IS_SIGN_WITH_CUSTOMER" == "False" || !@statusProjectEditable.ToString().ToLower()) {
+            editable = true;
+        }
+        if (@project.STATUS == "04" || @project.STATUS == "05") {
+            editable = false
+        }
+        function formatNumber(value) {
+            return value ? numeral(isNaN(value) ? 0 : value).format('0,0.[000]') : ''
+        }
+        function formatIntNumber(value) {
+            return value ? numeral(isNaN(value) ? 0 : value).format('0,0') : ''
+        }
+        function formatQuantity(value, row) {
+            const { unitCode } = row
+            if (unitCode === "%") {
+                return value ? numeral(isNaN(value) ? 0 : value).format('0,0.[000]%') : ''
+            }
+            return value ? numeral(isNaN(value) ? 0 : value).format('0,0.[000]') : ''
+        }
+
+
+    //`< div class= "dhx_checkbox dhx_cell-editor__checkbox" >
+    //<label for="${col.id}" style="display: none;">${value === true}</label>
+    //<input type="checkbox" dhx_id="cell_editor" id="${col.id}" ${value === true ? 'checked' : ''}  class="dhx_checkbox__input" style="user-select: none;">
+    //<span class="dhx_checkbox__visual-input" onclick="changeValueSelected('${row.id}')"></span>
+    //</div>`
+    const columns = [
+        { id: "selected", adjust: true, header: [{ text: "" }], editable: true, type: "boolean" },
+        { id: "code", adjust: true, header: [{ text: "Mã hạng mục" }] },
+        { id: "name", adjust: true, header: [{ text: "Tên hạng mục", align: "center" }], maxWidth: 350 },
+        { id: "unitCode", adjust: true, header: [{ text: "ĐVT", align: "center" }], editable: editable, editorType: "combobox", options: _.map(psUnitsData, ({ value }) => value), align: "center", minWidth: 100 },
+        { id: "startDate", adjust: true, header: [{ text: "Ngày bắt đầu", align: "center" }], editable: editable, type: "date", format: "%d/%m/%Y", align: "center", minWidth: 160, maxWidth:200 },
+        { id: "finishDate", adjust: true, header: [{ text: "Ngày kết thúc", align: "center" }], editable: editable, type: "date", format: "%d/%m/%Y", align: "center", minWidth: 160, maxWidth: 200 },
+        { id: "status", header: [{ text: "Trạng thái CV", align: "center" }], editable: editable, editorType: "combobox", options: ["Chưa bắt đầu", "Đang thực hiện", "Tạm dừng", "Hoàn thành"], maxWidth: 170, align: "center" },
+
+        {
+            id: "volume", adjust: true, header: [{ text: "KL hợp đồng", align: "right" }], editable: editable, align: "right", template: formatQuantity, width: 180
+        },
+        {
+            id: "unitPrice", header: [{ text: "Đơn giá" }], editable: editable, type: "number", format: "#,#", adjust: false, width: 180,
+        },
+        {
+            id: "total", header: [{ text: "Thành tiền", align: "right" }], align: "right", adjust: false, width: 180, template: (value, row) => {
+                const { isTask } = row
+                if (!isTask) {
+                    const allIds = _.map(gridData, "id")
+                    const total = _.chain(gridData)
+                        .filter(({ parent }) => !allIds.includes(parent))
+                        .map('total')
+                        .sum()
+                        .value()
+                    return formatIntNumber(total)
+                } else {
+                    return formatIntNumber(value)
+                }
+            }
+        },
+        { id: "wbsParent", header: [{ text: " Mã WBS cha", align: "center" }], editable: editable, editorType: "combobox", options: optionWbs, maxWidth: 170, align: "center" },
+        { id: "boqRef", header: [{ text: " BOQ liên kết", align: "center" }], editable: editable, editorType: "combobox", options: optionBoq, maxWidth: 170, align: "center" },
+        { id: "nguoiPhuTrach", header: [{ text: "Người phụ trách", align: "center" }], align: "center", maxWidth: 180 },
+        ];
+
+        const sumDescendantToParent = (row, _index, collection) => {
+            const { volume, unitPrice, id } = row
+            let total = 0
+            if (!(volume && unitPrice)) {
+                total = _.chain(collection)
+                    .filter(['parent', id])
+                    .map('total')
+                    .sum()
+                    .value();
+            } else {
+                total = roundNumber(unitPrice * volume) ?? 0;
+            }
+            return _.set(row, 'total', total)
+        }
+        const gridData = _.chain(rawData)
+            .reverse()
+            .forEach(sumDescendantToParent)
+            .reverse()
+            .map(x => ({
+                ...x,
+                selected: false,
+                isTask: true
+            }))
+            .value();
+        if (gridData.length > 0) {
+            gridData.unshift({
+                isTask: false,
+                name: 'Tổng cộng',
+            })
+        }
+
+        for (i = 0; i < gridData.length; i++) {
+            gridData[i].status = gridData[i].status == "01" ? "Chưa bắt đầu" : gridData[i].status == "02" ? "Đang thực hiện" : gridData[i].status == "03" ? "Tạm dừng" : gridData[i].status == "04" ? "Hoàn thành" : null;
+        }
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        autoHeight: true,
+        leftSplit: 2,
+        resizable: true,
+        selection: "cell",
+        keyNavigation: true,
+        data: gridData
+    });
+
+        console.log(gridData)
+        if ("@Model.ObjDetail.IS_SIGN_WITH_CUSTOMER" == "True") {
+            grid.hideColumn("startDate")
+            grid.hideColumn("finishDate")
+            grid.hideColumn("wbsParent")
+            grid.hideColumn("boqRef")
+            grid.hideColumn("status")
+        }
+
+        function updateDescendantParentTotal(rowId) {
+            if (!rowId) {
+                return
+            }
+            const children = grid.data.findAll({ by: "parent", match: rowId })
+            if (!children || children.length === 0) {
+                return
+            }
+            const rowData = grid.data.find({ by: "id", match: rowId })
+            const { unitPrice, volume } = rowData || {}
+            if (!(unitPrice && volume)) {
+                grid.data.update(rowId, { total: _.sumBy(children, 'total') })
+            }
+
+            updateDescendantParentTotal(rowData?.parent)
+        }
+
+        document.getElementById("@gridId").addEventListener("keydown", function (e) {
+            if (e.keycode == 37 || e.which == 37 || e.keycode == 38 || e.which == 38 || e.keycode == 39 || e.which == 39 || e.keycode == 40 || e.which == 40) {
+                grid.editEnd();
+            }
+        });
+        document.getElementById("@gridId").onkeypress = function (e) {
+            if (e.which == 9 || e.which == 13 || @project.STATUS == "04"|| @project.STATUS == "05") {
+                return;
+            }
+            var selectedCell = grid.selection.getCell();
+            if (selectedCell == undefined) {
+                return;
+            }
+            const { row, column } = selectedCell;
+            if (!column.id.includes('unitPrice') && !column.id.includes('volume')) {
+                return;
+            }
+            grid.editCell(row.id, column.id);
+            row[column.id] = parseFloat(e.key);
+        };
+
+        $(document).unbind('paste')
+        $(document).bind('paste', function (e) {
+            var selectedCell = grid.selection.getCell();
+            if (selectedCell == undefined) {
+                return;
+            }
+            const { row, column } = selectedCell;
+            if (!column.id.includes('unitPrice') && !column.id.includes('volume')) {
+                return;
+            }
+            if (@project.STATUS == "04" || @project.STATUS == "05") {
+                return
+            }
+
+            const pastedText = (e.originalEvent.clipboardData || window.clipboardData)?.getData('text').trim().split(/\r?\n */).map(r => r.split(/\t/));
+
+            const indexSelectCell = grid.data.getIndex(row.id);
+            const dataCell = grid.data.getRawData();
+
+            var lengthText = 0;
+            if (pastedText.length > dataCell.length - indexSelectCell) {
+                lengthText = dataCell.length - indexSelectCell;
+            } else {
+                lengthText = pastedText.length;
+            }
+            for (var i = 0; i < lengthText; i++) {
+                var value = String(pastedText[i][0]).replaceAll(",", "");
+
+                dataCell[indexSelectCell + i][column.id] = value;
+                dataCell[indexSelectCell + i].total = value * dataCell[indexSelectCell + i].volume
+
+                const children = grid.data.findAll({ by: "parent", match: dataCell[indexSelectCell + i].id })
+                const rowData = grid.data.find({ by: "id", match: dataCell[indexSelectCell + i].id })
+                const { unitPrice, volume } = rowData || {}
+                if (!(unitPrice && volume)) {
+                    grid.data.update(dataCell[indexSelectCell + i].id, { total: _.sumBy(children, 'total') })
+                }
+
+                updateDescendantParentTotal(rowData?.parent)
+
+                grid.data.update(dataCell[indexSelectCell + i].id, { total: roundNumber(dataCell[indexSelectCell + i].volume * dataCell[indexSelectCell + i].unitPrice) });
+
+                updateDescendantParentTotal(dataCell[indexSelectCell + i].parent)
+                grid.paint();
+            }
+        })
+
+        var oldValue = "";
+
+        grid.events.on("afterEditStart", function (row, col, editorType) {
+            oldValue = row[col.id];
+            setTimeout(function () {
+                $(".dhx_cell-editor__textarea").inputmask({ 'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true, 'autoUnmask': true });
+            }, 100);
+        });
+
+        grid.events.on("beforeEditEnd", function (value) {
+            if (value == null) {
+                return true;
+            }
+            value = Inputmask.unmask(value, { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            return !isNaN(value);
+        });
+
+        grid.events.on("beforeEditStart", function (row) {
+            return row.isTask
+        });
+
+        grid.events.on("afterEditEnd", function (value, row, column) {
+            if (column.id === "selected") {
+                return;
+            }
+            if (oldValue?.toString() == value?.toString()) {
+                return;
+            }
+            if (!editable) {
+                return;
+            }
+            if (row.unitCode == "%" && column.id == "volume") {
+                row[column.id] = value / 100;
+            }
+
+            grid.data.update(row.id, { total: roundNumber(row.volume * row.unitPrice) });
+            updateDescendantParentTotal(row.parent)
+            grid.paint();
+
+            console.log(grid.data.serialize())
+
+        });
+
+        var dataSave = [];
+        function saveData() {
+            _.forEach(grid.data.serialize(), (row) => {
+                dataSave.push({
+                    projectId: '@Model.ObjDetail.PROJECT_ID',
+                    contractId: '@Model.ObjDetail.ID',
+                    data: {
+                        projectStructId: row.id,
+                        unitCode: _.find(psUnitsData, ["value", row.unitCode])?.value,
+                        status: row.status,
+                        unitPrice: row.unitPrice,
+                        volume: row.volume,
+                        wbsParent: row.wbsParent,
+                        boqRef: row.boqRef,
+                        startDate: row.startDate,
+                        finishDate: row.finishDate,
+                        isEnable: row.isEnable
+                    }
+                })
+            });
+            dataSave.shift()
+            const ajaxParams = {
+                url: '@Url.Action("UpdateInformation")',
+                type: "POST",
+                data: {
+                    data: JSON.stringify(dataSave)
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams)
+        }
+
+    grid.paint();
+        function removeTasks() {
+            const selectedTasks = grid.data.findAll({ by: 'selected', match: true });
+            if (selectedTasks.length === 0) {
+                return alert("Bạn hãy chọn ít nhất một hạng mục!")
+            }
+            if (confirm("Bạn có chắc chắn muốn xóa những hạng mục này khỏi hợp đồng?")) {
+                const structureIds = selectedTasks.map(({ id }) => id);
+                const ajaxParams = {
+                    url: '@Url.Action("RemoveTasksFromContract")',
+                    type: "POST",
+                    data: {
+                        contractId: '@Model.ObjDetail.ID',
+                        structureIds
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        }
+        function removeTasksInContractAndTree() {
+            const selectedTasks = grid.data.findAll({ by: 'selected', match: true });
+            if (selectedTasks.length === 0) {
+                return alert("Bạn hãy chọn ít nhất một hạng mục!")
+            }
+            if (confirm("Bạn có chắc chắn muốn xóa những hạng mục này khỏi hợp đồng và cây cấu trúc?")) {
+                const structureIds = selectedTasks.map(({ id }) => id);
+                const ajaxParams = {
+                    url: '@Url.Action("RemoveTasksFromContractAndTree")',
+                    type: "POST",
+                    data: {
+                        contractId: '@Model.ObjDetail.ID',
+                        projectId:'@Model.ObjDetail.PROJECT_ID',
+                        structureIds
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        }
+
+    $(function () {
+        Forms.CompleteUI();
+        grid.paint();
+    });
+    </script>
+</div>

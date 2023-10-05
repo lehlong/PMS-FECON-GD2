@@ -1,0 +1,160 @@
+﻿@model SMO.Service.AD.FormService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">clear_all</i> THÔNG TIN CHI TIẾT</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                        @Html.MyButton("cmdCopy", "Copy", string.Format("Forms.LoadAjax('{0}');", @Url.Action("Copy", new { formCode = Model.ObjDetail.CODE })), "Alt+C", "content_copy")
+                        @Html.MyButton("cmdLanguage", "Ngôn ngữ", string.Format("Forms.MaintainLanguageForm('{0}');", Model.ObjDetail.CODE), "Cập nhật ngôn ngữ của form", "language")
+                    </div>
+                </div>
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" class="active"><a href="#thongTinChinh" data-toggle="tab">Thông tin chính</a></li>
+                    <li role="presentation"><a href="#danhSachObject" data-toggle="tab">Danh sách object</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="thongTinChinh">
+                        @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                        {
+                            @Html.AntiForgeryToken();
+                            @Html.HiddenFor(m => m.ObjDetail.CODE)
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20">
+                                    @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-1"></div>
+                                <div class="col-lg-7 col-xs-10">
+                                    <label>Code</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { @disabled = "" })
+                                        </div>
+                                    </div>
+
+                                    <label>Name</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                                    </div>
+
+                                    <label>Ghi chú</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NOTES)
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="danhSachObject">
+                        @{
+                            Model.ViewId = Guid.NewGuid().ToString();
+                            Model.FormId = Guid.NewGuid().ToString();
+                        }
+
+                        @using (Ajax.BeginForm("ListObject", null, FormDataUtils.GetAjaxOptions("danhSachObject", "#divResultObject"), new { @id = Model.FormId }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.FormId)
+                            @Html.HiddenFor(m => m.ObjObject.FK_FORM)
+                            <div class="page-function">
+                                <div class="page-function-button m-r-20" style="float:left">
+                                    @Html.MyButton("cmdAdd", "Thêm mới", "CreateObject();", "Alt+N", "add")
+                                    @*@Html.MyButton("cmdEdit", "Chi tiết", "ViewDetailObject();", "Alt+E", "menu")*@
+                                    @Html.MyButton("cmdDelete", "Xóa", string.Format("Forms.DeleteItems('{0}','chkItemObject');", @Url.Action("DeleteObject")), "Alt+D", "delete")
+                                </div>
+
+                                <div class="input-group page-function-search">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjObject.OBJECT_CODE, new { placeholder = "Tìm theo mã object", @class = "align-center", @data_val = false })
+                                    </div>
+
+                                    <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                        <i class="material-icons">search</i>
+                                    </span>
+                                    <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                        <i class="material-icons">refresh</i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div id="divResultObject">
+
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function ViewDetailObject() {
+            var selected = '';
+            var numItem = 0;
+
+            $('.chkItemObject').each(function () {
+                if (this.checked) {
+                    selected = $(this).attr('modelId');
+                    numItem++;
+                }
+            });
+
+            if (numItem == 0) {
+                alert("Bạn phải chọn bản ghi cần xem!");
+                return;
+            } else if (numItem > 1) {
+                alert("Bạn chỉ được chọn một bản ghi!");
+                return;
+            }
+            EditObject(selected);
+        }
+
+        function EditObject(id) {
+            var ajaxParams = {
+                url: "@Url.Action("EditObject")",
+                data: { id : id }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        }
+
+        function CreateObject() {
+            var ajaxParams = {
+                url: "@Url.Action("CreateObject")",
+                data: { formCode : '@Model.ObjDetail.CODE' }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        }
+
+        function SubmitListObject() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            SubmitListObject();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+

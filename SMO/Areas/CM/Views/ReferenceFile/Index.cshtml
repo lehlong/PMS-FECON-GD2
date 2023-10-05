@@ -1,0 +1,154 @@
+﻿@model SMO.Service.CM.ReferenceFileService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.MD
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var strTaiVe = "Tải về";
+    var strXemOnline = "Xem online";
+    var strMoBang = "Mở bằng ";
+    var strXoa = "Xóa";
+    var isRemoveFile = false;
+    if (ViewData["isRemoveFile"] != null)
+    {
+        isRemoveFile = Convert.ToBoolean(ViewData["isRemoveFile"]);
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <script src="~/Scripts/D2SCoreJS/UploadFile.js"></script>
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.REFERENCE_ID)
+        @Html.HiddenFor(m => m.ListFileDelete, new { id = "hddListFileDelete" })
+
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">attachment</i> FILE/LINK ĐÍNH KÈM</a></li>
+                </ul>
+                <div class="title-close" title="Đóng màn hình" onclick="" data-dismiss="modal"><i class="material-icons">close</i></div>
+                <div class="tab-content">
+                    <div class="page-function p-b-10 p-t-10">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", "Lưu thông tin", "SubmitFormFile();", "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                        <div style="flex: 1">
+                            <span class="waves-effect btn-default btn btn-border" onclick="UploadFile.InsertFile();"
+                                  style="width: 100%; padding: 6px 10px 15px 10px !important;">
+                                <i class="material-icons col-orange" style="font-size: 24px; top: 6px;">attach_file</i><span>Bấm để chọn file</span>
+                            </span>
+                        </div>
+                        <div style="flex: 1">
+                            <span class="waves-effect btn-default btn btn-border" onclick="InsertLink();"
+                                  style="width: 100%; padding: 6px 10px 15px 10px !important;">
+                                <i class="material-icons col-orange" style="font-size: 24px; top: 6px;">link</i><span>Bấm để thêm link</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="divPreviewLink" class="m-t-10">
+                        @foreach (var item in Model.ListLink)
+                        {
+                            <div class="input-group form-group">
+                                <div>
+                                    <input type="text" value="@item.LINK" name="lstLink" class="form-control" style="border: 1px solid #ddd; padding: 10px" placeholder="Hãy điền đường dẫn URL">
+                                </div>
+                                <span class="input-group-addon" onclick="RemoveLink(this);">
+                                    <i class="material-icons" style="color: red; margin-left: 10px; cursor: pointer; font-weight: bold;">close</i>
+                                </span>
+                            </div>
+                        }
+                    </div>
+                    <div id="divPreviewFile" class="m-t-10">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @{Html.RenderAction("ListFiles", new { referenceId = Model.ObjDetail.REFERENCE_ID, @isRemoveFile = "true" });}
+
+    <script type="text/template" id="templateLink">
+        <div class="input-group form-group">
+            <div>
+                <input type="text" name="lstLink" class="form-control" style="border: 1px solid #ddd; padding: 10px" placeholder="Hãy điền đường dẫn URL">
+            </div>
+            <span class="input-group-addon" onclick="RemoveLink(this);">
+                <i class="material-icons" style="color: red; margin-left: 10px; cursor: pointer; font-weight: bold;">close</i>
+            </span>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        function RemoveLink(obj) {
+            if (confirm("Bạn có chắc chắn xóa link này?")) {
+                $(obj).parent().remove()
+            }
+        }
+        function InsertLink() {
+            var template = $("#templateLink").html();
+            $("#divPreviewLink").append(template);
+        }
+        UploadFile.ListFile = [];
+
+        function RemoveFile(obj, fileId) {
+            if (!confirm("Bạn có chắc chắn xóa file này?")) {
+                return;
+            }
+            $(obj).parent().parent().parent().parent().remove();
+            $("#hddListFileDelete").val($("#hddListFileDelete").val() + "|" + fileId);
+        }
+
+        function SubmitFormFile() {
+            var formData = new FormData($('#@Model.FormId')[0]);
+
+            for (var i = 0; i < UploadFile.ListFile.length; i++) {
+                formData.append("files", UploadFile.ListFile[i].DataFile);
+            }
+
+            Forms.ShowLoading();
+
+            var headers = {
+                'RequestVerificationToken': $('#antiForgeryToken').val(),
+            };
+
+            $.ajax({
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+
+                    xhr.upload.addEventListener("progress", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+                            console.log(percentComplete);
+
+                            if (percentComplete === 100) {
+                                //alert("kakalot");
+                            }
+                        }
+                    }, false);
+
+                    return xhr;
+                },
+                type: "POST",
+                url: "@Url.Action("Update")",
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                },
+                error: Forms.AjaxErrorHandler
+            });
+        };
+    </script>
+</div>

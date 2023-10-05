@@ -1,0 +1,425 @@
+﻿@model SMO.Service.PS.ProjectStructService
+@using SMO.Repository.Implement.PS
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var gridId = Guid.NewGuid().ToString();
+    var units = SelectListUtilities.GetPsUnits();
+    var totalPlanVolume = ViewBag.TotalPlanVolume as decimal?;
+    var totalWorkVolume = ViewBag.TotalWorkVolume as decimal?;
+    var progress = (int)(totalPlanVolume == 0 ? 0 : totalWorkVolume * 100 / totalPlanVolume);
+    var lstUserOfProject = Model.UnitOfWork.Repository<ProjectResourceRepo>().Queryable()
+                .Where(x => x.PROJECT_ID == Model.ObjDetail.Activity.PROJECT_ID)
+                .OrderBy(x => x.USER_NAME)
+                .ToList();
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.2", Model.ObjDetail.Activity.PROJECT_ID) && project.STATUS != ProjectStatus.DONG_DU_AN.GetValue())
+    {
+        editable = true;
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>THÔNG TIN ACTIVITY</b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent();Forms.CloseRightContent();", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <div class="tab-content">
+                @if (editable)
+                {
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", "LƯU THÔNG TIN", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+                }
+                <div style="margin-top:20px;">
+                    @using (Ajax.BeginForm("SaveActivity", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(x => x.ObjDetail.ID)
+                        @Html.HiddenFor(x => x.ObjDetail.Activity.ID)
+                        @Html.HiddenFor(x => x.ObjDetail.Activity.PROJECT_ID)
+                        @Html.HiddenFor(x => x.ObjDetail.Activity.WBS_PARENT_ID)
+                        @Html.HiddenFor(x => x.ObjDetail.Activity.REFRENCE_ID)
+                        <div class="row">
+                            <div class="col-lg-1"></div>
+                            <div class="col-lg-10">
+                                <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Mã activity</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.Activity.CODE, new { @readonly = "true" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.Activity.CODE)
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Tên activity</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.Activity.TEXT)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.Activity.TEXT)
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Ngày bắt đầu (kế hoạch)</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.Activity.START_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.Activity.START_DATE)
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Ngày kết thúc (kế hoạch)</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.Activity.FINISH_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.Activity.FINISH_DATE)
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Ngày bắt đầu (thực tế)</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.Activity.ACTUAL_START_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.Activity.ACTUAL_START_DATE)
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Ngày kết thúc (thực tế)</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.Activity.ACTUAL_FINISH_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.Activity.ACTUAL_FINISH_DATE)
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>BOQ phụ thuộc</label>
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.Activity.BOQ_REFRENCE_ID, SelectListUtilities.GetBoqInProject(Model.ObjDetail.Activity?.PROJECT_ID))
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.Activity.BOQ_REFRENCE_ID)
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Khối lượng kế hoạch</label>
+                                            <input class="form-control" readonly value="@totalPlanVolume" />
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Khối lượng thực tế</label>
+                                            <input class="form-control" readonly value="@totalWorkVolume" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Tiến độ hoàn thành</label>
+                                            <div class="progress" style="height:35px; margin-bottom: 0;">
+                                                <div class="progress-bar bg-cyan progress-bar-striped active" role="progressbar" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100" style="width: @progress%; line-height: 35px; margin-bottom: 0px;">
+                                                    @progress%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Trạng thái công việc</label>
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.STATUS, SelectListUtilities.GetProjectStructStatus(),
+                                       new { @data_live_search = "true", @class = "selectpicker" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Đơn vị tính</label>
+                                            @Html.MyDropDownListFor(m => m.ObjDetail.UNIT_CODE, SelectListUtilities.GetPsUnits(),
+                                       new { @data_live_search = "true", @class = "selectpicker", onchange = "ChangeUnit()" })
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Khối lượng</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.QUANTITY,
+                                           new
+                                                {
+                                                    @class = "mask-number",
+                                               onchange = "CalValue();"
+                                           })
+                                        </div>
+                                    </div>
+
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Đơn giá</label>
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.PRICE,
+                new
+{
+@class = "mask-number",
+                    @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                    onchange = "CalValue();"
+                })
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1">
+                                        <div class="form-line">
+                                            <label>Thành tiền</label>
+                                            <input class="form-control mask-number"
+                                                   id="total-value"
+                                                   data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" readonly
+                                                   value="@(Model.ObjDetail.TOTAL)" />
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group dropdown-mul-phu-trach">
+                                    <label>Người phụ trách</label>
+                                    <select name="@Html.NameFor(m => m.ObjDetail.Activity.PEOPLE_RESPONSIBILITY)" id="dllNguoiPhuTrach"
+                                            multiple="multiple">
+                                        @foreach (var user in lstUserOfProject)
+                                        {
+                                            var lstUserPhuTrach = Model.ObjDetail.Activity.PEOPLE_RESPONSIBILITY?.Split(',');
+                                            var selected = "";
+                                            if (lstUserPhuTrach != null && lstUserPhuTrach.Contains(user.ID.ToString()))
+                                            {
+                                                selected = "selected";
+                                            }
+                                            <option value="@user.ID" @selected>@(user.User?.FULL_NAME) - @(user.User?.USER_NAME) - @(user.User?.Organize?.NAME)</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="clearfix"></div>
+                            <hr style="margin:0;" />
+
+                            <div class="p-t-10">
+                                <div class="title-header"> <i class="material-icons">description</i> <span class="title-name">THÔNG TIN THÊM</span> </div>
+                                <div class="col-xs-1 col-lg-1"></div>
+                                <div class="col-lg-10">
+                                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                        <div style="flex: 1">
+                                            <div class="form-line">
+                                                <label>Người tạo</label>
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.Activity.USER_CREATE.FULL_NAME, new { @disabled = true })
+                                            </div>
+                                        </div>
+                                        <div style="flex: 1">
+                                            <div class="form-line">
+                                                <label>Ngày tạo</label>
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.Activity.CREATE_DATE, new { @class = "datepicker", @disabled = true })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                        <div style="flex: 1">
+                                            <div class="form-line">
+                                                <label>Người cập nhật</label>
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.Activity.USER_UPDATE.FULL_NAME, new { @disabled = true })
+                                            </div>
+                                        </div>
+                                        <div style="flex: 1">
+                                            <div class="form-line">
+                                                <label>Ngày cập nhật</label>
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.Activity.UPDATE_DATE, new { @class = "datepicker", @disabled = true })
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                </div>
+                            </div>
+
+
+                        </div>
+                    }
+
+                    <div class="clearfix"></div>
+                    <hr style="margin:0;" />
+
+                    <div class="p-l-10 p-t-10">
+                        <div class="title-header"> <i class="material-icons">style</i> <span class="title-name">THÔNG TIN HỢP ĐỒNG | PHỤ LỤC HỢP ĐỒNG</span> </div>
+                    </div>
+
+                    <div class="row p-t-20">
+                        <div class="col-lg-1"></div>
+                        <div class="col-lg-5">
+                            <label>Số hợp đồng</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control" readonly value="@(Model.ObjDetail.ContractDetail?.Contract.CONTRACT_NUMBER)" />
+                                </div>
+                            </div>
+
+                            <label>Tên hợp đồng</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control" readonly value="@(Model.ObjDetail.ContractDetail?.Contract.NAME)" />
+                                </div>
+                            </div>
+
+                            <label>Thầu phụ/NCC</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control" readonly value="@(Model.ObjDetail.ContractDetail?.Contract.Vendor.NAME)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <label>Giá trị</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control mask-number" 
+                                           data-inputmask ="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" 
+                                           readonly value="@(Model.ObjDetail.ContractDetail?.VOLUME * Model.ObjDetail.ContractDetail?.UNIT_PRICE)" />
+                                </div>
+                            </div>
+
+                            <label>Khối lượng</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control mask-number" 
+                                           data-inputmask ="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" 
+                                           readonly value="@(Model.ObjDetail.ContractDetail?.VOLUME)" />
+
+                                </div>
+                            </div>
+
+                            <label>Đơn giá</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control mask-number" 
+                                           data-inputmask ="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" 
+                                           readonly value="@(Model.ObjDetail.ContractDetail?.UNIT_PRICE)" />
+                                </div>
+                            </div>
+
+                            <label>Đơn vị tính</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input class="form-control" readonly value="@(Model.ObjDetail.ContractDetail?.UNIT_CODE)" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <hr style="margin:0;" />
+
+                    <div class="p-t-10 row">
+                        <div class="title-header"> <i class="material-icons">attachment</i> <span class="title-name">FILE ĐÍNH KÈM</span> </div>
+                        <div class="col-lg-1"></div>
+                        <div class="col-lg-10">
+                            @if (editable)
+                            {
+                                <span class="waves-effect btn-default btn btn-border"
+                                      onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new { @area = "CM", referenceId = Model.ObjDetail.Activity.REFERENCE_FILE_ID }))"
+                                      style="width: 100%; padding: 6px 10px 15px 10px !important;">
+                                    <i class="material-icons col-orange" style="font-size: 24px; top: 6px;">cloud_upload</i><span>Thêm file đính kèm</span>
+                                </span>
+                            }
+                            @if (Model.ObjDetail.Activity.REFERENCE_FILE_ID != null)
+                            {
+                                Html.RenderAction("ListFiles", "ReferenceFile", new { @area = "CM", referenceId = Model.ObjDetail.Activity.REFERENCE_FILE_ID });
+                            }
+                        </div>
+                    </div>
+
+                    <hr style="margin:0;" />
+                    <div class="p-l-10 p-t-10">
+                        <div class="title-header"> <i class="material-icons">work</i> <span class="title-name">TASK LIST</span> </div>
+                    </div>
+                    <div id="activity-task-list"></div>
+
+                    @*<hr style="margin:0;" />
+
+            <div class="p-l-10 p-t-10">
+                <div class="title-header"> <i class="material-icons">comment</i> <span class="title-name">THÔNG TIN TRAO ĐỔI</span> </div>
+            </div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $('.dropdown-mul-phu-trach').dropdownselect({
+                multipleMode: 'label'
+            });
+            $(".mask-number").inputmask({ "removeMaskOnSubmit": true });
+
+            Forms.CompleteUI();
+            Forms.LoadAjax({ url: '@Html.Raw(Url.Action("Index", "Task",
+                                new { activityParentId = Model.ObjDetail.ACTIVITY_ID, projectId = Model.ObjDetail.PROJECT_ID }))', htmlTarget: '#@Model.ViewId #activity-task-list' });
+            if ("@editable" == "False") {
+                $("#@Model.FormId *").prop("disabled", true);
+            }
+            ChangeUnit()
+        });
+        function ChangeUnit() {
+            const unitCode = $('#@Model.FormId #ObjDetail_UNIT_CODE').val()
+            if (unitCode === "%") {
+
+                $('#@Model.FormId #ObjDetail_QUANTITY').inputmask({
+                    alias: "percentage",
+                    groupSeparator: ',',
+                    digits: 5,
+                    autoGroup: true,
+                    onBeforeMask: function (value) {
+                        return '' + value * 100;
+                    },
+                    onUnMask: function (maskedValue, unmaskedValue) {
+                        //do something with the value
+                        return '' + unmaskedValue / 100;
+                    },
+                    max: 10000000,
+                    autoUnmask: true
+                })
+            } else {
+                $('#@Model.FormId #ObjDetail_QUANTITY').inputmask({
+                    alias: "decimal",
+                    groupSeparator: ',',
+                    digits: 3,
+                    autoGroup: true,
+                    removeMaskOnSubmit: true,
+                    autoUnmask: true
+
+                })
+            }
+        }
+        function CalValue() {
+            const unitCode = $('#@Model.FormId #ObjDetail_UNIT_CODE').val()
+            var price = Inputmask.unmask($("#ObjDetail_PRICE").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            let quantity = 0
+            if (unitCode === "%") {
+                quantity = Inputmask.unmask($("#ObjDetail_QUANTITY").val(), {
+                    alias: 'percentage',
+                    groupSeparator: ',',
+                    autoGroup: true,
+                    digits: 5,
+                    max: 10000000
+                });
+            } else {
+                quantity = Inputmask.unmask($("#ObjDetail_QUANTITY").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            }
+            var totalValue = Number(price) * Number(quantity);
+            if (totalValue === 0) {
+                $("#total-value").val(@Model.ObjDetail.TOTAL);
+                return;
+            }
+            if (!isNaN(totalValue)) {
+                $("#total-value").val(totalValue);
+            }
+        }
+    </script>
+</div>

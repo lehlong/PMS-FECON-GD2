@@ -1,0 +1,108 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <style>
+    /*.dhx-cell-border-red {
+        border: 1px solid red
+    }*/
+    .alert-border {
+        border: 2px solid red;
+    }
+</style>
+    <div class="p-l-20 p-t-10">
+        <div class="title-header">
+            <i class="material-icons">content_copy</i> <span class="title-name"><b>@Model.ObjDetail.CODE - @Model.ObjDetail.NAME.ToUpper()</b></span>
+            @*<span class="title-nav">
+                    DANH SÁCH DỰ ÁN - HỢP ĐỒNG - THẦU PHỤ
+                </span>*@
+        </div>
+
+        <div class="title-close" id="close-plan-cost" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent(); goToGeneralInformationTab();", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist" id="ulNavTabs">
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.9", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-san-luong"><a href="#customer-plan-edit" data-toggle="tab" onclick="onClickCustomerPlan_Edit();">KẾ HOẠCH SẢN LƯỢNG</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.8", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-chi-phi"><a href="#vendor-plan-edit" data-toggle="tab" onclick="onClickVendorPlan_Edit();">KẾ HOẠCH CHI PHÍ</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.10", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-doanh-thu"><a href="#value-edit" data-toggle="tab" onclick="onClickProjectValue_Edit();">KẾ HOẠCH DOANH THU, DÒNG TIỀN</a></li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade" id="value-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="vendor-plan-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade in active" id="customer-plan-edit">
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+        var moduleName = "@ViewBag.ModulName";
+        if (moduleName == "KeHoachChiPhi") {
+            $("#@Model.ViewId #li-chi-phi a").click();
+        } else if (moduleName == "KeHoachDoanhThuDongTien") {
+            $("#@Model.ViewId #li-doanh-thu a").click();
+        } else {
+            $("#@Model.ViewId #li-san-luong a").click();
+        }
+    });
+
+        function setAlertColumn(rowId) {
+            $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=totalVolumePlan]`).addClass('alert-border')
+            $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=totalVolumePlan]`).attr('tooltip', "Lỗi tổng khối lượng kế hoạch > Khối lượng dự án")
+        }
+        function setAlertColumnCustomer(rowId) {
+            $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=totalVolumePlan]`).addClass('alert-border')
+            $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=totalVolumePlan]`).attr('tooltip', "Lỗi tổng khối lượng kế hoạch > Khối lượng thiết kế")
+        }
+        function removeAlertColumn(rowId) {
+            $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=totalVolumePlan]`).removeClass('alert-border')
+            $(`.dhx_grid-row[dhx_id=${rowId}] .dhx_grid-cell[dhx_col_id=totalVolumePlan]`).removeAttr('tooltip')
+        }
+    function onClickProjectValue_Edit() {
+        $('#@Model.ViewId #value-edit').empty();
+        $('#@Model.ViewId #customer-plan-edit').empty();
+        $('#@Model.ViewId #vendor-plan-edit').empty();
+        setTimeout(() => {
+            Forms.LoadAjax({ url: '@Url.Action("Edit", "ProjectSlDt",
+                               new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #value-edit' });
+        }, 150)
+    }
+
+    function onClickCustomerPlan_Edit() {
+        $('#@Model.ViewId #customer-plan-edit').empty();
+        $('#@Model.ViewId #value-edit').empty();
+        $('#@Model.ViewId #vendor-plan-edit').empty();
+        setTimeout(() => {
+            Forms.LoadAjax({ url: '@Html.Raw(Url.Action("EditPlanCostCustomer", "PlanCost",
+                               new { projectId = Model.ObjDetail.ID, isCustomer=true }))', htmlTarget: '#@Model.ViewId #customer-plan-edit' });
+        }, 150)
+    }
+
+    function onClickVendorPlan_Edit() {
+        $('#@Model.ViewId #vendor-plan-edit').empty();
+        $('#@Model.ViewId #value-edit').empty()
+        $('#@Model.ViewId #customer-plan-edit').empty();
+        setTimeout(() => {
+            Forms.LoadAjax({ url: '@Html.Raw(Url.Action("EditPlanCostVendor", "PlanCost",
+                               new { projectId = Model.ObjDetail.ID, isCustomer=false }))', htmlTarget: '#@Model.ViewId #vendor-plan-edit' });
+        }, 150)
+    }
+    </script>
+</div>

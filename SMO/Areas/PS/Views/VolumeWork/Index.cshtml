@@ -1,0 +1,90 @@
+﻿@model SMO.Service.PS.VolumeWorkService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    var isCustomer = Model.ObjDetail.IS_CUSTOMER;
+    var project = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT>().FirstOrDefault(x => x.ID == Model.ObjDetail.PROJECT_ID);
+    var controller = isCustomer ? "Customer" : "Vendor";
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>@project.CODE - @project.NAME.ToUpper() - @(isCustomer ? "KHỐI LƯỢNG KHÁCH HÀNG" : "KHỐI LƯỢNG THẦU PHỤ") </b></span> </div>
+        <div class="title-close" id="close-vendor" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}'); goToGeneralInformationTab();", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                @if ((isCustomer && AuthorizeUtilities.CheckUserRightProject("RP1.12", project.ID)) || (!isCustomer && AuthorizeUtilities.CheckUserRightProject("RP1.11", project.ID)) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-thuc-hien"><a href="#action-volume" onclick="onClickActionVolume();" data-toggle="tab">KHỐI LƯỢNG THỰC HIỆN</a></li>
+                }
+                @if ((isCustomer && AuthorizeUtilities.CheckUserRightProject("RP1.14", project.ID)) || (!isCustomer && AuthorizeUtilities.CheckUserRightProject("RP1.13", project.ID)) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-nghiem-thu"><a href="#accept-volume" onclick="onClickAcceptVolume();" data-toggle="tab">KHỐI LƯỢNG NGHIỆM THU</a></li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in active" id="action-volume">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="accept-volume">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+                var moduleName = "@ViewBag.ModulName";
+                if (moduleName == "NghiemThuThauPhu" || moduleName == "NghiemThuKhachHang") {
+                    $("#@Model.ViewId #li-nghiem-thu a").click();
+                }
+                else {
+                    $("#@Model.ViewId #li-thuc-hien a").click();
+                }
+            });
+
+            function onClickActionVolume() {
+                emptyTab();
+                setTimeout(() => {
+                    @if(isCustomer)
+                    {
+                        <text>
+                        Forms.LoadAjax({ url: '@Html.Raw(Url.Action("UpdateTimesIndexCus", "VolumeWork",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID, isCustomer = isCustomer }))', htmlTarget: '#@Model.ViewId #action-volume' });
+                        </text>
+                    } else
+                    {
+                        <text>
+                        Forms.LoadAjax({ url: '@Html.Raw(Url.Action("IndexProjectVolume", controller,
+                                        new { @area="MD", projectId = Model.ObjDetail.PROJECT_ID, isCustomer = isCustomer, isAccept=false }))', htmlTarget: '#@Model.ViewId #action-volume' });
+                        </text>
+                    }
+                }, 50)
+            }
+            function onClickAcceptVolume() {
+                emptyTab();
+                setTimeout(() => {
+                    @if (isCustomer)
+                    {
+                        <text>
+                            Forms.LoadAjax({ url: '@Html.Raw(Url.Action("UpdateTimesIndexCus", "VolumeAccept",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID, isCustomer = isCustomer }))' , htmlTarget: '#@Model.ViewId #accept-volume'});
+                        </text>
+                    } else
+                    {
+                        <text>
+                            Forms.LoadAjax({ url: '@Html.Raw(Url.Action("IndexProjectVolume", controller,
+                                   new { @area="MD", projectId = Model.ObjDetail.PROJECT_ID, isCustomer = isCustomer, isAccept=true }))', htmlTarget: '#@Model.ViewId #accept-volume' });
+                        </text>
+                    }
+                }, 50)
+            }
+            function emptyTab() {
+                $('#@Model.ViewId #action-volume').html("");
+                $('#@Model.ViewId #accept-volume').html("");
+
+            }
+        </script>
+    </div>
+</div>
+

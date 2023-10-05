@@ -1,0 +1,84 @@
+﻿@model SMO.Service.PS.VolumeWorkService
+@{
+    var type = Model.ObjDetail.IS_CUSTOMER ? "Customer" : "Vendor";
+    var detail = ViewBag.WorkDetail as IEnumerable<SMO.Core.Entities.PS.T_PS_VOLUME_WORK_DETAIL>;
+    decimal sumWork = 0;
+    foreach(var item in Model.ObjList)
+    {
+        if(item.STATUS == "05")
+        {
+            sumWork += detail.Where(x => x.HEADER_ID == item.ID).Sum(y => Math.Round(y.VALUE * y.PRICE, 0));
+        }
+    }
+}
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th align="center">#</th>
+                <th class="align-center">Từ ngày</th>
+                <th class="align-center">Đến ngày</th>
+                <th class="align-center">Ngày nhập</th>
+                <th class="align-center">Lần nhập</th>
+                <th class="align-center">Thành tiền</th>
+                <th class="align-center">Người cập nhật</th>
+                <th class="align-center">Người xác nhận</th>
+                <th class="align-center">Người phê duyệt</th>
+                <th class="align-center">Trạng thái phê duyệt</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td></td>
+                <td colspan="2" class="align-center" style="font-weight:bold">TỔNG CỘNG (đã phê duyệt)</td>
+                <td></td>
+                <td></td>
+                <td class="align-right" style="font-weight:bold">@sumWork.ToString("0,0")</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+
+            </tr>
+            @foreach (var item in Model.ObjList.OrderByDescending(x => x.FROM_DATE))
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax({{url:'{0}'}});", Url.Action("IndexVolumeWork",
+                    new { id = item.ID, partnerCode = Model.ObjDetail.VENDOR_CODE, projectId = Model.ObjDetail.PROJECT_ID, isCustomer = Model.ObjDetail.IS_CUSTOMER }));
+                <tr>
+                    <td align="center">
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.ID)" modelId="@item.ID" style="margin:0;" />
+                        <label for="@("chkItem" + item.ID)"></label>
+                    </td>
+
+                    <td class="align-center">
+                        <a href="#" onclick="@vdbclickAction">
+                            @item.FROM_DATE.Value.ToString(Global.DateToStringFormat)
+                        </a>
+                    </td>
+                    <td class="align-center">
+                        <a href="#" onclick="@vdbclickAction">
+                            @item.TO_DATE.Value.ToString(Global.DateToStringFormat)
+                        </a>
+                    </td>
+                    <td class="align-center">
+                        <a href="#" onclick="@vdbclickAction">
+                            @(item.CREATE_DATE?.ToString(Global.DateToStringFormat))
+                        </a>
+                    </td>
+                    <td class="align-center">
+                        <a href="#" onclick="@vdbclickAction">
+                            @item.UPDATE_TIMES
+                        </a>
+                    </td>
+                    <td class="align-right" ondblclick="@vdbclickAction">@(detail.Where(x => x.HEADER_ID == item.ID).Sum(y => y.TOTAL).ToString("0,0") )</td>
+                    <td class="align-center" ondblclick="@vdbclickAction">@item.UPDATE_BY</td>
+                    <td class="align-center" ondblclick="@vdbclickAction">@(item.STATUS != ProjectWorkVolumeStatus.KHONG_XAC_NHAN.GetValue() ? item.USER_XAC_NHAN : String.Empty)</td>
+                    <td class="align-center" ondblclick="@vdbclickAction">@(item.STATUS != ProjectWorkVolumeStatus.TU_CHOI.GetValue() ? item.USER_PHE_DUYET : String.Empty)</td>
+                    <td class="align-center" ondblclick="@vdbclickAction">@(item.STATUS.GetEnum<ProjectWorkVolumeStatus>().GetName())</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

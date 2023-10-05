@@ -1,0 +1,136 @@
+﻿<script>
+    function TrinhDuyet(data) {
+        Swal.fire({
+            title: 'Trình duyệt dữ liệu?',
+            text: "Bạn có chắc muốn trình duyệt dữ liệu này không?",
+            icon: 'warning',
+            showCancelButton: true,
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Trình duyệt',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Forms.ShowLoading();
+                var ajaxParams = {
+                    url: '@Url.Action("TrinhDuyet", "Project")',
+                    type: "POST",
+                    data: {
+                        ...data,
+                        note: result.value
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        })
+
+    }
+    function PheDuyet(data) {
+        Swal.fire({
+            title: 'Phê duyệt dữ liệu?',
+            text: "Bạn có chắc muốn Phê duyệt dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Phê duyệt',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Forms.ShowLoading();
+                var ajaxParams = {
+                    url: '@Url.Action("PheDuyet", "Project")',
+                    type: "POST",
+                    data: {
+                        ...data,
+                        note: result.value
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        })
+    }
+    function TuChoi(data) {
+        Swal.fire({
+            title: 'Từ chối dữ liệu?',
+            text: "Bạn có chắc muốn Từ chối dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputValidator: (value) => {
+                return new Promise((resolve) => {
+                    if (value) {
+                        resolve()
+                    } else {
+                        resolve('Ý kiến không được để trống.')
+                    }
+                })
+            },
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Từ chối',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Forms.ShowLoading();
+                var ajaxParams = {
+                    url: '@Url.Action("TuChoi", "Project")',
+                    type: "POST",
+                    data: {
+                        ...data,
+                        note: result.value
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        })
+    }
+    function HuyPheDuyet(data) {
+        Swal.fire({
+            title: 'Hủy phê duyệt dữ liệu?',
+            text: "Bạn có chắc muốn Hủy phê duyệt dữ liệu này không?",
+            icon: 'warning',
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Hủy phê duyẹt',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Forms.ShowLoading();
+                var ajaxParams = {
+                    url: '@Url.Action("HuyPheDuyet", "Project")',
+                    type: "POST",
+                    data: {
+                        ...data,
+                        note: result.value
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        })
+    }
+</script>

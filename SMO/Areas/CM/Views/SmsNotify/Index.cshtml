@@ -1,0 +1,92 @@
+﻿@model SMO.Service.CM.SmsNotifyService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.IS_SEND, new { @id="hddIsSend"})
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">clear_all</i> DANH SÁCH SMS THÔNG BÁO</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-b-10">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdDelete", "Xóa", string.Format("Forms.DeleteItems('{0}','chkItem');", @Url.Action("Delete")), "Alt+D", "delete")
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.PHONE_NUMBER, new { placeholder = "Tìm theo số điện thoại", @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Tìm theo các chỉ tiêu khác" id="spShowMore" onclick="$('#spHideMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_more</i>
+                            </span>
+                            <span class="input-group-addon" title="Ẩn các chỉ tiêu tìm kiếm khác" style="display:none;" id="spHideMore" onclick="$('#spShowMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_less</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                        <div>
+                            
+                        </div>
+                    </div>
+                    <div class="page-search-advance row m-l-0 m-r-0 m-b-10" style="display:none;">
+                        <div class="col-md-4 col-xs-12">
+                            <input type="checkbox" class="filled-in" id="chkIsSend" onclick="OnClickIsSend(this);"/>
+                            <label for="chkIsSend"></label>
+                            &nbsp;&nbsp;<span>Tìm những sms chưa gửi được</span>
+                        </div>
+                    </div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function ResetNumber(pkid, obj) {
+            var ajaxParams = {};
+            ajaxParams.url = "/CM/SmsNotify/Reset";
+            ajaxParams.type = "POST";
+            ajaxParams.data = {id : pkid};
+            ajaxParams.dataType = "json";
+            ajaxParams.success = function (response) {
+                Forms.HideLoading();
+                Message.execute(response);
+                $(obj).remove();
+                $('#span' + pkid).html(0); $('#span' + pkid).attr('class', 'badge  bg-blue');
+            }
+            Forms.Ajax(ajaxParams);
+        }
+
+        function OnClickIsSend(obj) {
+            $("#hddIsSend").val($(obj).is(":checked"));
+        }
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+
+

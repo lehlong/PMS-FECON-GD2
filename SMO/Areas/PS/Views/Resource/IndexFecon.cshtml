@@ -1,0 +1,109 @@
+﻿@model SMO.Service.PS.ProjectResourceService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.3", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    if(project.STATUS == "04" || project.STATUS == "05")
+    {
+        editable = false;
+    }
+}
+<style>
+    .fade-resource {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div id="@Model.ViewId">
+    @using (Ajax.BeginForm("ListFecon", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ViewId)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <div class="tab-content">
+                    <div class="page-function p-b-10 p-t-10 fade-resource">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-resource\").click();"), "Alt+N", "arrow_back")
+                            @if (editable)
+                            {
+                                @Html.MyButton("cmdAdd", "Thêm nhân sự", string.Format("Forms.LoadAjaxModalLarge('{0}');", @Url.Action("AddResourceUser", new { projectId = Model.ObjDetail.PROJECT_ID, userType = UserType.Fecon })), "Alt+N", "group_add")
+                                @Html.MyButton("cmdSave", "Lưu thông tin", "UpdateFecon();", "Alt+N", "done_all")
+                                @Html.MyButton("cmdDelete", "Xóa", string.Format("Forms.DeleteItems('{0}','chkItem');", @Url.Action("Delete")), "Alt+D", "delete")
+                            }
+
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME, new { placeholder = "Tìm theo tên người dùng", @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="divResult" class="fade-resource">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            function UpdateFecon() {
+                $(".inputMask").inputmask('remove');
+                var formData = new FormData($('#@Model.FormId')[0]);
+                Forms.ShowLoading();
+                var headers = {
+                    'RequestVerificationToken': $('#antiForgeryToken').val(),
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("UpdateFecon")",
+                    data: formData,
+                    headers: headers,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        Message.execute(response);
+                        Forms.HideLoading();
+                    },
+                    error: Forms.AjaxErrorHandler
+                });
+            }
+
+            function SubmitIndexResource() {
+                Forms.SubmitForm('@Model.FormId');
+            }
+
+            $(function () {
+                Forms.SubmitForm('@Model.FormId');
+                Forms.CompleteUI();
+                Forms.SubmitByEnter("@Model.FormId");
+            });
+        </script>
+    }
+</div>

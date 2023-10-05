@@ -1,0 +1,68 @@
+﻿@model SMO.Service.CM.EmailNotifyService
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive font-13">
+    <table class="table table-condensed table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th class="align-center">Trạng thái</th>
+                <th>Gửi tới</th>
+                <th class="align-center">Ngày tạo</th>
+                <th class="align-center">Số lần thử</th>
+                <th>Nội dung</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.PKID)" modelId="@item.PKID" style="margin:0;" />
+                        <label for="@("chkItem" + item.PKID)"></label>
+                    </td>
+                    <td class="align-center">
+                        @if (item.IS_SEND)
+                        {
+                            <span class="col-blue">Thành công</span>
+                        }
+                        else
+                        {
+                            <span class="col-red">Thất bại</span>
+                        }
+                    </td>
+                    <td>@item.EMAIL</td>
+                    <td class="align-center">@(item.CREATE_DATE.HasValue ? item.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat) : "")</td>
+                    <td class="align-center">
+
+                        @if (!item.IS_SEND)
+                        {
+                            <span class="badge bg-red" id="@("span" + item.PKID)">@item.NUMBER_RETRY</span>
+                            <div>
+                                <span class="waves-effect btn-default btn" onclick="ResetNumber('@item.PKID', this)" title="Thử lại"><i class="material-icons">refresh</i><span>Gửi lại</span></span>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="badge bg-blue">@item.NUMBER_RETRY</span>
+                            <div>
+                                <span class="waves-effect btn-default btn" onclick="ResetNumber('@item.PKID', this)" title="Thử lại"><i class="material-icons">refresh</i><span>Gửi lại</span></span>
+                            </div>
+                        }
+                    </td>
+                    <td width="300px;">
+                        <div>@Html.Raw(item.SUBJECT)</div>
+                        <div>@Html.Raw(item.CONTENTS)</div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

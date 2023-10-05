@@ -1,0 +1,238 @@
+﻿@model SMO.Service.PS.ProjectResourceOtherService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.3", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    if (project.STATUS == "04" || project.STATUS == "05")
+    {
+        editable = false;
+    }
+}
+<style>
+    .fade-vendor {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div id="@Model.ViewId">
+    @using (Ajax.BeginForm("ListVendor", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ViewId)
+        @Html.HiddenFor(m => m.IsSaveOther)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <div class="tab-content">
+                    <div class="page-function p-b-10 p-t-10 fade-vendor">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-resource\").click();"), "Alt+N", "arrow_back")
+                            @if (editable)
+                            {
+                                @Html.MyButton("cmdAdd", "Thêm nhân sự", "AddItem();", "Alt+N", "group_add")
+                                @Html.MyButton("cmdSave", "Lưu thông tin", "UpdateOther();", "Alt+N", "done_all")
+                            }
+
+                            @*@Html.MyButton("cmdDelete", "Xóa", string.Format("Forms.DeleteItems('{0}','chkItem');", @Url.Action("Delete")), "Alt+D", "delete")*@
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.FULL_NAME, new { placeholder = "Tìm theo họ & tên | Các bên liên quan | CMT | SĐT | Email | Vai trò", @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Tìm theo các chỉ tiêu khác" id="spShowMore" onclick="$('#spHideMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_more</i>
+                            </span>
+                            <span class="input-group-addon" title="Ẩn các chỉ tiêu tìm kiếm khác" style="display:none;" id="spHideMore" onclick="$('#spShowMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_less</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="page-search-advance row m-l-0 m-r-0 m-b-10 fade-vendor" style="display:none;">
+                        <div class="col-md-3 col-xs-12">
+                            <label>Từ ngày</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.FILTER_FROM_DATE, new { placeholder = "Tìm theo từ ngày", @class = "align-center datepicker", @data_val = false, @autocomplete = "off" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.FILTER_FROM_DATE)
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 col-xs-12">
+                            <label>Đến ngày</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.FILTER_TO_DATE, new { placeholder = "Tìm theo đến ngày", @class = "align-center datepicker", @data_val = false, @autocomplete = "off" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.FILTER_TO_DATE)
+                            </div>
+                        </div>
+                    </div>
+                    <div id="divResult" class="fade-vendor">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/html" id="TemplateOther">
+            <tr id="trOther__Index">
+                <td>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].FULL_NAME" class="form-control" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td class="align-center">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].VENDOR_CODE" class="form-control" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td class="align-center">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].CMT" class="form-control" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td class="align-center">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].PHONE" class="form-control" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td class="align-center">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].EMAIL" class="form-control" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td class="align-center">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].FROM_DATE" class="form-control datepicker" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td class="align-center">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].TO_DATE" class="form-control datepicker" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td class="align-center">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <div class="form-line">
+                            <input type="text" name="ObjList[_Index].VAI_TRO" class="form-control" value="" />
+                        </div>
+                    </div>
+                </td>
+                <td style="vertical-align:middle; padding-top: 11px;" class="align-center">
+                    <input type="hidden" id="delOther__Index" name="ObjList[_Index].IS_DELETE" value="" />
+                    <i class="material-icons col-red" onclick="RemoveOther(this, '_Index');" style="cursor:pointer">remove_circle_outline</i>
+                </td>
+            </tr>
+        </script>
+        <script type="text/javascript">
+        function SubmitIndexResourceVendor() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        function UpdateOther() {
+            $(".inputMask").inputmask('remove');
+            if (!$('#@Model.FormId').valid()) {
+                return;
+            }
+
+            var formData = new FormData($('#@Model.FormId')[0]);
+
+            Forms.ShowLoading();
+
+            var headers = {
+                'RequestVerificationToken': $('#antiForgeryToken').val(),
+            };
+            $.ajax({
+                //xhr: function () {
+                //    var xhr = new window.XMLHttpRequest();
+
+                //    xhr.upload.addEventListener("progress", function (evt) {
+                //        if (evt.lengthComputable) {
+                //            var percentComplete = evt.loaded / evt.total;
+                //            percentComplete = parseInt(percentComplete * 100);
+                //            console.log(percentComplete);
+
+                //            if (percentComplete === 100) {
+                //                //alert("kakalot");
+                //            }
+                //        }
+                //    }, false);
+
+                //    return xhr;
+                //},
+                type: "POST",
+                url: "@Url.Action("UpdateOther")",
+                data: formData,
+                headers: headers,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                },
+                error: Forms.AjaxErrorHandler
+            });
+        }
+
+        function AddItem() {
+            var html = $('#TemplateOther').html();
+            html = html.replace(/_Index/g, numberCurrent);
+
+            numberCurrent++;
+            $("#bodyListOther").prepend(html);
+            Forms.CompleteUI();
+        }
+
+        function RemoveOther(obj, index) {
+            if (confirm("Bạn có chắc chắn xóa nhân sự?")) {
+                $("#trOther_" + index).hide();
+                $("#delOther_" + index).val("1");
+            }
+        }
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+        </script>
+    }
+</div>

@@ -1,0 +1,151 @@
+﻿@model IList<SMO.Service.PS.Models.PlanQuantityViewModel>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@using SMO.Core.Entities.PS;
+@{
+    var gridId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var projectId = (ViewBag.ProjectId as Guid?).Value;
+    var project = SMOUtilities.GetProject(projectId);
+    var timePeriods = (ViewBag.ProjectTimes as IList<T_PS_TIME>).Select(x => new { x.START_DATE, x.FINISH_DATE }).ToList();
+    var timeType = project.TIME_TYPE;
+    var timeTypeText = string.Empty;
+
+    foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
+    {
+        if (time.GetValue().Equals(timeType))
+        {
+            timeTypeText = time.GetName();
+            break;
+        }
+    }
+}
+<div style="height: calc(100vh - 242px)">
+    <div class="p-t-10" style="height: 100%; width: 100%" id="@gridId"></div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+        const timePeriods = @Html.Raw(JsonConvert.SerializeObject(timePeriods));
+        const structGroup = _.chain(rawData)
+            .map(x => ({
+                ...x,
+                parent: x.parentId ?? undefined,
+                startDate: moment(x.startDate).toDate(),
+                finishDate: moment(x.finishDate).toDate()
+            }))
+            .groupBy("projectStructureId")
+            .value();
+        const gridData = []
+        _.forOwn(structGroup, (value) => {
+            gridData.push({
+                ..._.chain(value).keyBy("timePeriodOrder").mapValues("value").value(),
+                ...value[0],
+            });
+        })
+        const columns = [
+            { id: "projectStructureName", header: [{ text: "Hạng mục công việc" }] },
+            { id: "projectStructureType", header: [{ text: "Loại đối tượng" }] },
+            //{ id: "CODE", header: [{ text: "MÃ" }] },
+            { id: "unitName", header: [{ text: "Đơn vị tính" }] },
+            { id: "quantity", header: [{ text: "Khối lượng" }], type: "number", format: "#,#" },
+            { id: "price", header: [{ text: "Đơn giá" }], type: "number", format: "#,#" },
+            { id: "thanhTien", header: [{ text: "Thành tiền" }], type: "number", format: "#,#" },
+            { id: "startDate", header: [{ text: "Ngày bắt đầu" }], type: "date", format: "%d/%m/%Y" },
+            { id: "finishDate", header: [{ text: "Ngày kết thúc" }], type: "date", format: "%d/%m/%Y" },
+        ]
+
+        for (var i = 0; i < rawData.length / gridData.length; i++) {
+            const period = timePeriods[i];
+            const startDate = moment(period.START_DATE).format("@Global.DateToStringMomentJSFormat");
+            const endDate = moment(period.FINISH_DATE).format("@Global.DateToStringMomentJSFormat");
+            columns.push({
+                id: i, header: [{
+                    text: `<div style="display: block; width: 100%; text-align: center">
+<strong>@timeTypeText ${i + 1}</strong>
+<p style="text-align: center; font-size: 0.8em">${startDate} - ${endDate}</p>
+</div>`
+                }],
+                template: (value, row) => {
+                    const { startDate, finishDate } = row
+
+                    const startDateRow = moment(period.START_DATE).toDate();
+                    const endDateRow = moment(period.FINISH_DATE).toDate();
+                    if (startDate > endDateRow || finishDate < startDateRow) {
+                        return `<div></div>`
+                    }
+                    return `<div>${value ?? 0}</div>`;
+                },
+                htmlEnable: true,
+                editable: true,
+                type: "number",
+                format: "#,#",
+                width: 150,
+                minWidth: 150,
+                maxWidth: 250
+            })
+        }
+
+        const grid = new dhx.TreeGrid("@gridId", {
+            columns,
+            autoWidth: true,
+            autoHeight: true,
+            leftSplit: 2,
+            adjust: true,
+            resizable: true,
+            data: gridData,
+            selection: "complex",
+            keyNavigation: true,
+            id: null
+        });
+
+        _.forEach(grid.data.serialize(), (data) => {
+            for (var i = 0; i < rawData.length / gridData.length; i++) {
+                const period = timePeriods[i];
+                const { startDate, finishDate, id } = data
+
+                const startDateRow = moment(period.START_DATE).toDate();
+                const endDateRow = moment(period.FINISH_DATE).toDate();
+                if (startDate > endDateRow || finishDate < startDateRow) {
+                    grid.addCellCss(id, i, 'dhx-cell-disabled');
+                }
+            }
+        });
+
+        grid.events.on("afterEditEnd", function (value, row, column) {
+            //Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateValue")',
+                type: "POST",
+                data: {
+                    projectStructId: row.projectStructureId,
+                    periodId: _.find(structGroup[row.projectStructureId], ["timePeriodOrder", column.id]).timePeriodId,
+                    value,
+                    projectId: '@projectId',
+                    isCustomer: false
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.AjaxWithoutLoading(ajaxParams)
+        });
+
+        grid.events.on("beforeEditEnd", function (value) {
+            return !isNaN(value);
+        });
+        grid.events.on("beforeEditStart", function (row, col) {
+            const { startDate, finishDate } = row
+            const period = timePeriods[col.id];
+
+            const startDatePeriod = moment(period.START_DATE).toDate();
+            const endDatePeriod = moment(period.FINISH_DATE).toDate();
+            if (startDate > endDatePeriod || finishDate < startDatePeriod) {
+                return false
+            }
+            return true;
+        });
+    });
+</script>
+

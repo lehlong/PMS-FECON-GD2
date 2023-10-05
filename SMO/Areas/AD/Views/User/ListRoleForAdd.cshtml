@@ -1,0 +1,32 @@
+﻿@model SMO.Service.AD.UserService
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllRoleForAdd" onclick="Forms.CheckAll('chkItemRoleForAdd', '#chkAllRoleForAdd')" style="margin:0;" class="filled-in" />
+                    <label for="chkAllRoleForAdd"></label>
+                </th>
+                <th>Mã role</th>
+                <th>Tên role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjListRole)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemRoleForAdd" name="chkItemRoleForAdd" id="@("chkItemRoleForAdd" + item.CODE)" modelId="@item.CODE" style="margin:0;" />
+                        <label for="@("chkItemRoleForAdd" + item.CODE)"></label>
+                    </td>
+                    <td>@item.CODE</td>
+                    <td>@item.NAME</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+

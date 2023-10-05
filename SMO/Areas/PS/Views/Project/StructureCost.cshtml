@@ -1,0 +1,91 @@
+﻿@model IList<SMO.Service.PS.Models.ProjectStructureCostModel>
+@using Newtonsoft.Json;
+@using SMO.Core.Entities.PS;
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var gridId = Guid.NewGuid().ToString();
+
+    var projectStructureBoqs = ViewBag.ProjectStructureBoqs as IList<T_PS_PROJECT_STRUCT>;
+}
+<div>
+    <div class="page-function p-t-10">
+        <div class="page-function-button m-r-20">
+            @Html.MyButton("cmdSave", "Lưu thông tin", "saveData()", "Alt+N", "done_all")
+        </div>
+    </div>
+    <div style="height: calc(100vh - 210px)" id="@viewId">
+
+        <div class="p-t-10" style="height: 100%; width: 100%" id="@gridId"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    function viewDetail(structureId) {
+        Forms.LoadAjaxRight(`PS/ProjectStruct/Edit?id=${structureId}`);
+    }
+
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(Model));
+    const boq = @Html.Raw(JsonConvert.SerializeObject(projectStructureBoqs));
+    const gridData = _.map(rawData, (x) => (
+        {
+            ...x,
+            START_DATE: moment(x.START_DATE).toDate(),
+            FINISH_DATE: moment(x.FINISH_DATE).toDate(),
+            id: x.Id,
+            parent: x.Parent ?? undefined
+        }))
+    const columns = [
+        {
+            id: "TEXT", header: [{ text: "Hạng mục công việc" }],
+            template: (value, task) => {
+                return `<a href="#" onclick="viewDetail('${task.id}')">${value}</i>`
+            },
+            htmlEnable: true,
+        },
+        { id: "TYPE", header: [{ text: "Loại đối tượng" }] },
+        //{ id: "CODE", header: [{ text: "MÃ" }] },
+        { id: "UNIT_NAME", header: [{ text: "Đơn vị tính" }], width: 150 },
+        { id: "CONTRACT_VALUE", header: [{ text: "Khối lượng hợp đồng" }], width: 200, type: "number", format: "#,#" },
+        { id: "START_DATE", header: [{ text: "Ngày bắt đầu" }], type: "date", format: "%d/%m/%Y", width: 150 },
+        { id: "FINISH_DATE", header: [{ text: "Ngày kết thúc" }], type: "date", format: "%d/%m/%Y", width: 150 },
+        { id: "ReferenceBoqName", header: [{ text: "Liên kết BOQ" }], editable: true, editorType: "combobox", options: _.map(boq, (x) => x.TEXT) },
+    ]
+
+    const grid = new dhx.TreeGrid("@gridId", {
+        columns,
+        autoWidth: true,
+        autoHeight: true,
+        //leftSplit: 7,
+        //adjust: true,
+        resizable: true,
+        data: gridData
+    });
+
+    function saveData() {
+        const gridDataSerialize = grid.data.serialize();
+        Forms.ShowLoading();
+        const ajaxParams = {
+            url: '@Url.Action("UpdateInformationStructureCost")',
+            type: "POST",
+            data: {
+                projectId: '@((ViewBag.ProjectId as Guid?).Value)',
+                data: _.chain(gridDataSerialize)
+                    .filter(["TYPE", "@ProjectEnum.WBS.ToString()"])
+                    .map(x => ({
+                        projectStructId: x.id,
+                        referenceBoqId: _.find(boq, ["TEXT", x.ReferenceBoqName])?.ID
+                    }))
+            },
+            dataType: 'json',
+            success: function (response) {
+                Message.execute(response);
+            }
+        };
+        Forms.Ajax(ajaxParams)
+
+    }
+
+    grid.events.on("beforeEditStart", function (row) {
+            return row.TYPE === "@ProjectEnum.WBS.ToString()";
+    });
+</script>
+

@@ -1,0 +1,46 @@
+﻿@model SMO.Service.AD.UserHistoryService
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th>Người dùng</th>
+                <th>Thời gian</th>
+                <th>Trạng thái</th>
+                <th>Trình duyệt</th>
+                <th>Địa chỉ IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                <tr>
+                    <td>@item.USER_NAME</td>
+                    <td>@item.LOGON_TIME.ToString(Global.DateTimeToStringFormat)</td>
+                    <td>
+                        @if (item.STATUS)
+	                    {
+		                    <span class="col-blue">Thành công</span>
+                        }
+                        else
+                        {
+                            <span class="col-red">Thất bại</span>
+                        }
+                    </td>
+                    <td>
+                        Trình duyệt : @item.BROWSER - @item.VERSION <br />
+                        Thiết bị : @(item.IS_MOBILE ? "Điện thoại " + item.MOBILE_MODEL : "Máy tính") <br />
+                        Hệ điều hành : @item.OS <br />
+                        Nhà sản xuất : @item.MANUFACTURER
+                    </td>
+                    <td>@item.IP_ADDRESS</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

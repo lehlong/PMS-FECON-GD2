@@ -1,0 +1,211 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>@Model.ObjDetail.CODE - @Model.ObjDetail.NAME.ToUpper()</b></span>
+        @*<span class="title-nav">
+            DANH SÁCH DỰ ÁN - HỢP ĐỒNG - THẦU PHỤ
+        </span>*@
+        </div>
+        
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent()", @Model.ViewId)">
+        <i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist" id="ulNavTabs">
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.1", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-dashboard"><a href="#dashboard-edit" onclick="onClickDashboard_Edit();" data-toggle="tab">BÁO CÁO</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.2", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-general-infomation-edit"><a href="#general-infomation-edit" onclick="onClickGeneralInformation_Edit();" data-toggle="tab">THÔNG TIN</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.5", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-resource-edit"><a href="#resource-edit" data-toggle="tab" onclick="onClickResource_Edit();">NHÂN SỰ</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.3", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-contract-cus-edit"><a href="#contract-cus-edit" onclick="onClickContractCus_Edit();" data-toggle="tab">HỢP ĐỒNG KINH DOANH</a></li>
+                }
+
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.6,RP1.7", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-struct-edit"><a href="#tree-edit" data-toggle="tab" onclick="onClickProjectStruct_Edit();">CẤU TRÚC DỰ ÁN</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.8,RP1.9,RP1.10", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-plan-edit"><a href="#plan-edit" data-toggle="tab" onclick="onClickPlan_Edit();">KẾ HOẠCH</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.4", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-contract-ven-edit"><a href="#contract-ven-edit" onclick="onClickContractVen_Edit();" data-toggle="tab">HỢP ĐỒNG THẦU PHỤ</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.11,RP1.13", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-volumn-ven-edit"><a href="#vendor-volume-edit" data-toggle="tab" onclick="onClickVendorVolume_Edit();">QUẢN LÝ TH.PHỤ</a></li>
+                }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.12,RP1.14", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-volumn-cus-edit"><a href="#customer-volume-edit" data-toggle="tab" onclick="onClickCustomerVolume_Edit();">QUẢN LÝ HỢP ĐỒNG</a></li>
+                }
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane fade in" id="dashboard-edit"></div>
+                <div role="tabpanel" class="tab-pane fade in active" id="general-infomation-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade in" id="contract-cus-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade in" id="contract-ven-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="tree-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="resource-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="plan-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="vendor-volume-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="customer-volume-edit">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                var moduleName = "@ViewBag.ModulName";
+                Forms.CompleteUI();
+                $("#@Model.ViewId #ulNavTabs li").removeClass("active");
+
+                if (moduleName == "NhanSuFecon" || moduleName == "NhanSuVendor") {
+                    $("#@Model.ViewId #ulNavTabs #li-resource-edit a").click();
+                }
+                else if (moduleName == "ThongTinHopDongKhachHang" || moduleName == "PhamViCongViecHopDongKhachHang" || moduleName == "ThanhToanHopDongKhachHang") {
+                    $("#@Model.ViewId #ulNavTabs #li-contract-cus-edit a").click();
+                }
+                else if (moduleName == "ThongTinHopDongThauPhu" || moduleName == "PhamViCongViecHopDongThauPhu" || moduleName == "ThanhToanHopDongThauPhu") {
+                    $("#@Model.ViewId #ulNavTabs #li-contract-ven-edit a").click();
+                }
+                else if (moduleName == "CauTrucBOQ" || moduleName == "CauTrucChiPhi") {
+                    $("#@Model.ViewId #ulNavTabs #li-struct-edit a").click();
+                }
+                else if (moduleName == "KeHoachSanLuong" || moduleName == "KeHoachChiPhi" || moduleName == "KeHoachDoanhThuDongTien") {
+                    $("#@Model.ViewId #ulNavTabs #li-plan-edit a").click();
+                }
+                else if (moduleName == "ThucHienThauPhu" || moduleName == "NghiemThuThauPhu") {
+                    $("#@Model.ViewId #ulNavTabs #li-volumn-ven-edit a").click();
+                }
+                else if (moduleName == "ThucHienKhachHang" || moduleName == "NghiemThuKhachHang") {
+                    $("#@Model.ViewId #ulNavTabs #li-volumn-cus-edit a").click();
+                } else {
+                    $("#@Model.ViewId #ulNavTabs #li-general-infomation-edit a").click();
+                }
+            });
+
+            function goToGeneralInformationTab() {
+                $("#@Model.ViewId #ulNavTabs #li-general-infomation-edit a").click();
+            }
+
+            function onClickResource_Edit() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("Index", "Resource",
+                               new { projectId = Model.ObjDetail.ID, modulName = ViewBag.ModulName}))');
+            }
+
+            function onClickProjectStruct_Edit() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("Structure",
+                               new { projectId = Model.ObjDetail.ID, modulName = ViewBag.ModulName }))');
+            }
+
+            function onClickDashboard_Edit() {
+                Forms.LoadAjax({ url: '@Url.Action("ViewBaoCao",
+                               new { projectId = Model.ObjDetail.ID })'});
+            }
+            function onClickGeneralInformation_Edit() {
+                Forms.LoadAjax({ url: '@Url.Action("EditGeneralInformation",
+                               new { id = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #general-infomation-edit' });
+            }
+
+            function startProject_Edit() {
+                if (confirm("Bạn chắc chắn chuyển dự án sang giai đoạn lập kế hoạch?")) {
+                    Forms.LoadAjax({ url: '@Url.Action("StartProject", new { id = Model.ObjDetail.ID })', type: "POST", success: Forms.AjaxSuccessHandler, htmlTarget: '', dataType: "json" })
+                }
+                return false;
+            }
+
+            function CreateProjectSAP() {
+                Forms.LoadAjax({ url: '@Url.Action("CreateProjectSAP", new { id = Model.ObjDetail.ID })', type: "POST", success: Forms.AjaxSuccessHandler, htmlTarget: '', dataType: "json" })
+                return false;
+            }
+
+            function closeProject_Edit() {
+                Swal.fire({
+                    title: 'Đóng dự án?',
+                    text: "Xác nhận dự án đã hoàn thành và kết thúc? Lưu ý: Khi đã đóng dự án sẽ không mở lại được nữa",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Huỷ',
+                    cancelButtonText: 'Đóng dự án'
+                    }).then((result) => {
+                        if (!result.isConfirmed) {
+                            Forms.LoadAjax({ url: '@Url.Action("CloseProject", new { id = Model.ObjDetail.ID })', type: "POST", success: Forms.AjaxSuccessHandler, htmlTarget: '', dataType: "json" })
+                        }
+                    })
+                return false;
+            }
+
+            function doneProject_Edit() {
+                Swal.fire({
+                    title: 'Hoàn thành dự án?',
+                    text: "Xác nhận dự án đã hoàn thành?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Huỷ',
+                    cancelButtonText: 'Hoàn thành'
+                    }).then((result) => {
+                        if (!result.isConfirmed) {
+                            Forms.LoadAjax({ url: '@Url.Action("DoneProject", new { id = Model.ObjDetail.ID })', type: "POST", success: Forms.AjaxSuccessHandler, htmlTarget: '', dataType: "json" })
+                        }
+                    })
+                return false;
+            }
+
+            function onClickPlan_Edit() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("Plan",
+                               new { projectId = Model.ObjDetail.ID, modulName = ViewBag.ModulName }))');
+            }
+
+            function onClickContractCus_Edit() {
+                Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexCustomer", "Contract",
+                                   new { projectId = Model.ObjDetail.ID, modulName = ViewBag.ModulName }))', htmlTarget: '#@Model.ViewId #contract-cus-edit' });
+            }
+
+            function onClickContractVen_Edit() {
+                Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"IndexVendor", "Contract",
+                                   new { projectId = Model.ObjDetail.ID, modulName = ViewBag.ModulName }))', htmlTarget: '#@Model.ViewId #contract-ven-edit' });
+            }
+
+            function onClickVendorVolume_Edit() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("Index", "VolumeWork",
+                               new { projectId = Model.ObjDetail.ID, isCustomer = false, modulName = ViewBag.ModulName }))');
+            }
+            function onClickCustomerVolume_Edit() {
+                Forms.LoadAjax('@Html.Raw(Url.Action("Index", "VolumeWork",
+                               new { projectId = Model.ObjDetail.ID, isCustomer = true, modulName = ViewBag.ModulName }))');
+            }
+        </script>
+    </div>
+</div>
+

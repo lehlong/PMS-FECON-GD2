@@ -1,0 +1,35 @@
+﻿@model SMO.Service.AD.UserGroupService
+
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAllRoleOfUserGroup" onclick="Forms.CheckAll('chkItemRoleOfUserGroup', '#chkAllRoleOfUserGroup');" style="margin:0;" class="filled-in" />
+                    <label for="chkAllRoleOfUserGroup"></label>
+                </th>
+                <th>Mã role</th>
+                <th>Tên role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjDetail.ListUserGroupRole.OrderBy(x => x.ROLE_CODE))
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItemRoleOfUserGroup" name="chkItemRoleOfUserGroup" id="@("chkItemRoleOfUserGroup" + item.ROLE_CODE)" modelId="@item.ROLE_CODE" style="margin:0;" />
+                        <label for="@("chkItemRoleOfUserGroup" + item.ROLE_CODE)"></label>
+                    </td>
+                    <td>@item.Role.CODE</td>
+                    <td>@item.Role.NAME</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+

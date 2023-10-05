@@ -1,0 +1,41 @@
+﻿@model SMO.Service.AD.MenuService
+@using SMO.Core.Entities
+
+<div class="menu">
+    <ul class="list">
+        <li>
+            <a href="/" url="/">
+                <i class="material-icons">home</i>
+                <span>Trang chủ</span>
+            </a>
+        </li>
+        @ShowTree(Model.ListMenuRole.Where(x => x.PARENT == "" || x.PARENT == null).ToList())
+    </ul>
+</div>
+@helper ShowTree(List<T_AD_MENU> ListMenu)
+{
+    foreach (var item in ListMenu)
+    {
+        <li>
+            @{
+                var onclick = string.IsNullOrWhiteSpace(item.LINK) ? "" : "Forms.LoadFormMenu(this)";
+                var clsParent = Model.ListMenuRole.Count(x => x.PARENT == item.CODE) > 0 ? "menu-toggle" : "";
+            }
+
+            <a href="javascript:void(0);" class="@clsParent" onclick="@onclick" url="@item.LINK">
+                <i class="material-icons">@item.ICON</i>
+                <span>@item.DESCRIPTION</span>
+            </a>
+
+            @if (Model.ListMenuRole.Count(x => x.PARENT == item.CODE) > 0)
+            {
+                <ul class="ml-menu">
+                    @ShowTree(Model.ListMenuRole.Where(x => x.PARENT == item.CODE).ToList())
+                </ul>
+            }
+        </li>
+
+    }
+
+    
+}

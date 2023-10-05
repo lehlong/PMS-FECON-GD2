@@ -1,0 +1,87 @@
+﻿@model SMO.Service.PS.ContractService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.MD
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("ListTaskForAdd", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.ID)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">add</i> THÊM HẠNG MỤC CÔNG VIỆC VÀO HỢP ĐỒNG</a></li>
+                </ul>
+                <div class="title-close" title="Đóng màn hình" onclick="" data-dismiss="modal"><i class="material-icons">close</i></div>
+                <div class="tab-content">
+                    <div class="page-function p-b-10 p-t-10">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdSave", "Thêm hạng mục vào hợp đồng", "SaveAddTask();", "Alt+N", "add")
+                        </div>
+                        <div class="input-group page-function-search" style="max-width: 350px;">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjFilterProjectStruct.TEXT, new { placeholder = "Tìm theo tên hạng mục", @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function SubmitIndexAddTask() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+
+        function SaveAddTask() {
+            const url = "@Url.Action("AddTaskToContract")"
+            var lstSelected = '';
+            $('#@Model.ViewId .chkItem').each(function () {
+                if (this.checked) {
+                    lstSelected += $(this).attr('modelId') + ',';
+                }
+            });
+            if (lstSelected == '') {
+                alert("Bạn hãy chọn ít nhất một hạng mục!");
+                return;
+            }
+            if (confirm("Bạn có chắc chắn muốn thêm những hạng mục này vào hợp đồng?")) {
+                lstSelected = lstSelected.substring(0, lstSelected.length - 1);
+                var ajaxParams = {
+                    url: url,
+                    type: "POST",
+                    data: { pStrListSelected: lstSelected, contractId: "@Model.ObjDetail.ID" },
+                    dataType: "json",
+                    success: function (response) {
+                        Message.execute(response);
+                        if (response.Message.Code == "1000") {
+                            return false;
+                        }
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        }
+    </script>
+</div>

@@ -1,0 +1,292 @@
+﻿@model SMO.Service.PS.ContractService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.MD
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var lstUnit = Model.UnitOfWork.GetSession().Query<T_MD_UNIT>().ToList();
+    var lstBoqRef = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT_STRUCT>().Where(x => x.TYPE == "BOQ" && x.PROJECT_ID == Model.ObjDetail.PROJECT_ID).ToList();
+    var lstWbsParent = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_PROJECT_STRUCT>().Where(x => x.TYPE == "WBS" && x.PROJECT_ID == Model.ObjDetail.PROJECT_ID).ToList();
+}
+<style>
+    .form-control {
+        font-size: 15px;
+        border: none;
+        box-shadow: none;
+    }
+
+        .form-control:focus {
+            box-shadow: none;
+        }
+</style>
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div hidden>
+        <input type="file" accept=".xlsx,.xls" id="file_upload" name="file_upload" hidden />
+    </div>
+
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">add_circle</i> THÊM MỚI CÔNG VIỆC</a></li>
+            </ul>
+            <div class="title-close" title="Đóng màn hình" onclick="" data-dismiss="modal"><i class="material-icons">close</i></div>
+            <div class="tab-content">
+                <div class="page-function p-b-10 p-t-10">
+                    <div class="page-function-button m-r-20" style="float:left">
+                        @Html.MyButton("cmdSave", "Tạo mới", "saveData();", "Alt+N", "done_all")
+                        @Html.MyButton("cmdSave", "Tải file mẫu", "window.open('PS/Contract/DownloadTemplateVendor','_blank')", "Alt+N", "file_download")
+                        @Html.MyButton("cmdSave", "Nhập Excel", "$('#file_upload').click();", "Alt+N", "file_upload")
+                    </div>
+                </div>
+                <div id="divResult">
+
+                    <table class="table table-condensed table-bordered" id="table-add-new-activity">
+                        <thead>
+                            <tr>
+                                <th class="align-center" style="width:30%">Tên hạng mục</th>
+                                <th class="align-center">Ngày bắt đầu</th>
+                                <th class="align-center">Ngày kết thúc</th>
+                                <th class="align-center" style="width:8%">Đơn vị tính</th>
+                                <th class="align-center">Khối lượng</th>
+                                <th class="align-center">Đơn giá</th>
+                                <th class="align-center" style="width:10%">Gán với WBS cha</th>
+                                <th class="align-center" style="width:10%">Liên kết BOQ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" id="name" class="form-control input-paste" /></td>
+                                <td><input type="text" id="start_date" class="form-control datepicker input-paste" /></td>
+                                <td><input type="text" id="end_date" class="form-control datepicker input-paste" /></td>
+                                <td>
+                                    <select id="unit" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control input-paste">
+                                        <option value="">-</option>
+                                        @foreach (var item in lstUnit)
+                                        {
+                                    <option value="@item.CODE">@item.CODE - @item.NAME</option>
+                                        }
+                                    </select>
+
+                                </td>
+                                <td><input type="text" id="quantity" class="form-control input-paste"  data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 3, 'autoGroup': true, 'autoUnmask': true"/></td>
+                                <td><input type="text" id="price" class="form-control input-paste"  data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 3, 'autoGroup': true, 'autoUnmask': true" /></td>
+                                <td>
+                                    <select id="parent" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control input-paste">
+                                        <option value="">-</option>
+                                        @foreach (var item in lstWbsParent.OrderBy(x => x.C_ORDER))
+                                        {
+                                    <option value="@item.GEN_CODE">
+                                        @item.GEN_CODE - @item.TEXT
+                                    </option>
+                                        }
+                                    </select>
+
+                                </td>
+                                <td>
+                                    <select id="parent_boq" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control input-paste">
+                                        <option value="">-</option>
+                                        @foreach (var item in lstBoqRef.OrderBy(x => x.C_ORDER))
+                                        {
+                                    <option value="@item.GEN_CODE">
+                                        @item.GEN_CODE - @item.TEXT
+                                    </option>
+                                        }
+                                    </select>
+
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex; justify-content:center">
+                    @Html.MyButton("cmdSave", "Thêm activity", "addRowTable();", "Alt+N", "add")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            $(":input").inputmask();
+            Forms.CompleteUI();
+        });
+        const lstUnit = @Html.Raw(JsonConvert.SerializeObject(lstUnit, jsonSerializeSettings));
+        const lstBoq = @Html.Raw(JsonConvert.SerializeObject(lstBoqRef.OrderBy(x => x.C_ORDER), jsonSerializeSettings));
+        const lstWbs = @Html.Raw(JsonConvert.SerializeObject(lstWbsParent.OrderBy(x => x.C_ORDER), jsonSerializeSettings));
+        var unitSelect = "";
+        lstUnit.forEach(function (item) {
+            return unitSelect += `<option value='${item.code}'>${item.code} - ${item.name}</option>`
+        })
+        var boqSelect = "";
+        lstBoq.forEach(function (item) {
+            return boqSelect += `<option value='${item.geN_CODE}'>${item.geN_CODE}- ${item.text}</option>`
+        })
+        var wbsSelect = "";
+        lstWbs.forEach(function (item) {
+            return wbsSelect += `<option value='${item.geN_CODE}'>${item.geN_CODE}- ${item.text}</option>`
+        })
+
+        var inputMask = `data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 3, 'autoGroup': true, 'autoUnmask': true"`;
+
+        $('.input-paste').on('paste', function (e) {
+            var $this = $(this);
+            var data = (e.originalEvent.clipboardData || window.clipboardData)?.getData('text').trim().split(/\r?\n */).map(r => r.split(/\t/));
+            for (var i = 1; i < data.length; i++) {
+                addRowTable();
+            }
+            $.each(e.originalEvent.clipboardData.items , function (i, v) {
+                if (v.type === 'text/plain') {
+                    v.getAsString(function (text) {
+                        var x = $this.closest('td').index(),
+                            y = $this.closest('tr').index(),
+                            obj = {};
+                        text = text.trim('\r\n');
+                        $.each(text.split('\r\n'), function (i2, v2) {
+                            $.each(v2.split('\t'), function (i3, v3) {
+                                var row = y + i2 + 1, col = x + i3;
+                                obj['cell-' + row + '-' + col] = v3;
+                                $this.closest('table').find('tr:eq(' + row + ') td:eq(' + col + ') .input-paste').val(v3);
+                                Forms.CompleteUI();
+                            });
+                        });
+                    });
+                }
+            });
+            return false;
+        });
+
+        function addRowTable() {
+            $("#table-add-new-activity > tbody").append('<tr><td ><input type="text" id="name" class="form-control input-paste" /></td>' +
+                '<td><input type="text" id="start_date" class="form-control datepicker input-paste" /></td>' +
+                '<td><input type="text" id="end_date" class="form-control datepicker input-paste" /></td>' +
+                '<td>' +
+                '<select id="unit" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control input-paste">' +
+                '<option value="">-</option>' + unitSelect +
+                '</select>' +
+                '</td>' +
+                `<td><input type="text" id="quantity" class="form-control input-paste" ${inputMask}/></td>` +
+                `<td><input type="text" id="price" class="form-control input-paste" ${inputMask} /></td>` +
+                '<td>' +
+                '<select id="parent" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control input-paste">' +
+                '<option value="">-</option>' + wbsSelect +
+                '</select>' +
+                '</td>' +
+                '<td>' +
+                '<select id="parent_boq" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control input-paste">' +
+                '<option value="">-</option>' + boqSelect +
+                '</select>' +
+                '</td></tr>');            
+            $(":input").inputmask();
+            Forms.CompleteUI();
+        }
+
+        function saveData() {
+            var checkErrorMess = 0;
+            var errorMess = "Các hạng mục không được lưu: "
+
+            //Check các trường dữ liệu bắt buộc nhập
+            var errorCheck = 0;
+            $('#table-add-new-activity > tbody  > tr').each(function (index, tr) {
+                row = $(this)
+                if (row.find("#name").val() == "" || row.find("#start_date").val() == "" || row.find("#end_date").val() == "" || row.find("#unit").val() == "" || row.find("#quantity").val() == "" || row.find("#price").val() == "" || row.find("#parent").val() == "") {
+                    errorCheck++
+                }
+            });
+            if (errorCheck > 0) {
+                alert("Vui lòng nhập đầy đủ thông tin và đúng định dạng dữ liệu!")
+            }
+            else {
+                var data = [];
+                $('#table-add-new-activity > tbody  > tr').each(function (index, tr) {
+                    row = $(this);
+                    data.push({
+                        projectId: '@Model.ObjDetail.PROJECT_ID',
+                        contractId: '@Model.ObjDetail.ID',
+                        name: row.find("#name").val(),
+                        startDate: row.find("#start_date").val(),
+                        endDate: row.find("#end_date").val(),
+                        unit: row.find("#unit").val(),
+                        quantity: Number(String(row.find("#quantity").val()).replaceAll(",","")),
+                        price: Number(String(row.find("#price").val()).replaceAll(",", "")),
+                        parent: row.find("#parent").val(),
+                        parentBoq: row.find("#parent_boq").val(),
+                        peopleResponsibility: '@Model.ObjDetail.NGUOI_PHU_TRACH'
+                    })
+                });
+
+                var ajaxParams = {
+                    url: 'PS/ProjectStruct/SaveActivityFromContractVendor',
+                    type: "POST",
+                    data: {
+                        data: JSON.stringify(data)
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                    }
+                }
+                Forms.Ajax(ajaxParams)
+                onClickListTask();
+            }
+        }
+
+        document.getElementById('file_upload').onchange = function () {
+            var files = document.getElementById('file_upload').files;
+            if (files.length == 0) {
+                return;
+            }
+            var filename = files[0].name;
+            var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+            if (extension == '.XLS' || extension == '.XLSX') {
+                var file = files[0];
+                try {
+                    var reader = new FileReader();
+                    reader.readAsBinaryString(file);
+                    reader.onload = function (e) {
+
+                        var data = e.target.result;
+                        var workbook = XLSX.read(data, {
+                            type: 'binary'
+                        });
+                        var result = {};
+                        workbook.SheetNames.forEach(function () {
+                            var range = XLSX.utils.decode_range(workbook.Sheets[workbook.SheetNames[0]]['!ref']);
+                            range.s.r = 5;
+                            var new_range = XLSX.utils.encode_range(range);
+                            var excelInJSON = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]], { blankRows: false, defval: '', range: new_range });
+                            result = excelInJSON
+                        });
+                        var dataExcel = JSON.parse(JSON.stringify(result, null, 4))
+                        dataExcel.splice(0, 2);
+
+                        for (var i = 1; i < dataExcel.length; i++) {
+                            addRowTable();
+                        }
+                        $('#table-add-new-activity > tbody  > tr').each(function (index, tr) {
+                            row = $(this);
+                            row.find("#name").val(dataExcel[index].__EMPTY)
+                            row.find("#start_date").val(dataExcel[index].__EMPTY_1)
+                            row.find("#end_date").val(dataExcel[index].__EMPTY_2)
+                            row.find("#unit").val(dataExcel[index].__EMPTY_3)
+                            row.find("#quantity").val(Number(String(dataExcel[index].__EMPTY_4).replace("%", "")))
+                            row.find("#price").val(dataExcel[index].__EMPTY_5)
+                            row.find("#parent").val(dataExcel[index].__EMPTY_6)
+                            row.find("#parent_boq").val(dataExcel[index].__EMPTY_7)
+                            Forms.CompleteUI();
+                        })
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            } else {
+                alert("File không đúng định dạng! Vui lòng chọn file Excel...");
+            }
+        };
+
+    </script>
+</div>
+

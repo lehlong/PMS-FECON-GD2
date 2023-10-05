@@ -1,0 +1,83 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div class="card">
+    <div class="body" style="padding-top: 0px;">
+        <div class="tab-content">
+            @if (AuthorizeUtilities.CheckUserRightProject("R20,R30,R40,R50,R60,R70,R80,R90", Model.ObjDetail.ID))
+            {
+                <div class="page-function p-t-10">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdSave", "Cập nhật thông tin dự án", string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = Model.ObjDetail.ID })), "Alt+N", "edit")
+                    </div>
+                </div>
+            }
+
+            <div class="row" style="margin-top: 30px;">
+                <div class="col-xs-1 col-lg-3"></div>
+                <div class="col-lg-6 col-xs-10">
+                    @Html.LabelFor(x => x.ObjDetail.NAME, "Tên")
+                    <div class="form-group">
+                        <div class="form-line">
+                            @Html.MyTextBoxFor(m => m.ObjDetail.NAME, new { @readonly = "true" })
+                        </div>
+                    </div>
+
+                    @Html.LabelFor(x => x.ObjDetail.DESCRIPTION, "Ghi chú")
+                    <div class="form-group">
+                        <div class="form-line">
+                            @Html.MyTextBoxFor(m => m.ObjDetail.DESCRIPTION, new { @readonly = "true" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-line" style="float:left; width: 49%; margin-right:2px;">
+                            @Html.LabelFor(x => x.ObjDetail.START_DATE, "Ngày bắt đầu")
+                            @Html.MyTextBoxFor(m => m.ObjDetail.START_DATE, new { @class = "align-center", @readonly = "true", @Value = Model.ObjDetail.START_DATE.ToString(Global.DateToStringFormat) })
+                        </div>
+                        <div class="form-line" style="float:right; width: 49%;">
+                            @Html.LabelFor(x => x.ObjDetail.FINISH_DATE, "Ngày kết thúc")
+                            @Html.MyTextBoxFor(m => m.ObjDetail.FINISH_DATE, new { @class = "align-center", @readonly = "true", @Value = Model.ObjDetail.FINISH_DATE.ToString(Global.DateToStringFormat) })
+                        </div>
+                    </div>
+
+                    <label class="m-t-15">Người phụ trách</label>
+                    <div class="form-group">
+                        <div class="form-line">
+                            @Html.MyTextBoxFor(m => m.ObjDetail.ProjectOwner.FULL_NAME, new { @readonly = "true" })
+                        </div>
+                    </div>
+
+                    <label>Loại thời gian</label>
+                    <div class="form-group">
+                        <div class="form-line">
+                            @Html.MyTextBoxFor(m => m.ObjDetail.Period.TEXT, new { @readonly = "true" })
+                        </div>
+                    </div>
+
+                    @Html.LabelFor(x => x.ObjDetail.TYPE, "Loại dự án")
+                    <div class="form-group">
+                        <div class="form-line">
+                            @Html.MyTextBoxFor(m => m.ObjDetail.ProjectType.NAME, new { @readonly = "true" })
+                        </div>
+                    </div>
+
+                    <label>Cấp dự án</label>
+                    <div class="form-group">
+                        <div class="form-line">
+                            @Html.MyTextBoxFor(m => m.ObjDetail.ProjectLevel.NAME, new { @readonly = "true" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>
+

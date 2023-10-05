@@ -1,0 +1,51 @@
+﻿@model SMO.Service.AD.UserService
+@using SMO.Repository.Implement.MD;
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Tên đăng nhập</th>
+                <th>Chức vụ</th>
+                <th>Đơn vị</th>
+                <th>Trạng thái</th>
+                <th>#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList.OrderBy(x => x.USER_NAME))
+            {
+                var url = Url.Action("Edit");
+                string param = "{" + $"url:'{url}', data:" + "{id:'" + item.USER_NAME + "'}}";
+                var vdbclickAction = string.Format("Forms.LoadAjax({0});", param);
+                <tr>
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.USER_NAME</a>
+                        <div>@item.FULL_NAME</div>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@(item.Title != null ? item.Title.NAME : "")</td>
+                    <td ondblclick="@vdbclickAction">@(item.Organize != null ? $"[{item.Organize.COMPANY_CODE}] {item.Organize.NAME}" : "")</td>
+
+                    <td>
+                        @if (item.ACTIVE)
+                        {
+                            <span class="badge bg-blue">Hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-grey">Khóa tài khoản</span>
+                        }
+                    </td>
+                    <td class="align-center">
+                        <i class="material-icons btn" style="font-size: 16px !important" onclick="ShowHistory('@item.USER_NAME')">history</i>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

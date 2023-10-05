@@ -1,0 +1,190 @@
+﻿@model SMO.Service.CF.ConfigTemplateNotifyService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="card border-grey m-b-20">
+        <div class="body">
+            @Html.MyButton("cmdSave", "Cập nhật thông tin", "Submit()", "", "done_all")
+        </div>
+    </div>
+
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.PKID)
+
+        <div class="card border-grey m-t-20">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px" href="#tabTemplateCongViecXuLy" data-toggle="tab"><i class="material-icons col-fecon">clear_all</i> CÔNG VIỆC CẦN XỬ LÝ</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#tabTemplateCongViecHoanThanh" data-toggle="tab"><i class="material-icons col-fecon">clear_all</i> HOÀN THÀNH CÔNG VIỆC</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#tabTemplatePheDuyetChinhSua" data-toggle="tab"><i class="material-icons col-fecon">clear_all</i> PHÊ DUYỆT CHỈNH SỬA THÔNG TIN</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#tabTemplateNhanSu" data-toggle="tab"><i class="material-icons col-fecon">clear_all</i> NHÂN SỰ THAM GIA</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane fade in active" id="tabTemplateCongViecXuLy">
+                        <div class="form-group">
+                            <b>Các tham số được sử dụng trong nội dung email bao gồm :</b><br />
+                            <span class="badge bg-blue" title="Loại công việc">{LOAI_CONG_VIEC}</span>
+                            <span class="badge bg-blue" title="Mã">{MA}</span>
+                            <span class="badge bg-blue" title="Tên PR">{TEN}</span>
+                            <span class="badge bg-blue" title="Trạng thái">{TRANG_THAI}</span>
+                            <span class="badge bg-blue" title="Ý kiến">{Y_KIEN}</span>
+                            <span class="badge bg-blue" title="Đơn vị phòng ban">{DON_VI_PHONG_BAN}</span>
+                            <span class="badge bg-blue" title="Đường dẫn chi tiết">{LINK_CHI_TIET}</span>
+                            <span class="badge bg-blue" title="User name của người đề xuất">{USER_NAME_NGUOI_DE_XUAT}</span>
+                            <span class="badge bg-blue" title="User name của người phê duyệt">{USER_NAME_NGUOI_PHE_DUYET}</span>
+                            <span class="badge bg-blue" title="Họ tên người đề xuất">{HO_TEN_NGUOI_DE_XUAT}</span>
+                            <span class="badge bg-blue" title="Họ tên người phê duyệt">{HO_TEN_NGUOI_PHE_DUYET}</span>
+                            <span class="badge bg-blue" title="Vai trò dự án">{VAI_TRO_TAI_DU_AN}</span>
+                        </div>
+
+                        <b>Tiêu đề email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.CONG_VIEC_XU_LY_SUBJECT)
+                            </div>
+                        </div>
+
+                        <b>Nội dung Email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextAreaFor(m => m.ObjDetail.CONG_VIEC_XU_LY_BODY, new { @id = "txtCongViecXuLyBody" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="tabTemplateCongViecHoanThanh">
+                        <div class="form-group">
+                            <b>Các tham số được sử dụng trong nội dung email bao gồm :</b><br />
+                            <span class="badge bg-blue" title="Loại công việc">{LOAI_CONG_VIEC}</span>
+                            <span class="badge bg-blue" title="Mã">{MA}</span>
+                            <span class="badge bg-blue" title="Tên PR">{TEN}</span>
+                            <span class="badge bg-blue" title="Trạng thái">{TRANG_THAI}</span>
+                            <span class="badge bg-blue" title="Ý kiến">{Y_KIEN}</span>
+                            <span class="badge bg-blue" title="Đơn vị phòng ban">{DON_VI_PHONG_BAN}</span>
+                            <span class="badge bg-blue" title="Đường dẫn chi tiết">{LINK_CHI_TIET}</span>
+                            <span class="badge bg-blue" title="User name của người đề xuất">{USER_NAME_NGUOI_DE_XUAT}</span>
+                            <span class="badge bg-blue" title="User name của người phê duyệt">{USER_NAME_NGUOI_PHE_DUYET}</span>
+                            <span class="badge bg-blue" title="Họ tên người đề xuất">{HO_TEN_NGUOI_DE_XUAT}</span>
+                            <span class="badge bg-blue" title="Họ tên người phê duyệt">{HO_TEN_NGUOI_PHE_DUYET}</span>
+                            <span class="badge bg-blue" title="Vai trò dự án">{VAI_TRO_TAI_DU_AN}</span>
+                        </div>
+
+                        <b>Tiêu đề email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.CONG_VIEC_HOAN_THANH_SUBJECT)
+                            </div>
+                        </div>
+
+                        <b>Nội dung Email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextAreaFor(m => m.ObjDetail.CONG_VIEC_HOAN_THANH_BODY, new { @id = "txtCongViecHoanThanhBody" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="tabTemplatePheDuyetChinhSua">
+                        <div class="form-group">
+                            <b>Các tham số được sử dụng trong nội dung email bao gồm :</b><br />
+                            <span class="badge bg-blue" title="Loại công việc">{LOAI_CONG_VIEC}</span>
+                            <span class="badge bg-blue" title="Mã dự án">{MA}</span>
+                            <span class="badge bg-blue" title="Tên dự án">{TEN}</span>
+                            <span class="badge bg-blue" title="Trạng thái">{TRANG_THAI}</span>
+                            <span class="badge bg-blue" title="Ý kiến">{Y_KIEN}</span>
+                            <span class="badge bg-blue" title="Đơn vị phòng ban">{DON_VI_PHONG_BAN}</span>
+                            <span class="badge bg-blue" title="Đường dẫn chi tiết">{LINK_CHI_TIET}</span>
+                            <span class="badge bg-blue" title="User name của người đề xuất">{USER_NAME_NGUOI_DE_XUAT}</span>
+                            <span class="badge bg-blue" title="User name của người phê duyệt">{USER_NAME_NGUOI_PHE_DUYET}</span>
+                            <span class="badge bg-blue" title="Họ tên người đề xuất">{HO_TEN_NGUOI_DE_XUAT}</span>
+                            <span class="badge bg-blue" title="Họ tên người phê duyệt">{HO_TEN_NGUOI_PHE_DUYET}</span>
+                            <span class="badge bg-blue" title="Vai trò dự án">{VAI_TRO_TAI_DU_AN}</span>
+                        </div>
+
+                        <b>Tiêu đề email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.PHE_DUYET_CHINH_SUA_SUBJECT)
+                            </div>
+                        </div>
+
+                        <b>Nội dung Email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextAreaFor(m => m.ObjDetail.PHE_DUYET_CHINH_SUA_BODY, new { @id = "txtPheDuyetChinhSuaBody" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="tabTemplateNhanSu">
+                        <div class="form-group">
+                            <b>Các tham số được sử dụng trong nội dung email bao gồm :</b><br />
+                            <span class="badge bg-blue" title="Mã dự án">{MA}</span>
+                            <span class="badge bg-blue" title="Tên dự án">{TEN}</span>
+                            <span class="badge bg-blue" title="Đường dẫn chi tiết">{LINK_CHI_TIET}</span>
+                        </div>
+
+                        <b>Tiêu đề email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.NHAN_SU_THAM_GIA_SUBJECT)
+                            </div>
+                        </div>
+
+                        <b>Nội dung Email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextAreaFor(m => m.ObjDetail.NHAN_SU_THAM_GIA_BODY, new { @id = "txtNhanSuBody" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        function Submit() {
+            $("#txtCongViecXuLyBody").val(CKEDITOR.instances.txtCongViecXuLyBody.getData());
+            $("#txtCongViecHoanThanhBody").val(CKEDITOR.instances.txtCongViecHoanThanhBody.getData());
+            $("#txtPheDuyetChinhSuaBody").val(CKEDITOR.instances.txtPheDuyetChinhSuaBody.getData());
+            $("#txtNhanSuBody").val(CKEDITOR.instances.txtNhanSuBody.getData());
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            CKEDITOR.replace('txtCongViecXuLyBody', {
+                filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+            });
+
+            CKEDITOR.replace('txtCongViecHoanThanhBody', {
+                filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+            });
+
+            CKEDITOR.replace('txtPheDuyetChinhSuaBody', {
+                filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+            });
+
+            CKEDITOR.replace('txtNhanSuBody', {
+                filebrowserImageBrowseUrl: '/FileBrowser/FileBrowser.aspx?type=images'
+            });
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+
+
+

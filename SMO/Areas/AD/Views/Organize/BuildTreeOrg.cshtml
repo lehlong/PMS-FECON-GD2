@@ -1,0 +1,11 @@
+﻿<input type="hidden" id="hddParent" value="" />
+<ul id="treeOrg" class="ztree"></ul>
+
+<script type="text/javascript">
+    var zNodes = jQuery.parseJSON('@Html.Raw(ViewBag.zNodeOrg)');
+    $(function () {
+        $.fn.zTree.init($("#treeOrg"), settingOrganize, zNodes);
+    });
+</script>
+
+

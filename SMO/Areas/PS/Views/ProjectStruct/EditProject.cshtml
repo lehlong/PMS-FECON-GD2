@@ -1,0 +1,375 @@
+﻿@model SMO.Service.PS.ProjectStructService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.PS
+@using SMO.Core.Entities.MD
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var lstOrg = Model.UnitOfWork.GetSession().Query<T_AD_ORGANIZE>().ToList();
+    var hopDong = Model.UnitOfWork.GetSession().Query<T_PS_CONTRACT>()
+        .Where(x => x.PROJECT_ID == Model.ObjDetail.PROJECT_ID && x.IS_SIGN_WITH_CUSTOMER).FirstOrDefault();
+    var lstPurGroup = Model.UnitOfWork.GetSession().Query<T_MD_PUR_GROUP>().ToList();
+
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP2.1", Model.ObjDetail.ID) && project.STATUS != ProjectStatus.DONG_DU_AN.GetValue())
+    {
+        editable = true;
+    }
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>THÔNG TIN DỰ ÁN</b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent();Forms.CloseRightContent();", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <div class="tab-content">
+                @*<div class="page-function">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdSave", "LƯU THÔNG TIN", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                    </div>
+                </div>*@
+                @using (Ajax.BeginForm("SaveProject", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(x => x.ObjDetail.Project.ID)
+                    @Html.HiddenFor(x => x.ObjDetail.STATUS)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.IS_CREATE_ON_SAP)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_STRUCT_PLAN)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_CUSTOMER_PLAN_COST)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_CUSTOMER_PLAN_PROGRESS)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_CUSTOMER_PLAN_QUANTITY)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_SL_DT)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_VENDOR_PLAN_COST)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_VENDOR_PLAN_PROGRESS)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.STATUS_VENDOR_PLAN_QUANTITY)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.FINISH_DATE_ACTUAL)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.NGAY_TRIEN_KHAI)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.START_DATE)
+                    @Html.HiddenFor(x => x.ObjDetail.Project.FINISH_DATE)
+                    @Html.HiddenFor(x => x.ObjDetail.ID)
+
+                    <div class="row" style="margin-top: 30px;">
+                        <div class="col-xs-1 col-lg-1"></div>
+                        <div class="col-lg-10">
+                            <div class="form-group">
+                                <label>Công ty phụ trách</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.Project.DON_VI)" id="dllCompany"
+                                        data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany();"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var company in lstOrg.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
+                                    {
+                                        var selected = "";
+                                        if (company.PKID == Model.ObjDetail.Project.DON_VI)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option value="@company.PKID" data-company="@company.COMPANY_CODE" @selected>
+                                            @company.NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Phòng ban phụ trách</label>
+                                <select name="@Html.NameFor(m => m.ObjDetail.Project.PHONG_BAN)" id="dllPhongBan"
+                                        data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                                        class="selectpicker show-tick dropdown form-control">
+                                    <option value="">-</option>
+                                    @foreach (var phongBan in lstOrg.Where(x => x.TYPE == "BP").OrderBy(x => x.C_ORDER))
+                                    {
+                                        var selected = "";
+                                        if (phongBan.PKID == Model.ObjDetail.Project.PHONG_BAN)
+                                        {
+                                            selected = "selected";
+                                        }
+                                        <option disabled value="@phongBan.PKID" data-company="@phongBan.COMPANY_CODE" @selected>
+                                            @phongBan.NAME
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Loại dự án</label>
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.Project.TYPE, SelectListUtilities.GetProjectType(),
+                                        new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.TYPE)
+                                </div>
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Nhóm mua hàng</label>
+                                        <select name="@Html.NameFor(m => m.ObjDetail.Project.PUR_GROUP)" id="dllPurGroup" data-val="true" data-val-required="Nhóm mua hàng bắt buộc nhập"
+                                            data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                                            class="selectpicker show-tick dropdown form-control">
+                                        <option value="">-</option>
+                                        @foreach (var item in lstPurGroup)
+                                        {
+                                            var selected = "";
+                                            if (item.CODE == Model.ObjDetail.Project.PUR_GROUP)
+                                            {
+                                                selected = "selected";
+                                            }
+                                            <option value="@item.CODE" data-company="@item.COMPANY_CODE" data-subtext="@item.CODE" @selected>
+                                                @item.NAME
+                                            </option>
+                                        }
+                                    </select>
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.PUR_GROUP)
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Kỳ thời gian</label>
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.Project.TIME_TYPE, SelectListUtilities.GetTimePeriods(),
+                    new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.TIME_TYPE)
+                                </div>
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Cấp dự án</label>
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.Project.PROJECT_LEVEL_CODE, SelectListUtilities.GetProjectLevel(),
+                    new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.PROJECT_LEVEL_CODE)
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Mã dự án</label>
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.Project.CODE, new { @readonly = "true" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.CODE)
+                                </div>
+                                <div style="flex: 2">
+                                    <div class="form-line">
+                                        <label>Tên dự án</label>
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.Project.NAME)
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.NAME)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <label>Khách hàng</label>
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.Project.CUSTOMER_CODE, SelectListUtilities.GetCustomers(),
+                    new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.Project.CUSTOMER_CODE)
+                            </div>
+
+                            <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Ngày bắt đầu</label>
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.Project.START_DATE, new { @class = "datepicker", @autocomplete = "off", @disabled = "true" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.START_DATE)
+                                </div>
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Ngày kết thúc</label>
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.Project.FINISH_DATE, new { @class = "datepicker", @autocomplete = "off", @disabled = "true" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.FINISH_DATE)
+                                </div>
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Trạng thái</label>
+                                        <input class="form-control col-red" value="@(Model.ObjDetail.Project.STATUS.GetEnum<ProjectStatus>().GetName())" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; flex-direction: row; gap:10px;" class="form-group">
+                                <div style="flex-grow:1">
+                                    <div class="form-line">
+                                        <label>Giám đốc dự án</label>
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.Project.GIAM_DOC_DU_AN, SelectListUtilities.GetListUserFecon(),
+                    new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.GIAM_DOC_DU_AN)
+                                </div>
+                                <div style="flex-grow:1">
+                                    <div class="form-line">
+                                        <label>Quản trị dự án</label>
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.Project.QUAN_TRI_DU_AN, SelectListUtilities.GetListUserFecon(),
+                    new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.QUAN_TRI_DU_AN)
+                                </div>
+                                <div style="flex-grow:1">
+                                    <div class="form-line">
+                                        <label>Người phụ trách (SM)</label>
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.Project.PROJECT_OWNER, SelectListUtilities.GetListUserFecon(),
+                    new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.Project.PROJECT_OWNER)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Địa điểm</label>
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.Project.DIA_DIEM)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.Project.DIA_DIEM)
+                            </div>
+
+                            <div class="form-group">
+                                <label>Ghi chú</label>
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.Project.DESCRIPTION)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.Project.DESCRIPTION)
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <hr style="margin:0;" />
+                <div class="p-t-10 row">
+                    <div class="title-header"> <i class="material-icons">style</i> <span class="title-name">THÔNG TIN HỢP ĐỒNG</span> </div>
+                    <div class="col-xs-1 col-lg-1"></div>
+                    <div class="col-lg-10">
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Số hợp đồng</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_NUMBER)" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 2">
+                                <div class="form-line">
+                                    <label>Tên hợp đồng</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.NAME)" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Ngày bắt đầu</label>
+                                    <input class="form-control valid align-center" type="text" value="@(hopDong?.START_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Ngày kết thúc</label>
+                                    <input class="form-control valid align-center" type="text" value="@(hopDong?.FINISH_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Giá trị(trước thuế)</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_VALUE.ToStringVN())" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>VAT %</label>
+                                    <input class="form-control valid" type="text" value="@(hopDong?.VAT)" readonly>
+                                </div>
+                            </div>
+                            <div style="flex: 1">
+                                <div class="form-line">
+                                    <label>Giá trị(sau thuế)</label>
+                                    <input class="form-control valid" type="text" readonly value="@((hopDong?.CONTRACT_VALUE + hopDong?.CONTRACT_VALUE * hopDong?.VAT / 100)?.ToStringVN())">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<div class="clearfix"></div>
+                }
+
+                <div class="clearfix"></div>
+                <hr style="margin:0;" />
+
+                <div class="p-t-10 row">
+                    <div class="title-header"> <i class="material-icons">attachment</i> <span class="title-name">FILE ĐÍNH KÈM</span> </div>
+                    <div class="col-lg-1"></div>
+                    <div class="col-lg-10">
+                         @if (editable)
+        {
+            <span class="waves-effect btn-default btn btn-border" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", 
+                                                                          @Url.Action("Index", "ReferenceFile", new {@area = "CM", referenceId = Model.ObjDetail.Project.REFERENCE_FILE_ID }))"
+                  style="width: 100%; padding: 6px 10px 15px 10px !important;">
+                <i class="material-icons col-orange" style="font-size: 24px; top: 6px;">cloud_upload</i><span>Thêm file đính kèm</span>
+            </span>
+        }
+
+        @if (Model.ObjDetail.Project.REFERENCE_FILE_ID != null)
+        {
+            Html.RenderAction("ListFiles", "ReferenceFile", new { @area = "CM", referenceId = Model.ObjDetail.Project.REFERENCE_FILE_ID });
+        }
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+<hr style="margin:0;" />
+<div class="p-l-10 p-t-10 row">
+    <div class="title-header"> <i class="material-icons">history</i> <span class="title-name">LỊCH SỬ PHÊ DUYỆT</span> </div>
+    <div class="title-close" title="Đóng màn hình" onclick="" data-dismiss="modal"><i class="material-icons">close</i></div>
+    <div class="col-lg-12">
+        <div id="progress-history"></div>
+    </div>
+</div>
+
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function OnChangeCompany() {
+            var companyCode = $("#@Model.ViewId #dllCompany").find(':selected').data("company");
+            //$("#dllPhongBan").val("");
+            //$("#dllPurGroup").val("");
+            $("#@Model.ViewId #dllPhongBan option").removeAttr('disabled');
+            $("#@Model.ViewId #dllPurGroup option").removeAttr('disabled');
+            $("#@Model.ViewId #dllPhongBan option").each(function () {
+                if ($(this).data('company') != companyCode) {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+
+            $("#@Model.ViewId #dllPurGroup option").each(function () {
+                if ($(this).data('company') != companyCode) {
+                    $(this).attr('disabled', 'disabled');
+                }
+            });
+
+            $("#@Model.ViewId #dllPhongBan").selectpicker('refresh');
+            $("#@Model.ViewId #dllPurGroup").selectpicker('refresh');
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+            setTimeout(() => {
+
+            Forms.LoadAjax({ url: '@Html.Raw(Url.Action("ProgressHistory", "Project",
+                                new { projectId = Model.ObjDetail.PROJECT_ID }))', htmlTarget: '#@Model.ViewId #progress-history' });
+}, 200)
+            OnChangeCompany();
+            
+            $("#@Model.FormId *").prop("disabled", true);
+        });
+    </script>
+</div>

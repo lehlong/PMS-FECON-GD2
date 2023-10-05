@@ -1,0 +1,54 @@
+﻿@model IEnumerable<SMO.Core.Entities.PS.T_PS_VOLUME_PROGRESS_HISTORY>
+@using Newtonsoft.Json;
+
+@{
+    var gridId = Guid.NewGuid().ToString();
+    var mappingData = from data in Model
+                      select new
+                      {
+                          ACTOR = data.ACTOR,
+                          NOTE = data.NOTE,
+                          ACTION = data.ACTION.GetEnum<ProjectWorkVolumeAction>().GetName(),
+                          PRE_STATUS = data.PRE_STATUS.GetEnum<ProjectWorkVolumeStatus>().GetName(),
+                          DES_STATUS = data.DES_STATUS.GetEnum<ProjectWorkVolumeStatus>().GetName(),
+                          CREATED_DATE = data.CREATE_DATE.Value.ToString(Global.DateTimeToStringFormat),
+                      };
+}
+<div class="card">
+    <div class="body" style="padding-top: 0px;">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">description</i>LỊCH SỬ PHÊ DUYỆT</a></li>
+        </ul>
+    </div>
+    <div class="title-close" title="Đóng màn hình" onclick="" data-dismiss="modal"><i class="material-icons">close</i></div>
+    <div class="tab-content">
+        <div class="row p-l-10 p-t-10">
+            <div class="col-lg-1"></div>
+            <div class="col-lg-10 p-b-10">
+                <div style="height: calc(100vh - 150px)" id="@gridId"></div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(mappingData));
+    const columns = [
+        //{ id: "ACTION", header: [{ text: "Hành động" }] },
+        { id: "ACTOR", header: [{ text: "Người hành động" }] },
+        //{ id: "PRE_STATUS", header: [{ text: "Trạng thái ban đầu" }] },
+        { id: "DES_STATUS", header: [{ text: "Trạng thái" }] },
+        { id: "NOTE", header: [{ text: "Ghi chú" }] },
+        { id: "CREATED_DATE", header: [{ text: "Thời gian" }], width: 150, adjust: false },
+    ]
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        autoHeight: true,
+        //adjust: true,
+        resizable: true,
+        keyNavigation: true,
+        data: rawData,
+    });
+</script>

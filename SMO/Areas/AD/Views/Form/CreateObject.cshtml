@@ -1,0 +1,57 @@
+﻿@model SMO.Service.AD.FormService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("CreateObject", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjObject.FK_FORM)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <span class="page-header-icon" onclick="Forms.CloseRightContent();" style="float:right;">
+                    <i class="material-icons">arrow_forward</i>
+                </span>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">add</i> TẠO MỚI OBJECT</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="row m-t-20">
+                        <div class="col-xs-12">
+                            <label>Mã object</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjObject.OBJECT_CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjObject.OBJECT_CODE)
+                            </div>
+
+                            <label>Kiểu</label>
+                            <div class="form-group">
+                                @Html.MyDropDownListFor(m => m.ObjObject.TYPE, SelectListUtilities.GetDictionary(Domain.OBJECT_TYPE.ToString(), true, false), new { @class = "selectpicker show-tick" })
+                                @Html.ValidationMessageFor(m => m.ObjObject.TYPE)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+
+

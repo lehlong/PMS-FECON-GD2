@@ -1,0 +1,178 @@
+﻿
+@model SMO.Service.AD.HoSoService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.HiddenFor(m => m.ObjDetail.PKID);
+        @Html.HiddenFor(m => m.ObjDetail.USERNAME);
+        @Html.AntiForgeryToken()
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> CẬP NHẬT THÔNG TIN</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                            @Html.MyButton("cmdSave", "Lưu thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 1</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO1</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO1)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 2</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO2</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO2)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 3</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO3</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO3)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 4</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO4</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO4)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 5</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO5</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO5)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 6</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO6</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO6)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 7</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO7</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO7)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 8</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO8</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO8)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 9</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO9</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO9)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-2">Thông tin 10</div>
+                        <div class="col-lg-4">
+                            <span>@Model.ObjDetail.INFO10</span>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.INFO10)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>
+

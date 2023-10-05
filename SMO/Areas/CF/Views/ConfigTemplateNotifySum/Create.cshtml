@@ -1,0 +1,84 @@
+﻿@model SMO.Service.CF.ConfigTemplateNotifySumService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <script src="~/Theme/plugins/ckeditor/ckeditor.js"></script>
+    @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> CẤU HÌNH NỘI DUNG TIN NHẮN, EMAIL</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                            @Html.MyButton("cmdSave", "Lưu lại", "SubmitForm();", "Alt+N", "done_all")
+                        </div>
+                    </div>
+
+                    <div class="m-t-20" style="padding: 10px;">
+                        <b>Chọn trạng thái</b>
+                        <div class="form-group" style="width: 320px;">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.PO_STATUS, SelectListUtilities.GetAllPoStatus(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                            @Html.ValidationMessageFor(m => m.ObjDetail.PO_STATUS)
+                        </div>
+                        
+                        <div class="form-group">
+                            <b>Các tham số được sử dụng trong nội dung sms, email bao gồm :</b><br />
+                            <span class="badge bg-blue" title="Mã đơn hàng SMO">{SO_LUONG_DON_HANG}</span>
+                            <span class="badge bg-blue" title="Tên khách hàng/cửa hàng/công ty tuyến sau">{TEN_KHACH_HANG}</span>
+                            <span class="badge bg-blue" title="Nội dung chi tiết">{NOI_DUNG_CHI_TIET}</span>
+                            <span class="badge bg-blue" title="Lý do từ chối">{LY_DO_TU_CHOI}</span>
+                        </div>
+
+                        <b>Nội dung SMS</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.SMS_TEMPLATE)
+                            </div>
+                        </div>
+
+                        <b>Tiêu đề Email</b>
+                        <div class="form-group">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.SUBJECT_TEMPLATE)
+                            </div>
+                        </div>
+
+                        <b>Nội dung Email</b>
+                        <div class="form-group m-t-10">
+                            @Html.MyTextAreaFor(m => m.ObjDetail.EMAIL_TEMPLATE, new { @id="txtEmailTemplate"})
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>    
+    }
+    <script type="text/javascript">
+        function SubmitForm() {
+            $("#txtEmailTemplate").val(CKEDITOR.instances.txtEmailTemplate.getData());
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+            CKEDITOR.replace('txtEmailTemplate', {
+                filebrowserImageBrowseUrl: '/Home/SelectImage',
+                filebrowserImageUploadUrl: '/Home/UploadImage'
+            });
+
+            function UpdateValue(id, value) {
+                document.getElementById(id).value = value;
+            }
+        });
+    </script>
+</div>

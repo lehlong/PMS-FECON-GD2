@@ -1,0 +1,459 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6FBBAA1A-8ADF-4E7D-9BFB-CED5268CC985}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SMO.Repository</RootNamespace>
+    <AssemblyName>SMO.Repository</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\SolutionDll\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr3.Runtime.3.5.1\lib\net40-client\Antlr3.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FluentNHibernate, Version=2.1.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentNHibernate.2.1.2\lib\net461\FluentNHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Iesi.Collections, Version=4.0.0.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Iesi.Collections.4.0.4\lib\net461\Iesi.Collections.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NHibernate, Version=5.1.0.0, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <HintPath>..\packages\NHibernate.5.1.3\lib\net461\NHibernate.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.Linq.2.1.2\lib\net45\Remotion.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Remotion.Linq.EagerFetching, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.Linq.EagerFetching.2.1.0\lib\net45\Remotion.Linq.EagerFetching.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\GenericRepository.cs" />
+    <Compile Include="Common\IGenericRepository.cs" />
+    <Compile Include="Common\IPSRepository.cs" />
+    <Compile Include="Common\IUnitOfWork.cs" />
+    <Compile Include="Common\NHConfigurationSingleton.cs" />
+    <Compile Include="Common\NHListener.cs" />
+    <Compile Include="Common\NHSessionFactorySingleton.cs" />
+    <Compile Include="Common\NHUnitOfWork.cs" />
+    <Compile Include="Common\PSRepository.cs" />
+    <Compile Include="Common\Utils.cs" />
+    <Compile Include="Implement\AD\FormObjectRepo.cs" />
+    <Compile Include="Implement\AD\FormRepo.cs" />
+    <Compile Include="Implement\AD\HoSoRepo.cs" />
+    <Compile Include="Implement\AD\LanguageRepo.cs" />
+    <Compile Include="Implement\AD\MenuRepo.cs" />
+    <Compile Include="Implement\AD\MessageRepo.cs" />
+    <Compile Include="Implement\AD\OrganizeRepo.cs" />
+    <Compile Include="Implement\AD\RightRepo.cs" />
+    <Compile Include="Implement\AD\RoleDetailRepo.cs" />
+    <Compile Include="Implement\AD\RoleRepo.cs" />
+    <Compile Include="Implement\AD\SystemConfigRepo.cs" />
+    <Compile Include="Implement\AD\UserCustomerRepo.cs" />
+    <Compile Include="Implement\AD\UserGroupRepo.cs" />
+    <Compile Include="Implement\AD\UserGroupRoleRepo.cs" />
+    <Compile Include="Implement\AD\UserHistoryRepo.cs" />
+    <Compile Include="Implement\AD\UserRepo.cs" />
+    <Compile Include="Implement\AD\UserRightRepo.cs" />
+    <Compile Include="Implement\AD\UserRoleRepo.cs" />
+    <Compile Include="Implement\AD\UserUserGroupRepo.cs" />
+    <Compile Include="Implement\AD\UserVendorRepo.cs" />
+    <Compile Include="Implement\CF\ConfigDCCHRepo.cs" />
+    <Compile Include="Implement\CF\ConfigDCNBRepo.cs" />
+    <Compile Include="Implement\CF\ConfigMHGLRepo.cs" />
+    <Compile Include="Implement\CF\ConfigMODULRepo.cs" />
+    <Compile Include="Implement\CF\ConfigTemplateNotifyRepo.cs" />
+    <Compile Include="Implement\CF\ConfigTemplateNotifySumRepo.cs" />
+    <Compile Include="Implement\CF\ConfigTemplateTransferRepo.cs" />
+    <Compile Include="Implement\CF\ConfigXBNDRepo.cs" />
+    <Compile Include="Implement\CF\ConfigXBTXRepo.cs" />
+    <Compile Include="Implement\CF\ConfigXTHGRepo.cs" />
+    <Compile Include="Implement\CF\StoreMaterialRepo.cs" />
+    <Compile Include="Implement\CM\CommentRepo.cs" />
+    <Compile Include="Implement\CM\EmailRepo.cs" />
+    <Compile Include="Implement\CM\FileUploadRepo.cs" />
+    <Compile Include="Implement\CM\HistorySmoApiRepo.cs" />
+    <Compile Include="Implement\CM\NotifyRepo.cs" />
+    <Compile Include="Implement\CM\ReferenceFileRepo.cs" />
+    <Compile Include="Implement\CM\SmsHistoryRepo.cs" />
+    <Compile Include="Implement\CM\SmsOTPRepo.cs" />
+    <Compile Include="Implement\CM\SmsRepo.cs" />
+    <Compile Include="Implement\MD\AreaRepo.cs" />
+    <Compile Include="Implement\MD\BatchRepo.cs" />
+    <Compile Include="Implement\MD\ConditionRepo.cs" />
+    <Compile Include="Implement\MD\ContractRepo.cs" />
+    <Compile Include="Implement\MD\ContractStatusRepo.cs" />
+    <Compile Include="Implement\MD\ContractTypeRepo.cs" />
+    <Compile Include="Implement\MD\CriteriaRepo.cs" />
+    <Compile Include="Implement\MD\CurrencyRepo.cs" />
+    <Compile Include="Implement\MD\CustomerOldRepo.cs" />
+    <Compile Include="Implement\MD\CustomerRepo.cs" />
+    <Compile Include="Implement\MD\CustomerTransferedRepo.cs" />
+    <Compile Include="Implement\MD\DCRepo.cs" />
+    <Compile Include="Implement\MD\DictionaryRepo.cs" />
+    <Compile Include="Implement\MD\DischardRepo.cs" />
+    <Compile Include="Implement\MD\DivisionRepo.cs" />
+    <Compile Include="Implement\MD\DomainRepo.cs" />
+    <Compile Include="Implement\MD\MaterialRepo.cs" />
+    <Compile Include="Implement\MD\NumberRangeRepo.cs" />
+    <Compile Include="Implement\MD\PaymentStatusRepo.cs" />
+    <Compile Include="Implement\MD\PaymentTermRepo.cs" />
+    <Compile Include="Implement\MD\PoRepo.cs" />
+    <Compile Include="Implement\MD\PoTypeRepo.cs" />
+    <Compile Include="Implement\MD\ProjectLevelRepo.cs" />
+    <Compile Include="Implement\MD\ProjectProfileRepo.cs" />
+    <Compile Include="Implement\MD\ProjectRoleRepo.cs" />
+    <Compile Include="Implement\MD\ProjectRoleRightRepo.cs" />
+    <Compile Include="Implement\MD\ProjectTimePeriodRepo.cs" />
+    <Compile Include="Implement\MD\ProjectTypeRepo.cs" />
+    <Compile Include="Implement\MD\ProjectUserTypeRepo.cs" />
+    <Compile Include="Implement\MD\PurGroupRepo.cs" />
+    <Compile Include="Implement\MD\RouteRepo.cs" />
+    <Compile Include="Implement\MD\SaleOfficeRepo.cs" />
+    <Compile Include="Implement\MD\ShTypeRepo.cs" />
+    <Compile Include="Implement\MD\SlocCHRepo.cs" />
+    <Compile Include="Implement\MD\SoTypeRepo.cs" />
+    <Compile Include="Implement\MD\StoreRepo.cs" />
+    <Compile Include="Implement\MD\TimeTypeRepo.cs" />
+    <Compile Include="Implement\MD\TitleRepo.cs" />
+    <Compile Include="Implement\MD\TransmodeRepo.cs" />
+    <Compile Include="Implement\MD\TransUnitRepo.cs" />
+    <Compile Include="Implement\MD\UnitOldRepo.cs" />
+    <Compile Include="Implement\MD\UnitRepo.cs" />
+    <Compile Include="Implement\MD\VehicleCompartmentRepo.cs" />
+    <Compile Include="Implement\MD\VehicleRepo.cs" />
+    <Compile Include="Implement\MD\VendorOldRepo.cs" />
+    <Compile Include="Implement\MD\VendorRepo.cs" />
+    <Compile Include="Implement\MD\VendorVehicleRepo.cs" />
+    <Compile Include="Implement\PS\ActivityRepo.cs" />
+    <Compile Include="Implement\PS\BoqRepo.cs" />
+    <Compile Include="Implement\PS\CommentRepo.cs" />
+    <Compile Include="Implement\PS\ConfigHideColumnRepo.cs" />
+    <Compile Include="Implement\PS\ContractDetailRepo.cs" />
+    <Compile Include="Implement\PS\ContractFileRepo.cs" />
+    <Compile Include="Implement\PS\ContractPaymentRepo.cs" />
+    <Compile Include="Implement\PS\ContractRepo.cs" />
+    <Compile Include="Implement\PS\GenCodeHistoryRepo.cs" />
+    <Compile Include="Implement\PS\PlanCostRepo.cs" />
+    <Compile Include="Implement\PS\PlanProgressHistoryRepo.cs" />
+    <Compile Include="Implement\PS\PlanProgressRepo.cs" />
+    <Compile Include="Implement\PS\PlanQuantityRepo.cs" />
+    <Compile Include="Implement\PS\PlanVolumeDesignRepo.cs" />
+    <Compile Include="Implement\PS\ProgressHistoryRepo.cs" />
+    <Compile Include="Implement\PS\ProjectRepo.cs" />
+    <Compile Include="Implement\PS\ProjectResourceOtherRepo.cs" />
+    <Compile Include="Implement\PS\ProjectResourceRepo.cs" />
+    <Compile Include="Implement\PS\ProjectSlDtRepo.cs" />
+    <Compile Include="Implement\PS\ProjectStructRepo.cs" />
+    <Compile Include="Implement\PS\ProjectTimeRepo.cs" />
+    <Compile Include="Implement\PS\ReferenceRepo.cs" />
+    <Compile Include="Implement\PS\TaskRepo.cs" />
+    <Compile Include="Implement\PS\VolumeAcceptDetailRepo.cs" />
+    <Compile Include="Implement\PS\VolumeAcceptRepo.cs" />
+    <Compile Include="Implement\PS\VolumeProgressHistoryRepo.cs" />
+    <Compile Include="Implement\PS\VolumeWorkDetailRepo.cs" />
+    <Compile Include="Implement\PS\VolumeWorkRepo.cs" />
+    <Compile Include="Implement\PS\WbsRepo.cs" />
+    <Compile Include="Interface\AD\IFormObjectRepo.cs" />
+    <Compile Include="Interface\AD\IFormRepo.cs" />
+    <Compile Include="Interface\AD\IHoSoRepo.cs" />
+    <Compile Include="Interface\AD\ILanguageRepo.cs" />
+    <Compile Include="Interface\AD\IMenuRepo.cs" />
+    <Compile Include="Interface\AD\IMessageRepo.cs" />
+    <Compile Include="Interface\AD\IOrganizeRepo.cs" />
+    <Compile Include="Interface\AD\IRightRepo.cs" />
+    <Compile Include="Interface\AD\IRoleDetailRepo.cs" />
+    <Compile Include="Interface\AD\IRoleRepo.cs" />
+    <Compile Include="Interface\AD\ISystemConfigRepo.cs" />
+    <Compile Include="Interface\AD\IUserCustomerRepo.cs" />
+    <Compile Include="Interface\AD\IUserGroupRepo.cs" />
+    <Compile Include="Interface\AD\IUserGroupRoleRepo.cs" />
+    <Compile Include="Interface\AD\IUserHistoryRepo.cs" />
+    <Compile Include="Interface\AD\IUserRepo.cs" />
+    <Compile Include="Interface\AD\IUserRightRepo.cs" />
+    <Compile Include="Interface\AD\IUserRoleRepo.cs" />
+    <Compile Include="Interface\AD\IUserUserGroupRepo.cs" />
+    <Compile Include="Interface\AD\IUserVendorRepo.cs" />
+    <Compile Include="Interface\CF\IConfigDCCH.cs" />
+    <Compile Include="Interface\CF\IConfigDCNB.cs" />
+    <Compile Include="Interface\CF\IConfigMHGL.cs" />
+    <Compile Include="Interface\CF\IConfigMODUL.cs" />
+    <Compile Include="Interface\CF\IConfigTemplateNotify.cs" />
+    <Compile Include="Interface\CF\IConfigTemplateNotifySum.cs" />
+    <Compile Include="Interface\CF\IConfigTemplateTransfer.cs" />
+    <Compile Include="Interface\CF\IConfigXBND.cs" />
+    <Compile Include="Interface\CF\IConfigXBTX.cs" />
+    <Compile Include="Interface\CF\IConfigXTHG.cs" />
+    <Compile Include="Interface\CF\IStoreMaterialRepo.cs" />
+    <Compile Include="Interface\CM\ICommentRepo.cs" />
+    <Compile Include="Interface\CM\IEmailRepo.cs" />
+    <Compile Include="Interface\CM\IFileUploadRepo.cs" />
+    <Compile Include="Interface\CM\IHistorySmoApiRepo.cs" />
+    <Compile Include="Interface\CM\INotifyRepo.cs" />
+    <Compile Include="Interface\CM\IReferenceFileRepo.cs" />
+    <Compile Include="Interface\CM\ISmsHistoryRepo.cs" />
+    <Compile Include="Interface\CM\ISmsOTPRepo.cs" />
+    <Compile Include="Interface\CM\ISmsRepo.cs" />
+    <Compile Include="Interface\MD\IAreaRepo.cs" />
+    <Compile Include="Interface\MD\IBatchRepo.cs" />
+    <Compile Include="Interface\MD\IConditionRepo.cs" />
+    <Compile Include="Interface\MD\IContractRepo.cs" />
+    <Compile Include="Interface\MD\IContractStatusRepo.cs" />
+    <Compile Include="Interface\MD\IContractTypeRepo.cs" />
+    <Compile Include="Interface\MD\ICriteriaRepo.cs" />
+    <Compile Include="Interface\MD\ICurrencyRepo.cs" />
+    <Compile Include="Interface\MD\ICustomerOldRepo.cs" />
+    <Compile Include="Interface\MD\ICustomerRepo.cs" />
+    <Compile Include="Interface\MD\ICustomerTransferedRepo.cs" />
+    <Compile Include="Interface\MD\IDCRepo.cs" />
+    <Compile Include="Interface\MD\IDictionaryRepo.cs" />
+    <Compile Include="Interface\MD\IDischardRepo.cs" />
+    <Compile Include="Interface\MD\IDivisionRepo.cs" />
+    <Compile Include="Interface\MD\IDomainRepo.cs" />
+    <Compile Include="Interface\MD\IMaterialRepo.cs" />
+    <Compile Include="Interface\MD\INumberRangeRepo.cs" />
+    <Compile Include="Interface\MD\IPaymentStatusRepo.cs" />
+    <Compile Include="Interface\MD\IPaymentTermRepo.cs" />
+    <Compile Include="Interface\MD\IPoRepo.cs" />
+    <Compile Include="Interface\MD\IPoTypeRepo.cs" />
+    <Compile Include="Interface\MD\IProjectLevelRepo.cs" />
+    <Compile Include="Interface\MD\IProjectProfileRepo.cs" />
+    <Compile Include="Interface\MD\IProjectRoleRepo.cs" />
+    <Compile Include="Interface\MD\IProjectRoleRightRepo.cs" />
+    <Compile Include="Interface\MD\IProjectTimePeriodRepo.cs" />
+    <Compile Include="Interface\MD\IProjectTypeRepo.cs" />
+    <Compile Include="Interface\MD\IProjectUserTypeRepo.cs" />
+    <Compile Include="Interface\MD\IPurGroupRepo.cs" />
+    <Compile Include="Interface\MD\IRouteRepo.cs" />
+    <Compile Include="Interface\MD\ISaleOfficeRepo.cs" />
+    <Compile Include="Interface\MD\IShTypeRepo.cs" />
+    <Compile Include="Interface\MD\ISlocCHRepo.cs" />
+    <Compile Include="Interface\MD\ISoTypeRepo.cs" />
+    <Compile Include="Interface\MD\IStoreRepo.cs" />
+    <Compile Include="Interface\MD\ITimeTypeRepo.cs" />
+    <Compile Include="Interface\MD\ITitleRepo.cs" />
+    <Compile Include="Interface\MD\ITransmodeRepo.cs" />
+    <Compile Include="Interface\MD\ITransUnitRepo.cs" />
+    <Compile Include="Interface\MD\IUnitOldRepo.cs" />
+    <Compile Include="Interface\MD\IUnitRepo.cs" />
+    <Compile Include="Interface\MD\IVehicleCompartmentRepo.cs" />
+    <Compile Include="Interface\MD\IVehicleRepo.cs" />
+    <Compile Include="Interface\MD\IVendorOldRepo.cs" />
+    <Compile Include="Interface\MD\IVendorRepo.cs" />
+    <Compile Include="Interface\MD\IVendorVehicleRepo.cs" />
+    <Compile Include="Interface\PS\IActivityRepo.cs" />
+    <Compile Include="Interface\PS\IBoqRepo.cs" />
+    <Compile Include="Interface\PS\ICommentRepo.cs" />
+    <Compile Include="Interface\PS\IConfigHideColumnRepo.cs" />
+    <Compile Include="Interface\PS\IContractDetailRepo.cs" />
+    <Compile Include="Interface\PS\IContractFileRepo.cs" />
+    <Compile Include="Interface\PS\IContractPaymentRepo.cs" />
+    <Compile Include="Interface\PS\IContractRepo.cs" />
+    <Compile Include="Interface\PS\IGenCodeHistoryRepo.cs" />
+    <Compile Include="Interface\PS\IPlanCostRepo.cs" />
+    <Compile Include="Interface\PS\IPlanProgressHistoryRepo.cs" />
+    <Compile Include="Interface\PS\IPlanProgressRepo.cs" />
+    <Compile Include="Interface\PS\IPlanQuantityRepo.cs" />
+    <Compile Include="Interface\PS\IPlanVolumeDesignRepo.cs" />
+    <Compile Include="Interface\PS\IProgressHistoryRepo.cs" />
+    <Compile Include="Interface\PS\IProjectRepo.cs" />
+    <Compile Include="Interface\PS\IProjectResourceOtherRepo.cs" />
+    <Compile Include="Interface\PS\IProjectResourceRepo.cs" />
+    <Compile Include="Interface\PS\IProjectSlDtRepo.cs" />
+    <Compile Include="Interface\PS\IProjectStructRepo.cs" />
+    <Compile Include="Interface\PS\IProjectTimeRepo.cs" />
+    <Compile Include="Interface\PS\IReferenceRepo.cs" />
+    <Compile Include="Interface\PS\ITaskRepo.cs" />
+    <Compile Include="Interface\PS\IVolumeAcceptDetailRepo.cs" />
+    <Compile Include="Interface\PS\IVolumeAcceptRepo.cs" />
+    <Compile Include="Interface\PS\IVolumeProgressHistoryRepo.cs" />
+    <Compile Include="Interface\PS\IVolumeWorkDetailRepo.cs" />
+    <Compile Include="Interface\PS\IVolumeWorkRepo.cs" />
+    <Compile Include="Interface\PS\IWbsRepo.cs" />
+    <Compile Include="Mapping\AD\T_AD_CONNECTION_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_FORM_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_FORM_OBJECT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_HOSO_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_LANGUAGE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_MENU_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_MESSAGE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_ORGANIZE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_PROJECT_RIGHT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_RIGHT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_ROLE_DETAIL_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_ROLE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_SYSTEM_CONFIG_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_CUSTOMER_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_GROUP_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_GROUP_ROLE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_HISTORY_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_RIGHT_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_ROLE_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_USER_GROUP_Map.cs" />
+    <Compile Include="Mapping\AD\T_AD_USER_VENDOR_Map.cs" />
+    <Compile Include="Mapping\BaseMapping.cs" />
+    <Compile Include="Mapping\CF\T_CF_DCCH_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_DCNB_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_MHGL_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_MODUL_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_STORE_MATERIAL_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_TEMPLATE_NOTIFY_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_TEMPLATE_NOTIFY_SUM_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_TEMPLATE_TRANSFER_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_XBND_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_XBTX_Map.cs" />
+    <Compile Include="Mapping\CF\T_CF_XTHG_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_COMMENT_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_EMAIL_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_FILE_UPLOAD_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_HISTORY_SMO_API_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_MA_TRA_CUU_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_NOTIFY_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_REFERENCE_FILE_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_REFERENCE_LINK_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_SMS_HISTORY_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_SMS_Map.cs" />
+    <Compile Include="Mapping\CM\T_CM_SMS_OTP_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_AREA_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_BATCH_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CONDITION_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CONTRACT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CONTRACT_STATUS_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CONTRACT_TYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_COUNTRY_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CRITERIA_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CURRENCY_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CUSTOMER_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CUSTOMER_OLD_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_CUSTOMER_TRANSFERED_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_DC_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_DICTIONARY_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_DISCHARD_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_DIVISION_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_DOMAIN_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_MATERIAL_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_NUMBER_RANGE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PAYMENT_STATUS_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PAYMENT_TERM_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_POTYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PO_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_LEVEL_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_PROFILE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_ROLE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_ROLE_RIGHT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_TIME_PERIOD_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_TYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PROJECT_USER_TYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PUR_GROUP_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_ROUTE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_SALEOFFICE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_SHPOINT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_SHTYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_SLOCCH_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_SOTYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_STORE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_TIME_TYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_TITLE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_TRANSMODE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_TRANSUNIT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_UNIT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_UNIT_OLD_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_VEHICLE_COMPARTMENT_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_VEHICLE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_VENDOR_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_VENDOR_OLD_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_VENDOR_VEHICLE_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_ACTIVITY_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_BOQ_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_COMMENT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_CONFIG_HIDE_COLUMN_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_CONTRACT_DETAIL_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_CONTRACT_FILE_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_CONTRACT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_CONTRACT_PAYMENT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_GEN_CODE_HISTORY_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PLAN_COST_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PLAN_PROGRESS_HISTORY_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PLAN_PROGRESS_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PLAN_QUANTITY_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PLAN_VOLUME_DESIGN_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROGRESS_HISTORY_Mapping.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_SAP_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_USER_RIGHT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_REFERENCE_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_RESOURCE_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_RESOURCE_OTHER_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_SL_DT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_TASK_CHECK_LIST_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_TASK_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_TIME_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_VOLUME_ACCEPT_DETAIL_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_VOLUME_ACCEPT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_VOLUME_PROGRESS_HISTORY_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_VOLUME_WORK_DETAIL_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_VOLUME_WORK_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_WBS_Map.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SMO.Core\SMO.Core.csproj">
+      <Project>{02fec8f7-5984-48ed-9d60-8808829629be}</Project>
+      <Name>SMO.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

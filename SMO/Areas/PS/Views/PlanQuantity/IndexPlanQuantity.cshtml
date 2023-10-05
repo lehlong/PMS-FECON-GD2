@@ -1,0 +1,74 @@
+﻿@model SMO.Service.PS.PlanQuantityService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var partnerType = Model.ObjDetail.IS_CUSTOMER ? "Customer" : "Vendor";
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm($"EditPlanQuantity{partnerType}", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.IS_CUSTOMER)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+
+        <div class="page-function p-t-10">
+            <div class="page-function-button m-r-20">
+                <div id="progress-buttons">
+
+                </div>
+                <div class="input-group page-function-search">
+                    @if (!Model.ObjDetail.IS_CUSTOMER)
+                    {
+                        <div class="form-line" style="z-index: 1000">
+                            @Html.MyDropDownListFor(m => m.Vendor, SelectListUtilities.GetVendors(Model.ObjDetail.PROJECT_ID),
+         new { @class = "selectpicker show-tick", @placeholder = "Tìm theo thầu phụ" })
+                        </div>
+
+                        <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                            <i class="material-icons">search</i>
+                        </span>
+                        <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                            <i class="material-icons">refresh</i>
+                        </span>
+                    }
+                    else
+                    {
+                <div class="form-line">
+                    @Html.MyTextBoxFor(m => m.StructureName, new { placeholder = "Tìm theo tên hạng mục" })
+                </div>
+
+                        <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                            <i class="material-icons">search</i>
+                        </span>
+                        <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                            <i class="material-icons">refresh</i>
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="row m-t-30" id="divResult">
+        </div>
+    }
+
+</div>
+<script type="text/javascript">
+    function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+    function refreshProgressButtons() {
+        Forms.LoadAjax({
+            url: '@Html.Raw(Url.Action("ProgressButtons", "Project",
+                                   new { projectId = Model.ObjDetail.PROJECT_ID, partnerType = partnerType, planType = ProjectPlanType.QUANTITY }))',
+            htmlTarget: '#@Model.ViewId #progress-buttons'
+        });
+    }
+    $(function () {
+        refreshProgressButtons();
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+</script>
+

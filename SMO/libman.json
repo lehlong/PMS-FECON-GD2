@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "defaultProvider": "jsdelivr",
+  "libraries": [
+    {
+      "library": "dhtmlx-gantt@7.1.7",
+      "destination": "Properties/dhtmlx-gantt/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "autosize.js@5.0.1",
+      "destination": "Properties/autosize.js/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "select2@4.0.13",
+      "destination": "Properties/select2/"
+    },
+    {
+      "library": "dhx-suite@7.2.5",
+      "destination": "Properties/dhx-suite/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "font-awesome@5.15.4",
+      "destination": "Properties/font-awesome/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "jquery-treegrid@0.2.0",
+      "destination": "Properties/jquery-treegrid/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "lodash.js@4.17.21",
+      "destination": "Properties/lodash.js/"
+    },
+    {
+      "library": "sweetalert2@11.3.0",
+      "destination": "Properties/sweetalert2/",
+      "files": [
+        "dist/sweetalert2.all.js",
+        "dist/sweetalert2.all.min.js",
+        "dist/sweetalert2.css",
+        "dist/sweetalert2.js",
+        "dist/sweetalert2.min.css",
+        "dist/sweetalert2.min.js"
+      ]
+    },
+    {
+      "provider": "cdnjs",
+      "library": "numeral.js@2.0.6",
+      "destination": "Properties/numeral.js/",
+      "files": [
+        "numeral.min.js"
+      ]
+    },
+    {
+      "library": "jquery-ui@1.13.1",
+      "destination": "Properties/jquery-ui/",
+      "files": [
+        "themes/base/autocomplete.min.css",
+        "ui/widgets/autocomplete.min.js"
+      ]
+    }
+  ]
+}

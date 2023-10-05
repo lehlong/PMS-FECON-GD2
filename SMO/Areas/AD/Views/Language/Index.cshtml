@@ -1,0 +1,111 @@
+﻿@model SMO.Service.AD.LanguageService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId' class="container-fluid child-content">
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">clear_all</i> DANH SÁCH NGÔN NGỮ</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdDongBo", "Đồng bộ ngôn ngữ", string.Format("Forms.LoadAjax('{0}');", @Url.Action("DongBo")), "Alt+N", "sync")
+                        </div>
+                        <div class="input-group page-function-search" style="margin-bottom: 7px !important">
+                            @Html.MyDropDownListFor(m => m.ObjDetail.OBJECT_TYPE, SelectListUtilities.GetDictionary(Domain.OBJECT_TYPE.ToString(), true, true), new { @class = "selectpicker show-tick", @data_val = false })
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Tìm theo các chỉ tiêu khác" id="spShowMore" onclick="$('#spHideMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_more</i>
+                            </span>
+                            <span class="input-group-addon" title="Ẩn các chỉ tiêu tìm kiếm khác" style="display:none;" id="spHideMore" onclick="$('#spShowMore').toggle(); $(this).toggle(); $('.page-search-advance').toggle();">
+                                <i class="material-icons">expand_less</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="page-search-advance" style="display:none">
+                        <div class="row">
+                            <div class="col-xs-4">
+                                <label for="email_address">Mã</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.FK_CODE, new { @data_val = false })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-4">
+                                <label for="email_address">Nội dung</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.VALUE, new { @data_val = false })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-4">
+                                <label for="password">Ngôn ngữ</label>
+                                <div class="form-group">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.LANG, SelectListUtilities.GetDictionary(Domain.LANG.ToString(), true, true, "", "vi", false), new { @class = "selectpicker show-tick", @data_val = false })
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                            <div class="col-xs-4">
+                                <label for="password">Form</label>
+                                <div class="form-group">
+                                    @Html.MyDropDownListFor(m => m.ObjDetail.FORM_CODE, SelectListUtilities.GetAllForm(), new { @data_live_search = "true", @class = "selectpicker show-tick", @data_val = false })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function UpdateLanguage(pkId, obj) {
+            var value = $(obj).val();
+            if (value == "" || value == null || value == undefined) {
+                alert("Không được phép để trống nội dung!");
+                $(obj).val(obj.defaultValue);
+                return false;
+            }
+            obj.defaultValue = value;
+
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("Update")',
+                type: "POST",
+                data: { value: value, id: pkId },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        $(function () {
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+

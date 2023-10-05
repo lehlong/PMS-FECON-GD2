@@ -1,0 +1,66 @@
+﻿@model SMO.Service.PS.ProjectService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    var project = Model.ObjDetail;
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="p-l-20 p-t-10">
+        <div class="title-header"> <i class="material-icons">content_copy</i> <span class="title-name"><b>@project.NAME.ToUpper() - CẤU TRÚC DỰ ÁN</b></span> </div>
+        <div class="title-close" title="Đóng màn hình" onclick="@string.Format("Forms.Close('{0}');Forms.CloseGanttDetailRightContent()", @Model.ViewId)"><i class="material-icons">close</i></div>
+    </div>
+    <div class="card">
+        <div class="body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                <li role="presentation" class="active"><a href="#structure-tree" onclick="onClickTree();" data-toggle="tab">GANTT CHART</a></li>
+                <li role="presentation"><a href="#cost" data-toggle="tab" onclick="onClickCost();">CHI PHÍ</a></li>
+                <li role="presentation"><a href="#boq" data-toggle="tab" onclick="onClickBoq();">BOQ</a></li>
+            </ul>
+            <div class="tab-content p-t-10">
+                <div role="tabpanel" class="tab-pane fade in active" id="structure-tree">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="cost">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="boq">
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            $(function () {
+                Forms.CompleteUI();
+                onClickTree();
+            });
+
+            function onClickTree() {
+                emptyTab();
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Url.Action("IndexView", "../GC/GanttChart",
+                               new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #structure-tree' });
+                }, 50)
+
+            }
+            function onClickCost() {
+                emptyTab();
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action("StructureCostView",
+                               new { projectId = Model.ObjDetail.ID }))', htmlTarget: '#@Model.ViewId #cost' });
+                }, 50)
+            }
+            function onClickBoq() {
+                emptyTab();
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action("StructureBoqView",
+                               new { projectId = Model.ObjDetail.ID }))', htmlTarget: '#@Model.ViewId #boq' });
+                }, 50)
+            }
+            function emptyTab() {
+                $('#@Model.ViewId #structure-tree').html("");
+                $('#@Model.ViewId #cost').html("");
+                $('#@Model.ViewId #boq').html("");
+
+            }
+        </script>
+    </div>
+</div>
+

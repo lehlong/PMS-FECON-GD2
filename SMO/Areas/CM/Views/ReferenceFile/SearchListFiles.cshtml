@@ -1,0 +1,127 @@
+﻿@model SMO.Service.CM.ReferenceFileService
+@using SMO.Core.Entities
+@using SMO.Core.Entities.MD
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+
+    var strTaiVe = "Tải về";
+    var strXemOnline = "Xem online";
+    var strMoBang = "Mở bằng ";
+    var strXoa = "Xóa";
+    var isRemoveFile = false;
+    if (ViewBag.IsRemoveFile != null)
+    {
+        isRemoveFile = Convert.ToBoolean(ViewBag.IsRemoveFile);
+    }
+}
+<div>
+    @if (!isRemoveFile)
+    {
+        foreach (var link in Model.ListLink)
+        {
+            <div class="preview-file">
+                <img src="\Content\IconFileType\cloud-link-48.png">
+                <div class="file-info">
+                    <div class="file-name p-t-10"><a href="@link.LINK" target="_blank">@link.LINK</a></div>
+                </div>
+            </div>
+        }
+    }
+
+    @foreach (var file in Model.ObjList.Select(x => x.FileUpload).OrderByDescending(x => x.CREATE_DATE).ToList())
+    {
+        file.FILE_EXT = file.FILE_EXT.ToLower();
+
+        <div class="preview-file">
+            <img src="\Content\IconFileType\@SMOUtilities.GetIconOfFile(file.FILE_EXT)">
+            <div class="file-info">
+                <div class="file-name">@file.FILE_OLD_NAME</div>
+                <div class="file-size">@SMOUtilities.BytesToSize((double)file.FILE_SIZE)</div>
+            </div>
+            <div class="file-function">
+                <a href="javascript:void(0);" class="file-function-a" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+                    <i class="material-icons">more_vert</i>
+                </a>
+                <ul class="dropdown-menu pull-right">
+                    @if (isRemoveFile)
+                    {
+                        <li>
+                            <a href="javascript:void(0);" onclick="RemoveFile(this,'@file.PKID')" class="waves-effect waves-block">
+                                <i class="material-icons col-fecon">close</i> @strXoa
+                            </a>
+                        </li>
+                    }
+                    <li>
+                        <a href="javascript:void(0);" onclick="DownloadFile('@file.PKID')" class="waves-effect waves-block">
+                            <i class="material-icons col-fecon">cloud_download</i> @strTaiVe
+                        </a>
+                    </li>
+                    @if (file.FILE_EXT == ".xlsx" || file.FILE_EXT == ".xls" || file.FILE_EXT == ".csv")
+                    {
+                        <li>
+                            <a href="javascript:void(0);" onclick="PreviewFile('@file.PKID')" class="waves-effect waves-block">
+                                <i class="material-icons col-fecon">search</i> @strXemOnline
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="javascript:void(0);" onclick="OpenApplication('@file.PKID', '@file.FILE_EXT')" class="waves-effect waves-block">
+                                <img style="width: 22px" src="\Content\IconFileType\@SMOUtilities.GetIconOfFile(file.FILE_EXT)"> @strMoBang EXCEL
+                            </a>
+                        </li>
+                    }
+
+                    @if (file.FILE_EXT == ".docx" || file.FILE_EXT == ".doc")
+                    {
+                        <li>
+                            <a href="javascript:void(0);" onclick="PreviewFile('@file.PKID')" class="waves-effect waves-block">
+                                <i class="material-icons col-fecon">search</i> @strXemOnline
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="javascript:void(0);" onclick="OpenApplication('@file.PKID', '@file.FILE_EXT')" class="waves-effect waves-block">
+                                <img style="width: 22px" src="\Content\IconFileType\@SMOUtilities.GetIconOfFile(file.FILE_EXT)"> @strMoBang WORD
+                            </a>
+                        </li>
+                    }
+
+                    @if (file.FILE_EXT == ".ppt" || file.FILE_EXT == ".pptx")
+                    {
+                        <li>
+                            <a href="javascript:void(0);" onclick="PreviewFile('@file.PKID')" class="waves-effect waves-block">
+                                <i class="material-icons col-fecon">search</i> @strXemOnline
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="javascript:void(0);" onclick="OpenApplication('@file.PKID', '@file.FILE_EXT')" class="waves-effect waves-block">
+                                <img style="width: 22px" src="\Content\IconFileType\@SMOUtilities.GetIconOfFile(file.FILE_EXT)"> @strMoBang POWERPOINT
+                            </a>
+                        </li>
+                    }
+
+                    @if (file.FILE_EXT == ".pdf")
+                    {
+                        <li>
+                            <a href="javascript:void(0);" onclick="PreviewFile('@file.PKID')" class="waves-effect waves-block">
+                                <i class="material-icons col-fecon">search</i> @strXemOnline
+                            </a>
+                        </li>
+                    }
+
+                    @if (file.FILE_EXT == ".jpg" || file.FILE_EXT == ".png" || file.FILE_EXT == ".bmp" || file.FILE_EXT == ".jpeg")
+                    {
+                        <li>
+                            <a href="javascript:void(0);" onclick="PreviewFile('@file.PKID')" class="waves-effect waves-block">
+                                <i class="material-icons col-fecon">search</i> @strXemOnline
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+
+</div>

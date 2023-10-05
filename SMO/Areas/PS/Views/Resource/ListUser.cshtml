@@ -1,0 +1,39 @@
+﻿@model SMO.Service.PS.ProjectResourceService
+
+<table class="table table-condensed table-bordered">
+    <thead>
+        <tr>
+            <th width="20px" class="align-center">
+                <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                <label for="chkAll"></label>
+            </th>
+            <th>Tên đăng nhập</th>
+            <th>Họ và tên</th>
+            <th>Kiểu người dùng</th>
+            <th>Chức vụ</th>
+            <th>Phòng ban</th>
+            <th>Số điện thoại</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Users)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.USER_NAME)" modelId="@item.USER_NAME" style="margin:0;" />
+                    <label for="@("chkItem" + item.USER_NAME)"></label>
+                </td>
+                <td>
+                    <a href="#">@item.USER_NAME</a>
+                </td>
+                <td>@item.FULL_NAME</td>
+                <td>@(UserType.GetText(item.USER_TYPE))</td>
+                <td>@(item.Title?.NAME)</td>
+                <td>@(item.Organize?.NAME)</td>
+                <td>@item.PHONE</td>
+                <td>@item.EMAIL</td>
+            </tr>
+        }
+    </tbody>
+</table>

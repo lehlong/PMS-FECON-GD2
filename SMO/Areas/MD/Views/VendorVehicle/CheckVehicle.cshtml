@@ -1,0 +1,38 @@
+﻿@model SMO.Service.MD.VendorVehicleService
+
+@if (Model.ObjVehicle == null)
+{
+    <h5 class="col-red">Không tồn tại mã phương tiện này</h5>
+}
+else{
+    <div class="table-responsive">
+        <table class="table table-condensed table-bordered">
+            <thead>
+                <tr>
+                    <th>Mã phương tiện</th>
+                    <th>Tổng dung tích</th>
+                    @foreach (var item in Model.ObjVehicle.ListCompartment)
+                    {
+                        <th>Ngăn @item.SEQ_NUMBER.Trim('0')</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@Model.ObjVehicle.CODE</td>
+                    <td>@Model.ObjVehicle.CAPACITY.ToStringVN() @Model.ObjVehicle.UNIT</td>
+                    @foreach (var item in Model.ObjVehicle.ListCompartment)
+                    {
+                        <td>@item.CAPACITY.ToStringVN() @Model.ObjVehicle.UNIT</td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    if (!Model.IsInList)
+    {
+        <h5 class="col-blue" style="float: left;">Phương tiện này chưa thuộc danh sách phương tiện do đơn vị bạn quản lý &nbsp;&nbsp;</h5>
+        @Html.MyButton("cmdAdd", "Nhấn vào đây để thêm vào", $"AddToListVT('{Model.ObjDetail.VEHICLE_CODE}','{Model.ObjDetail.VENDOR_CODE}')", "", "add")
+    }
+}

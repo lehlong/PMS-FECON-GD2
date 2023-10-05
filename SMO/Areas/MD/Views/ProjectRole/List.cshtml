@@ -1,0 +1,57 @@
+﻿@model SMO.Service.MD.ProjectRoleService
+@{
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                @if (AuthorizeUtilities.CheckUserRight("R2.7.2"))
+                {
+                    <th class="align-center" style="max-width: 100px;">Quyền</th>
+                }
+                <th>Mã</th>
+                <th>Tên</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var vdbclickAction = "";
+                if (AuthorizeUtilities.CheckUserRight("R2.7.2"))
+                {
+                    vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.ID }));
+                }
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.ID)" modelId="@item.ID" style="margin:0;" />
+                        <label for="@("chkItem" + item.ID)"></label>
+                    </td>
+                    @if (AuthorizeUtilities.CheckUserRight("R2.7.2"))
+                    {
+                        <td class="align-center">
+                            <a onclick="EditRight('@item.ID')" href="#">Sửa</a>
+                        </td>
+                    }
+                    
+                    <td ondblclick="@vdbclickAction">
+                        <a href="#" onclick="@vdbclickAction">@item.ID</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.NAME</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

@@ -1,0 +1,162 @@
+﻿@model SMO.Service.PS.ProjectService
+    @using Newtonsoft.Json.Serialization;
+@using SMO.Repository.Implement.PS;
+@using Newtonsoft.Json;
+@using System.Linq;
+@{ 
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var allProjectIds = Model.ObjList.Select(x => x.ID);
+    var contracts = Model.UnitOfWork.Repository<ContractRepo>().Queryable()
+        .Where(x => allProjectIds.Contains(x.PROJECT_ID) && x.IS_SIGN_WITH_CUSTOMER)
+        .ToList();
+
+    var jsonData = Model.ObjList.Select(x => {
+        var contractParent = contracts.FirstOrDefault(y => y.PROJECT_ID == x.ID && y.PARENT_CODE == null);
+        var totalContractValue = contracts.Where(y => y.PROJECT_ID == x.ID).Sum(y => y.CONTRACT_VALUE);
+
+        return new
+        {
+            Id = x.ID,
+            Company = x.DonVi?.NAME,
+            Code = x.CODE,
+            Name = x.NAME,
+            ProjectLevel = x.ProjectLevel?.NAME,
+            ProjectType = x.ProjectType?.NAME,
+            Customer = x.Customer?.NAME,
+            StartDate = x.START_DATE,
+            FinishDate = x.FINISH_DATE,
+            NgayQuyetToan = x.NGAY_QUYET_TOAN,
+            NgayBaoHanh = x.HAN_BAO_HANH,
+            Status = x.STATUS.GetEnum<ProjectStatus>().GetName(),
+            ProjectDirector = x.GiamDocDuAn?.FULL_NAME,
+            ProjectManager = x.QuanTriDuAn?.FULL_NAME,
+            ProjectOwner = x.ProjectOwner?.FULL_NAME,
+            QuanLyHopDong = x.QuanLyHopDong?.FULL_NAME,
+            PhuTrachCungUng = x.PhuTrachCungUng?.FULL_NAME,
+            Department = x.PhongBan?.NAME,
+            Address = x.DIA_DIEM,
+            Area = x.KhuVuc?.NAME,
+            Period = x.Period?.TEXT,
+            ContractCode = contractParent?.CONTRACT_NUMBER,
+            ContractValue = totalContractValue,
+            CreatedBy = x.USER_CREATE?.FULL_NAME,
+            CreatedDate = x.CREATE_DATE?.ToString(Global.DateToStringFormat)
+        };
+        });
+    var gridId = Guid.NewGuid().ToString("N");
+
+    var currentUserName = ProfileUtilities.User.USER_NAME;
+    var hasPermissionEdit = AuthorizeUtilities.CheckUserRight("R7") || AuthorizeUtilities.CheckUserRight("R00");
+}
+ <div style="height: calc(100vh - 140px)" id="@gridId"></div>
+
+ <script type="text/javascript">
+    Forms.FloatingScroll(".table-responsive");
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(jsonData, jsonSerializeSettings));
+    const columns = [
+        { id: "company", header: [{ text: "Công ty" }, { content: "inputFilter" }], adjust: true, },
+        {
+            id: "code", header: [{ text: "Mã dự án" }, { content: "inputFilter" }], adjust: true,
+            template: (value, row) => {
+                const { id } = row
+                return `<a href="#" onclick="viewProjectDetail('${id}')">${value}</a>`
+            },
+            htmlEnable: true,
+
+        },
+        {
+            id: "name", header: [{ text: "Tên dự án" }, { content: "inputFilter" }], width: 450, autoWidth: false,
+            template: (value, row) => {
+                const { id } = row
+                return `<a href="#" onclick="viewProjectDetail('${id}')">${value}</a>`
+            },
+            htmlEnable: true,
+        },
+        { id: "projectLevel", header: [{ text: "Cấp dự án" }, { content: "selectFilter" }], adjust: true },
+        { id: "projectType", header: [{ text: "Loại dự án" }, { content: "selectFilter" }], adjust: true },
+        { id: "customer", header: [{ text: "Khách hàng" }], width: 300, autoWidth: false, },
+        {
+            id: "startDate", header: [{ text: "Ngày bắt đầu" }],
+            template: (value) => {
+                return moment(value).format("@Global.DateToStringMomentJSFormat")
+            }, adjust: true
+        },
+        {
+            id: "finishDate", header: [{ text: "Ngày kết thúc" }],
+            template: (value) => {
+                return moment(value).format("@Global.DateToStringMomentJSFormat")
+            }, adjust: true,
+        },
+        {
+            id: "ngayQuyetToan", header: [{ text: "Ngày quyết toán" }],
+            template: (value) => {
+                if (value == null) {
+                    return null
+                } else {
+                    return moment(value).format("@Global.DateToStringMomentJSFormat");
+                }
+
+            }, adjust: true,
+        },
+        {
+            id: "ngayBaoHanh", header: [{ text: "Ngày hết hạn bảo hành" }],
+            template: (value) => {
+                if (value == null) {
+                    return null
+                } else {
+                    return moment(value).format("@Global.DateToStringMomentJSFormat");
+                }
+
+            }, adjust: true,
+        },
+        { adjust: true, id: "status", header: [{ text: "Trạng thái" }, { content: "selectFilter" }] },
+        { adjust: true, id: "projectDirector", header: [{ text: "Lãnh đạo phụ trách" }] },
+        { adjust: true, id: "projectManager", header: [{ text: "PM" }] },
+        { adjust: true, id: "projectOwner", header: [{ text: "Người phụ trách" }] },
+        { adjust: true, id: "quanLyHopDong", header: [{ text: "Quản lý hợp đồng" }] },
+        { adjust: true, id: "phuTrachCungUng", header: [{ text: "Phụ trách cung ứng" }] },
+        { adjust: true, id: "department", header: [{ text: "Phòng ban phụ trách" }] },
+        {
+            adjust: true, id: "contractCode", header: [{ text: "Số hợp đồng khách hàng" }]
+        },
+        {
+            adjust: true, id: "contractValue", header: [{ text: "Giá trị hợp đồng (trước VAT)" }],
+            type: "number", format: "#,#"
+        },
+        { id: "area", header: [{ text: "Khu vực" }], width: 200, autoWidth: false, },
+        { id: "address", header: [{ text: "Địa điểm" }], width: 200, autoWidth: false, },
+        { adjust: true, id: "period", header: [{ text: "Kì thời gian" }] },
+        { adjust: true, id: "createdBy", header: [{ text: "Người tạo" }] },
+        { id: "createdDate", header: [{ text: "Ngày tạo" }], width: 120 }
+    ]
+
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        autoHeight: true,
+        leftSplit: 3,
+        //adjust: true,
+        resizable: true,
+        keyNavigation: true,
+        data: rawData,
+    });
+
+    function checkAuthorized(row) {
+        const { createdBy, projectOwner, id } = row
+        return @hasPermissionEdit.ToString().ToLower() || [createdBy, projectOwner].includes('@currentUserName')
+    }
+
+    function viewProjectDetail(id) {
+        const rowData = grid.data.getItem(id)
+        if (checkAuthorized(rowData)) {
+            Forms.LoadAjax(`/PS/Project/Edit/${id}`);
+        }
+    }
+
+    grid.events.on("cellDblClick", function (row, column, e) {
+        const { id } = row
+        if (checkAuthorized(row)) {
+            Forms.LoadAjax(`/PS/Project/Edit/${id}`);
+        }
+    });
+ </script>

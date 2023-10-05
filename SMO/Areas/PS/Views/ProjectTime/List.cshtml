@@ -1,0 +1,39 @@
+﻿@model SMO.Service.PS.ProjectTimeService
+
+@if (Model.ObjList.Count > 40)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th width="20px" class="align-center">
+                    <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
+                    <label for="chkAll"></label>
+                </th>
+                <th>Tên dự án</th>
+                <th>Ngày bắt đầu</th>
+                <th>Ngày kết thúc</th>
+                <th>Loại kỳ thời gian</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                var vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = item.ID }));
+                <tr>
+                    <td>
+                        <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.ID)" modelId="@item.ID" style="margin:0;" />
+                        <label for="@("chkItem" + item.ID)"></label>
+                    </td>
+                    <td ondblclick="@vdbclickAction">@item.Project.NAME</td>
+                    <td ondblclick="@vdbclickAction">@(item.START_DATE.ToString(Global.DateToStringFormat))</td>
+                    <td ondblclick="@vdbclickAction">@(item.FINISH_DATE.ToString(Global.DateToStringFormat))</td>
+                    <td ondblclick="@vdbclickAction">@item.TimeType.NAME</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

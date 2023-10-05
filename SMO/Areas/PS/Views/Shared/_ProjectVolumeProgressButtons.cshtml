@@ -1,0 +1,125 @@
+﻿@model string
+
+@{
+    var currentStatus = Model;
+    var refreshData = ViewBag.RefreshData as string;
+    if (string.IsNullOrEmpty(currentStatus))
+    {
+        currentStatus = ProjectWorkVolumeStatus.KHOI_TAO.GetValue();
+    }
+    bool isCustomer = ViewBag.IsCustomer;
+    bool isAccept = ViewBag.IsAccept;
+    string modul = ViewBag.Modul;
+    Guid projectId = ViewBag.ProjectId;
+
+    var statusCanEdit = new string[] {
+        ProjectWorkVolumeStatus.KHOI_TAO.GetValue(),
+        ProjectWorkVolumeStatus.TU_CHOI.GetValue(),
+        ProjectWorkVolumeStatus.KHONG_XAC_NHAN.GetValue() };
+    var editable = false;
+    if (isCustomer && AuthorizeUtilities.CheckUserRightProject(isAccept ? "RP9.1" : "RP8.1", projectId)
+        && statusCanEdit.Contains(currentStatus)
+        )
+    {
+        editable = true;
+    }
+    else if (!isCustomer && AuthorizeUtilities.CheckUserRightProject(isAccept ? "RP7.1" : "RP6.1", projectId)
+        && statusCanEdit.Contains(currentStatus)
+        )
+    {
+        editable = true;
+    }
+}
+<script type="text/javascript">
+    function refreshProjectWorkVolumeStatusData() {
+        @refreshData
+    }
+</script>
+@if (editable)
+{
+    @Html.MyButton("cmdSave", "Lưu dữ liệu", "saveData('0')", "Alt+N", "done_all")
+    @Html.MyButton("cmdSave", "Gửi", "saveData('1')", "Alt+N", "send")
+}
+@switch (currentStatus.GetEnum<ProjectWorkVolumeStatus>())
+{
+    case ProjectWorkVolumeStatus.KHOI_TAO:
+        @*if (
+            (!isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP6.1", projectId)) ||
+            (isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP8.1", projectId)) ||
+            (!isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP7.1", projectId)) ||
+            (isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP9.1", projectId))
+        )
+        {
+            @Html.MyButton("cmdSave", "Gửi", "onClickTrinhDuyet()", "Alt+N", "send")
+        }*@
+        break;
+    case ProjectWorkVolumeStatus.CHO_XAC_NHAN:
+        if (
+            (!isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP6.2", projectId)) ||
+            (isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP8.2", projectId)) ||
+            (!isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP7.2", projectId)) ||
+            (isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP9.2", projectId))
+        )
+        {
+            @Html.MyButton("cmdSave", "Xác nhận", "onClickAccept()", "Alt+N", "done")
+            @Html.MyButton("cmdSave", "Không xác nhận", "onClickNotAccept()", "Alt+N", "cancel")
+        }
+        break;
+    case ProjectWorkVolumeStatus.XAC_NHAN:
+        if (
+            (!isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP6.3", projectId)) ||
+            (isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP8.3", projectId)) ||
+            (!isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP7.3", projectId)) ||
+            (isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP9.3", projectId))
+        )
+        {
+            @Html.MyButton("cmdSave", "Phê duyệt", "onClickPheDuyet()", "Alt+N", "done")
+            @Html.MyButton("cmdSave", "Từ chối", "onClickTuChoi()", "Alt+N", "close")
+        }
+        break;
+    case ProjectWorkVolumeStatus.KHONG_XAC_NHAN:
+        @*if (
+            (!isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP6.1", projectId)) ||
+            (isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP8.1", projectId)) ||
+            (!isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP7.1", projectId)) ||
+            (isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP9.1", projectId))
+        )
+        {
+            @Html.MyButton("cmdSave", "Gửi", "onClickTrinhDuyet()", "Alt+N", "send")
+        }*@
+        break;
+    case ProjectWorkVolumeStatus.PHE_DUYET:
+        if (
+            (!isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP6.3", projectId)) ||
+            (isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP8.3", projectId)) ||
+            (!isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP7.3", projectId)) ||
+            (isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP9.3", projectId))
+        )
+        {
+            @Html.MyButton("cmdSave", "Hủy phê duyệt", "onClickHuyPheDuyet()", "Alt+N", "cancel")
+        }
+        break;
+    case ProjectWorkVolumeStatus.TU_CHOI:
+        @*if (
+            (!isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP6.1", projectId)) ||
+            (isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP8.1", projectId)) ||
+            (!isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP7.1", projectId)) ||
+            (isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP9.1", projectId))
+        )
+        {
+            @Html.MyButton("cmdSave", "Gửi", "onClickTrinhDuyet()", "Alt+N", "send")
+        }*@
+        break;
+    default:
+        @*if (
+            (!isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP6.1", projectId)) ||
+            (isCustomer && modul == "Work" && AuthorizeUtilities.CheckUserRightProject("RP8.1", projectId)) ||
+            (!isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP7.1", projectId)) ||
+            (isCustomer && modul == "Accept" && AuthorizeUtilities.CheckUserRightProject("RP9.1", projectId))
+        )
+        {
+            @Html.MyButton("cmdSave", "Gửi", "onClickTrinhDuyet()", "Alt+N", "send")
+        }*@
+        break;
+
+}                

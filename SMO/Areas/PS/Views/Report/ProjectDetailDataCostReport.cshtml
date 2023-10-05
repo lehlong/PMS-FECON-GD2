@@ -1,0 +1,326 @@
+﻿@model IEnumerable<SMO.Service.PS.Models.Report.ProjectDetailDataCost.ProjectDetailDataCost>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var gridId = Guid.NewGuid().ToString();
+    var searchModel = ViewBag.SearchModel as SMO.Service.PS.Models.Report.ProjectDetailDataCost.ProjectDetailDataCostModel;
+    searchModel.BoldRowIndexes = Model.Select((data, index) => new { data, index })
+        .Where(x => x.data.Type == SMO.Core.Entities.PS.ProjectEnum.PROJECT.ToString())
+        .Select(x => x.index).ToList();
+    searchModel.PercentageRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.UnitCode == "%").Select(x => x.index).ToList();
+    var display = ConfigHideColumn.XUAT_DU_LIEU_CHI_TIET_CHI_PHI_DU_AN.GetValue().ToString();
+
+    var project = SMOUtilities.GetProject(searchModel.ProjectId);
+    var timeType = project.TIME_TYPE;
+    var timeTypeText = string.Empty;
+
+    foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
+    {
+        if (time.GetValue().Equals(timeType))
+        {
+            timeTypeText = time.GetName();
+            break;
+        }
+    }
+}
+<style>
+    .row-bold .dhx_grid-cell {
+        font-weight: bold
+    }
+
+    .grid .dhx_grid-cell {
+        word-break: break-word
+    }
+
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
+
+    .fade-report {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div class="fade-report">
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+    <div class="dropdown-hide-column">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+        <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+        </select>
+        <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+    </div>
+    <div style="height: calc(100vh - 180px)" id="@gridId" class="grid"></div>
+
+    <script type="text/javascript">
+
+    const widthDefault = 120
+    function calculatePercentage(val1, val2) {
+        if (_.isNil(val1) || _.isNil(val2) || isNaN(val1) || isNaN(val2)) {
+            return 0
+        } else if (val2 > 0) {
+            return val1 / val2
+        }
+        return 0
+    }
+    function displayNumberRounded(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0')
+    }
+    function displayQuantity(value, row) {
+        const { unitCode } = row
+        if (unitCode === "%") {
+            return numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+        }
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[000]')
+    }
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+    const classes = ''
+    const gridData = rawData.map(row => {
+        const { price, dataCostPeriods, contractPrice } = row  // sửa thành đơn giá cây chi phí
+        const totalPlanVolume = _.sumBy(dataCostPeriods, "planVolume")
+        const totalPlanVolumePrice = totalPlanVolume * price
+        const totalWorkedVolume = _.sumBy(dataCostPeriods, "workedVolume")
+        const totalWorkedVolumePrice = _.sumBy(dataCostPeriods, function (o) { return o.workedPrice * o.workedVolume; });
+        const totalAcceptedVolume = _.sumBy(dataCostPeriods, "acceptedVolume")
+        const totalAcceptedVolumePrice = _.sumBy(dataCostPeriods, function (o) { return o.acceptedPrice * o.acceptedVolume; });
+        const totalPercentageWorkWithPlan = calculatePercentage(totalWorkedVolume, totalPlanVolume)
+        const rowData = {
+            ...row,
+            totalPlanVolume,
+            totalPlanVolumePrice,
+            totalWorkedVolume,
+            totalWorkedVolumePrice,
+            totalAcceptedVolume,
+            totalAcceptedVolumePrice,
+            totalPercentageWorkWithPlan
+        }
+        $.each(_.orderBy(dataCostPeriods, ["order"], ["asc"]), (i, dataCostPeriod) => {
+            const { planVolume, workedVolume, acceptedVolume, workedPrice, acceptedPrice } = dataCostPeriod
+            const totalPlanVolumePrice = planVolume * price
+            const totalWorkedVolumePrice = workedVolume * workedPrice
+            const totalAcceptedVolumePrice = acceptedVolume * acceptedPrice
+            const percentageWorkWithPlan = calculatePercentage(workedVolume, planVolume)
+            _.set(rowData, `planVolume_${i}`, planVolume)
+            _.set(rowData, `planVolumePrice_${i}`, totalPlanVolumePrice)
+            _.set(rowData, `workedVolume_${i}`, workedVolume)
+            _.set(rowData, `workedVolumePrice_${i}`, totalWorkedVolumePrice)
+            _.set(rowData, `acceptedVolume_${i}`, acceptedVolume)
+            _.set(rowData, `acceptedVolumePrice_${i}`, totalAcceptedVolumePrice)
+            _.set(rowData, `percentageWorkWithPlan_${i}`, percentageWorkWithPlan)
+        })
+        return rowData
+    })
+
+    const calculateParent = _.chain(gridData).reverse().map((row, _index, collection) => {
+        const { id, totalWorkedVolumePrice, totalAcceptedVolumePrice, totalPlanVolumePrice, dataCostPeriods, planVolume } = row
+        if (!id) {
+            return row;
+        }
+        const children = _.filter(collection, ['parentId', id])
+        if (_.isEmpty(children)) {
+            return row;
+        }
+        if (!totalAcceptedVolumePrice) {
+            row.totalAcceptedVolumePrice = _.sumBy(children, 'totalAcceptedVolumePrice')
+        }
+        if (!totalWorkedVolumePrice) {
+            row.totalWorkedVolumePrice = _.sumBy(children, 'totalWorkedVolumePrice')
+        }
+        if (!totalPlanVolumePrice) {
+            row.totalPlanVolumePrice = _.sumBy(children, 'totalPlanVolumePrice')
+        }
+        row.totalPercentageWorkWithPlan = calculatePercentage(row.totalWorkedVolumePrice, row.totalPlanVolumePrice)
+
+        for (var i = 0; i < dataCostPeriods.length; i++) {
+            const indexTotalWorkedPrice = _.get(row, `workedVolumePrice_${i}`)
+            const indexTotalAcceptPrice = _.get(row, `acceptedVolumePrice_${i}`)
+            const indexTotalPlanVolumePrice = _.get(row, `planVolumePrice_${i}`)
+            if (!indexTotalAcceptPrice) {
+                _.set(row, `acceptedVolumePrice_${i}`, _.sumBy(children, `acceptedVolumePrice_${i}`))
+            }
+            if (!indexTotalWorkedPrice) {
+                _.set(row, `workedVolumePrice_${i}`, _.sumBy(children, `workedVolumePrice_${i}`))
+            }
+            if (!indexTotalPlanVolumePrice) {
+                _.set(row, `planVolumePrice_${i}`, _.sumBy(children, `planVolumePrice_${i}`))
+            }
+            _.set(row, `percentageWorkWithPlan_${i}`, calculatePercentage(_.get(row, `workedVolumePrice_${i}`), _.get(row, `planVolumePrice_${i}`)))
+        }
+        return row
+    }).reverse().value();
+
+    function displayNumber(value) {
+        return numeral(isNaN(value) || !_.isFinite(value) ? 0 : value).format('0,0.[000]')
+    }
+    function displayPercentage(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+    }
+    const columns = [
+        { id: "projectStructureCode", header: [{ text: "Mã " }, { content: "selectFilter" }], width: 100 },
+        { id: "projectStructureName", header: [{ text: "Hạng mục công việc", rowspan: 2 }], width: 250 },
+        { id: "vendorName", header: [{ text: "Đơn vị thực hiện", rowspan: 2 }], width: 200 },
+        { id: "contractCode", header: [{ text: "Số HĐ/PLHĐ", rowspan: 2 }], width: 170 },
+        { id: "unitName", header: [{ text: "Đơn vị tính", rowspan: 2 }], width: 110 },
+        {
+            id: "totalPlanVolume", header: [
+                { text: "TỔNG CỘNG", colspan: 7, align: 'center' },
+                {
+                    text: `<span class="${classes}">Khối lượng kế hoạch</span>`, align: 'center'
+                }
+            ], template: displayQuantity, align: 'right', width: 135
+        },
+        {
+            id: "totalPlanVolumePrice", header: ["", {
+                text: `<span class="${classes}">Giá trị kế hoạch (chưa VAT)</span>`, align: 'center'
+            }],
+            align: 'right',  template: displayNumberRounded, width: 170
+        },
+        {
+            id: "totalWorkedVolume", header: ["", {
+                text: `<span class="${classes}">Khối lượng thực hiện</span>`, align: 'center'
+            }],
+            template: displayQuantity, align: 'right', width: 135
+        },
+        {
+            id: "totalWorkedVolumePrice", header: ["", {
+                text: `<span class="${classes}">Giá trị thực hiện (chưa VAT)</span>`, align: 'center'
+            }],
+            align: 'right',  template: displayNumberRounded, width: 170
+        },
+        {
+            id: "totalAcceptedVolume", header: ["", { text: `<span class="${classes}">Khối lượng nghiệm thu</span>`, align: 'center' }],
+            template: displayQuantity, align: 'right', width: 140
+        },
+        {
+            id: "totalAcceptedVolumePrice", header: ["", { text: `<span class="${classes}">Giá trị nghiệm thu (chưa VAT)</span>`, align: 'center' }],
+            align: 'right',  template: displayNumberRounded, width: 160
+        },
+        {
+            id: "totalPercentageWorkWithPlan", header: ["", { text: `<span class="${classes}">%thực hiện/ kế hoạch</span>`, align: 'center' }],
+            template: displayPercentage, align: 'right', width: 142
+        },
+    ]
+    $.each(_.orderBy(rawData[0]?.dataCostPeriods, ["order"], ["asc"]), (i, value) => {
+        const { startDate, toDate} = value
+        const fromDate = moment(startDate).format("@Global.DateToStringMomentJSFormat");
+        const finishDate = moment(toDate).format("@Global.DateToStringMomentJSFormat");
+        columns.push(...[
+            {
+                id: `planVolume_${i}`, header: [
+                    {
+                        text: `<div style="display: block;width: 100%;text-align: center;white-space: initial;">
+                        <strong>@timeTypeText.ToUpper() ${i + 1}</strong>
+                        <div style="text-align: center; font-size: 0.8em">${fromDate} - ${finishDate}</div>
+                        </div>`, colspan: 7, align: 'center' },
+                    { text: 'Khối lượng kế hoạch', align: 'center' }
+                ], template: displayQuantity, align: 'right', width: 135
+            },
+            {
+                id: `planVolumePrice_${i}`, header: ["", { text: `<span class="${classes}">Giá trị kế hoạch (chưa VAT)</span>`, align: 'center' }],
+                align: 'right',  template: displayNumberRounded, width: 170
+            },
+            {
+                id: `workedVolume_${i}`, header: ["", { text: `<span class="${classes}">Khối lượng thực hiện</span>`, align: 'center' }],
+                template: displayQuantity, align: 'right', width: 135
+            },
+            {
+                id: `workedVolumePrice_${i}`, header: ["", {
+                    text: `<span class="${classes}">Giá trị thực hiện (chưa VAT)</span>`, align: 'center'
+                }],
+                align: 'right',  template: displayNumberRounded, width: 170
+            },
+            {
+                id: `acceptedVolume_${i}`, header: ["", { text: `<span class="${classes}">Khối lượng nghiệm thu</span>`, align: 'center' }],
+                template: displayQuantity, align: 'right', width: 140
+            },
+            {
+                id: `acceptedVolumePrice_${i}`, header: ["", { text: `<span class="${classes}">Giá trị nghiệm thu (chưa VAT)</span>`, align: 'center' }],
+                align: 'right',  template: displayNumberRounded, width: 160
+            },
+            {
+                id: `percentageWorkWithPlan_${i}`, header: ["", { text: `<span class="${classes}">%thực hiện/ kế hoạch</span>`, align: 'center' }],
+                template: displayPercentage, align: 'right', width: 142
+            },
+        ])
+    })
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        leftSplit: 5,
+        autoHeight: true,
+        resizable: true,
+        data: calculateParent,
+        headerRowHeight: 50,
+        selection: "cell",
+        keyNavigation: true,
+        rowCss: function ({ type }) { return type === "PROJECT" || type === 0 ? "row-bold" : "" },
+    });
+
+    function ExportExcel() {
+        grid.export.xlsx({
+            name: "XUAT_DU_LIEU_CHI_TIET_DU_AN_CHI_PHI.xlsx",
+            url: "@Url.Action("ExportExcelProjectDetailDataCost", new { searchModel=JsonConvert.SerializeObject(searchModel)})"
+        });
+    }
+
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+
+        function updateHideColumn() {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+        }
+    $(function () {
+        for (i = 0; i < columns.length; i++) {
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+    });
+    </script>
+</div>

@@ -1,0 +1,783 @@
+﻿@model IList<SMO.Service.PS.Models.AcceptVolumeViewModel>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@using SMO.Core.Entities.PS;
+@using SMO.Core.Entities.MD;
+@{
+    var gridId = Guid.NewGuid().ToString();
+    var formId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var statusDict = new Dictionary<string, string>();
+    var display = ConfigHideColumn.NGHIEM_THU_KHACH_HANG.GetValue().ToString();
+
+    foreach (ProjectWorkVolumeStatus projectVolume in Enum.GetValues(typeof(ProjectWorkVolumeStatus)))
+    {
+        statusDict.Add(projectVolume.GetValue(), projectVolume.GetName());
+    }
+    var currentObj = ViewBag.CurrentObj as T_PS_VOLUME_ACCEPT;
+    if (string.IsNullOrEmpty(currentObj.STATUS))
+    {
+        currentObj.STATUS = ProjectWorkVolumeStatus.KHOI_TAO.GetValue();
+    }
+    var isEditingObj = currentObj.ID != Guid.Empty;
+    var startDate = isEditingObj ? currentObj.FROM_DATE : null;
+    var toDate = isEditingObj ? currentObj.TO_DATE : null;
+    var customer = ViewBag.Customer as T_MD_CUSTOMER;
+
+    var editable = false;
+    var disabled = "disabled";
+
+    if (AuthorizeUtilities.CheckUserRightProject("RP9.1", currentObj.PROJECT_ID))
+    {
+        editable = true;
+        disabled = "";
+    }
+    var project = SMOUtilities.GetProject(currentObj.PROJECT_ID);
+    var isProjectCanEdit = ProjectStatus.BAT_DAU.GetValue() == project.STATUS;
+    var summaryRowId = Guid.NewGuid();
+
+    string[] header = new string[] { customer.NAME,project.NAME, project.CODE, startDate?.Day.ToString(), startDate?.Month.ToString(), startDate?.Year.ToString(), toDate?.Day.ToString(), toDate?.Month.ToString(), toDate?.Year.ToString() };
+    if(project.STATUS == "04" || project.STATUS == "05")
+    {
+        editable = false;
+    }
+}
+
+<div class="row m-t-30" id="@formId">
+    <div class="col-md-4 col-xs-12">
+        <label>Khách hàng</label>
+        <div class="form-group">
+            <div class="form-line">
+                <input class="form-control" data-val="False" readonly value="@customer.NAME.ToUpper()">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-xs-12">
+        <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+            <div style="flex: 1">
+                <div class="form-line">
+                    <label>Từ ngày</label>
+                    <input class="form-control datepicker" name="fromDate" id="fromDate" autocomplete="off" type="text" @disabled
+                           onchange="onChangeDate()" value="@startDate" />
+                </div>
+            </div>
+            <div style="flex: 1">
+                <div class="form-line">
+                    <label>Đến ngày</label>
+                    <input class="form-control datepicker" name="toDate" id="toDate" type="text" @disabled
+                           onchange="onChangeDate()" autocomplete="off" value="@toDate" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-xs-12">
+        <label>Trạng thái</label>
+        <div class="form-group">
+            <div class="form-line">
+                <input class="form-control" id="status" data-val="False" readonly value="@(currentObj.STATUS.GetEnum<ProjectWorkVolumeStatus>().GetName())">
+            </div>
+        </div>
+    </div>
+
+    <div class="clearfix"></div>
+    <div style="height: calc(100vh - 302px)" id="@gridId"></div>
+</div>
+
+<script type="text/javascript">
+    var editableAcceptCustomer = false;
+    @if (editable)
+    {
+        <text>
+        editableAcceptCustomer = true;
+        </text>
+    }
+    $(function () {
+        Forms.CompleteUI();
+        @if (!new string[] {@ProjectWorkVolumeStatus.KHOI_TAO.GetValue(),
+        @ProjectWorkVolumeStatus.KHONG_XAC_NHAN.GetValue(),
+        @ProjectWorkVolumeStatus.TU_CHOI.GetValue() }.Contains(currentObj.STATUS))
+        {
+            <text>
+            $('#@formId #fromDate').prop('disabled', true);
+        $('#@formId #toDate').prop('disabled', true);
+        </text>
+        }
+    });
+
+    const statuses = @Html.Raw(JsonConvert.SerializeObject(statusDict));
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+    function validateNumber(value) {
+        return numeral(isNaN(value) ? 0 : value).format('0.[0000000000]')
+    }
+    function displayNumber(value) {
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[0000000000]')
+    }
+    function displayPercentage(value) {
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[00]%')
+    }
+    function displayNumberRounded(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0')
+    }
+    function displayQuantity(value, row) {
+        const { unitCode } = row
+        if (unitCode === "%") {
+            return numeral(isNaN(value) ? 0 : value).format('0,0.[0000000000]%')
+        }
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[0000000000]')
+    }
+    const structGroup = _.chain(rawData)
+            .map(x => ({
+                ...x,
+                total: roundNumber(x.acceptVolume * x.price),
+                id: x.projectStructureId,
+                statusText: statuses[x.status],
+                finishedDate: x.finishedDate ? moment(x.finishedDate).toDate() : undefined,
+                //onProgressVolume: (x.accumulateAllowedVolume && x.accumulateAcceptedVolume) ? x.accumulateAllowedVolume - x.accumulateAcceptedVolume : undefined
+            }))
+        .reverse()
+        .map((row, _index, collection) => {
+            const { projectStructureId, total } = row
+            const children = _.filter(collection, ['parentId', projectStructureId])
+            if (!children) {
+                return row;
+            }
+            if (!total) {
+                row.total = _.sumBy(children, 'total')
+            }
+            return row
+        })
+        .reverse()
+        .value();
+    const allIds = _.map(structGroup, "id")
+
+    if (structGroup.length > 0) {
+        structGroup.unshift({
+            total: _.chain(structGroup)
+                .filter(({ parentId }) => !allIds.includes(parentId))
+                .sumBy("total")
+                .value(),
+            projectStructureName: 'Tổng cộng',
+            id: "@summaryRowId",
+            isSummary: true
+        })
+    }
+
+    function calculateKLDoDang(row) {
+        return row.accumulatedVolume - row.accumulateAllowedVolume;
+    }
+
+    const gridWithTotal = _.map(structGroup, (row) => {
+        return {
+            ...row,
+            pendingVolume: calculateKLDoDang(row)
+        }
+    })
+    const columns = [
+        {
+            id: "projectStructureType", header: [{ text: "", align: 'center'}],
+            template: (type, row) => {
+                const { isSummary } = row
+                if (isSummary) {
+                    return undefined
+                }
+                return `<image src="Content/Images/IconProject/${type}.png"></image>`
+            },
+            htmlEnable: true,
+            width: 50
+        },
+        { id: "projectStructureCode", header: [{ text: "Mã ", align: 'center' }], width: 100 },
+        { id: "projectStructureName", header: [{ text: "Hạng mục công việc", align: 'center' }, { content: "inputFilter" }], width: 300 },
+        { id: "contractCode", header: [{ text: "Mã hợp đồng", align: 'center' }, { content: "selectFilter" }], width: 150 },
+        { id: "unitCode", header: [{ text: "ĐVT", align: 'center' }], width: 100 },
+        {
+            id: "contractVolume", header: [{ text: "KL hợp đồng", align: 'center' }], width: 112, align: "right", template: displayQuantity
+        },
+        {
+            id: "planVolume", header: [{ text: "KL kế hoạch", align: 'center' }], width: 110, align: "right", template: displayQuantity
+        },
+        {
+            id: "accumulatedPlanVolume", header: [{ text: "LK kế hoạch", align: 'center' }], width: 110, align: "right", template: displayQuantity
+        },
+        {
+            id: "accumulatedVolume", header: [{ text: "LK thực hiện", align: 'center' }], align: "right", template: displayQuantity,
+            width: 114
+        },
+        {
+            id: "price", header: [{ text: "Đơn giá", align: 'center' }], align: "right", type: "decimal", width: 120, template: displayNumber
+        },
+        //{ id: "accumulateAcceptedVolume", header: [{ text: "LK xác nhận", align: 'center'}] },
+        {
+            id: "acceptVolume", header: [{ text: "KL nghiệm thu", align: 'center' }], editable: editableAcceptCustomer, align: "right", template: displayQuantity,
+            width: 134
+        },
+        {
+            id: "total", header: [{ text: "Thành tiền", align: 'center' }], align: "right", type: "number", template: displayNumberRounded,
+            adjust: true
+        },
+        {
+            id: "accumulateAllowedVolume", header: [{ text: "LK nghiệm thu", align: 'center' }], align: "right", template: displayQuantity,
+            width: 134
+        },
+        {
+            id: "totalAccumulateAllowedVolume", header: [{ text: "LK NT đã nhập", align: 'center' }], align: "right", template: displayQuantity,
+            width: 125
+        },
+        {
+            id: "pendingVolume", header: [{ text: "KL dở dang", align: 'center' }], align: "right", template: displayQuantity,
+            width: 105
+        },
+        //{ id: "onProgressVolume", header: [{ text: "KL dở dang", align: 'center'}]},
+        //{ id: "percentageDone", header: [{ text: "Tỷ lệ hoàn thành(%)", align: 'center'}] },
+        { id: "notes", header: [{ text: "Ghi chú", align: 'center' }], editable: editableAcceptCustomer, width: 96 },
+        //{ id: "finishedDate", header: [{ text: "Ngày hoàn thành", align: 'center'}], type: "date", format: "%d/%m/%Y" },
+        //{ id: "workStatus", header: [{ text: "Trạng thái công việc", align: 'center'}] },
+        { id: "userUpdated", header: [{ text: "Người cập nhật", align: 'center' }], width: 133 },
+    ]
+    if (@isEditingObj.ToString().ToLower()) {
+        columns.push({
+            id: "referenceFileId", header: [{ text: "Đính kèm", align: 'center'}],
+            adjust: false,
+            width: 96,
+            align: 'center',
+            template: (value, task) => {
+                if (task.projectStructureType !== '@ProjectEnum.PROJECT.ToString()' && task.referenceFileId) {
+                    return `<i class="fa fa-paperclip p-r-5" onclick="viewReferenceFile('${value}', '${task.id}')"></i>`
+                }
+            },
+            htmlEnable: true,
+        })
+    }
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        autoWidth: true,
+        autoHeight: true,
+        leftSplit: 3,
+        resizable: true,
+        selection: "cell",
+        keyNavigation: true,
+        data: gridWithTotal,
+        headerRowHeight: 50
+    });
+
+    document.getElementById("@gridId").addEventListener("keydown", function (e) {
+        if (e.keyCode == 37 || e.which == 37 || e.keyCode == 38 || e.which == 38 || e.keyCode == 39 || e.which == 39 || e.keyCode == 40 || e.which == 40) {
+            grid.editEnd();
+        }
+    });
+
+    let isEditing = false
+    document.getElementById("@gridId").onkeypress = function (e) {
+        if (isEditing) {
+            return;
+        }
+        if (@currentObj.STATUS == "02" || @currentObj.STATUS == "04" ||@currentObj.STATUS == "05" || @project.STATUS == "04") {
+            return;
+        }
+        if (e.which == 9 || e.which == 13) {
+            return;
+        }
+        var selectedCell = grid.selection.getCell();
+        if (selectedCell == undefined) {
+            return;
+        }
+        const { row, column } = selectedCell;
+        if (!column.id.includes('acceptVolume') && !column.id.includes('notes')) {
+            return;
+        }
+        if (row.unitCode === "%") {
+            grid.editCell(row.id, column.id);
+            row[column.id] = parseFloat(e.key) / 100;
+        } else {
+            grid.editCell(row.id, column.id);
+            row[column.id] = parseFloat(e.key);
+        }
+    };
+
+    $(document).bind('paste', function (e) {
+        if (@currentObj.STATUS == "02" || @currentObj.STATUS == "04" ||@currentObj.STATUS == "05" || @project.STATUS == "04") {
+            return;
+        }
+        var selectedCell = grid.selection.getCell();
+        if (selectedCell == undefined) {
+            return;
+        }
+        const { row, column } = selectedCell;
+        if (!column.id.includes('acceptVolume')) {
+            return;
+        }
+
+        const pastedText = (e.originalEvent.clipboardData || window.clipboardData)?.getData('text').trim().split(/\r?\n */).map(r => r.split(/\t/));
+
+        const indexSelectCell = grid.data.getIndex(row.id);
+        const dataCell = grid.data.getRawData();
+        var lengthText = 0;
+        if (pastedText.length > dataCell.length - indexSelectCell) {
+            lengthText = dataCell.length - indexSelectCell;
+        } else {
+            lengthText = pastedText.length;
+        }
+        const columnId = column.id;
+        for (var i = 0; i < lengthText; i++) {
+            const rowId = dataCell[indexSelectCell + i].id
+            var index = grid.data.getIndex(rowId);
+            var cellId = grid.data.getId(index);
+            if (!(column.$cellCss[cellId] == "dhx-cell-disabled ")) {
+                var oldValue = dataCell[indexSelectCell + i][column.id];
+                var oldPenVolume = dataCell[indexSelectCell + i].pendingVolume;
+                const rowData = grid.data.find({ by: 'id', match: rowId })
+                dictValueOrgin[rowId] = rowData[columnId] ?? 0
+
+                var value = String(pastedText[i][0]).replaceAll(",", "")
+
+                if (String(value).includes("%")) {
+                    value = String(value).replace("%", "")
+                }
+
+                value = validateNumber(value)
+
+                dataCell[indexSelectCell + i][columnId] = value;
+                dataCell[indexSelectCell + i].value = value;
+
+                if (oldValue?.toString() == value?.toString()) {
+                    continue;
+                }
+
+                if (value - oldValue > oldPenVolume) {
+                    setAlertColumn(dataCell[indexSelectCell + i].id)
+                }
+
+                value = value ?? 0
+                if (dictValueOrgin[rowId] === value) {
+                    return
+                }
+                if (dataCell[indexSelectCell + i].unitCode === "%") {
+                    value /= 100
+                }
+                const projectStructureId = dataCell[indexSelectCell + i].projectStructureId;
+                const price = dataCell[indexSelectCell + i].price;
+                const parentId = dataCell[indexSelectCell + i].parentId;
+
+                const accumulateAllowedVolume = rowData.accumulateAllowedVolume + Number(value) - dictValueOrgin[rowId]
+                const totalAccumulateAllowedVolume = rowData.totalAccumulateAllowedVolume + Number(value) - dictValueOrgin[rowId]
+                const pendingVolume = calculateKLDoDang({ ...rowData, accumulateAllowedVolume })
+                grid.data.update(projectStructureId, { [columnId]: value, total: roundNumber(value * price), pendingVolume, accumulateAllowedVolume }, true);
+
+                updateTotalGrid(parentId);
+
+            }
+        }
+
+        setTimeout(function () {
+            grid.paint();
+            updateTotalGrid();
+        }, 100);
+    });
+
+    function ExportExcel() {
+        grid.export.xlsx({
+            name: "KhoiLuongNghiemThuKhachHang.xlsx",
+            url: "@Url.Action("ExportExcelCustomer", new { header = JsonConvert.SerializeObject(header) })"
+        });
+    }
+
+    function tempAlert(msg, duration) {
+        var el = document.createElement("div");
+        el.setAttribute("style", "display:inline-block;margin 0px auto;position:fixed;transition:all 0.5s aese-in-out 0s;z-index:1031;top:20px;right:20px;animation: growDown 1500ms ease-in-out forwards;transform - origin: top center");
+        el.setAttribute("class", "bootstrap-notify-container alert alert-dismissble alert-success role=animated fadeInDown")
+        el.innerHTML = msg;
+        setTimeout(function () {
+            el.parentNode.removeChild(el);
+        }, duration);
+        document.body.appendChild(el);
+    }
+
+    function excelFileToJSON(file) {
+        if (@currentObj.STATUS == "02" || @currentObj.STATUS == "04" ||@currentObj.STATUS == "05" || @project.STATUS == "04") {
+            alert("Không được phép chỉnh sửa!!!");
+            return;
+        }
+
+        try {
+            $("#import").hide();
+            var reader = new FileReader();
+            reader.readAsBinaryString(file);
+            reader.onload = function (e) {
+
+                var data = e.target.result;
+                var workbook = XLSX.read(data, {
+                    type: 'binary',
+                    startRow : 8
+                });
+                var result = {};
+                workbook.SheetNames.forEach(function (sheetName) {
+                    var range = XLSX.utils.decode_range(workbook.Sheets[sheetName]['!ref']);
+                    range.s.c = 0;
+                    range.e.c = columns.length;
+                    var new_range = XLSX.utils.encode_range(range);
+                    var excelInJSON = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName], { blankRows: false, defval: '', range: new_range });
+                    result = excelInJSON
+                });
+
+                const array = JSON.parse(JSON.stringify(result, null, 4));
+
+                array.splice(0, 3)
+                for (i = 1; i < array.length; i++) {
+                    let value = array[i].__EMPTY_9 ?? 0
+                    grid.editCell(grid.data.getId(i), grid.config.columns[10].id);
+                    grid.data._order[i].acceptVolume = validateNumber(String(value).replaceAll(",", ""));
+
+                    grid.editCell(grid.data.getId(i), grid.config.columns[14].id);
+                    grid.data._order[i].notes = array[i].__EMPTY_14;
+
+
+                    if (value > grid.data._order[i].accumulatedVolume) {
+                        setAlertColumn(grid.data._order[i].id);
+                    }
+
+                    const columnId = grid.config.columns[10].id;
+
+                    const projectStructureId = grid.data._order[i].projectStructureId;
+                    const price = grid.data._order[i].price;
+                    const parentId = grid.data._order[i].parentId;
+
+
+                    const accumulateAllowedVolume = grid.data._order[i].accumulateAllowedVolume + Number(value) - dictValueOrgin[grid.data._order[i].id]
+                    const totalAccumulateAllowedVolume = grid.data._order[i].totalAccumulateAllowedVolume + Number(value) - dictValueOrgin[grid.data._order[i].id]
+                    const pendingVolume = calculateKLDoDang({ ...grid.data._order[i], accumulateAllowedVolume })
+                    grid.data.update(projectStructureId, { [columnId]: value, total: roundNumber(value * price), pendingVolume, accumulateAllowedVolume }, true);
+
+
+                    updateTotalGrid(parentId);
+                    validateVolume({ ...grid.data.getId(i), [columnId]: value })
+                }
+                grid.paint();
+                tempAlert("Import thành công!", 2000)
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const dictValueOrgin = {};
+
+    grid.config.currentStatus = '@(currentObj.STATUS.GetEnum<ProjectWorkVolumeStatus>().GetValue())';
+
+    grid.config.allowEditStatuses = ['@ProjectWorkVolumeStatus.KHOI_TAO.GetValue()',
+        '@ProjectWorkVolumeStatus.KHONG_XAC_NHAN.GetValue()',
+        '@ProjectWorkVolumeStatus.TU_CHOI.GetValue()'];
+
+
+    let oldPendingVolume = '';
+    let oldAcceptVolume = '';
+    grid.events.on("afterEditStart", function (row, col, editorType) {
+        oldPendingVolume = row.pendingVolume;
+        oldAcceptVolume = row.acceptVolume;
+        isEditing = true
+        if (col.id == "acceptVolume") {
+            setTimeout(function () {
+                const { unitCode } = row
+                const element = $(".dhx_cell-editor__textarea")
+                if (unitCode === "%") {
+                    element.val(element.val() * 100)
+                    element.inputmask({ 'alias': 'percentage', 'max': 10000000, 'min': -9999999, 'allowMinus': true, 'groupSeparator': ',', 'digits': 10, 'autoGroup': true, 'autoUnmask': true });
+                } else {
+                    element.inputmask({ 'alias': 'decimal', 'groupSeparator': ',', 'digits': 10, 'autoGroup': true, 'autoUnmask': true });
+                }
+            }, 50);
+        }
+    });
+
+    grid.events.on("beforeEditStart", function (row, col) {
+        const { active, isSummary } = row
+        if (!@isProjectCanEdit.ToString().ToLower() || isSummary) {
+            return false;
+        }
+        const allowEditStatuses = grid.config.allowEditStatuses
+        const currentStatus = grid.config.currentStatus
+        if (!allowEditStatuses.includes(currentStatus)) {
+            return false;
+        }
+        const canEdit = col.id === "selected" || active;
+        if (col.id === "acceptVolume") {
+            dictValueOrgin[row.id] = row[col.id] ?? 0
+        }
+        return canEdit;
+    });
+    grid.events.on("beforeEditEnd", function (value, row, col) {
+        if (row.unitCode === "%") {
+            value /= 100;
+        }
+        if (col.id === "acceptVolume") {
+            if (!value) {
+                value = "0"
+            }
+            const isValueValid = !isNaN(value);
+            if (isValueValid) {
+
+                value = Inputmask.unmask(value, { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+                const accumulateAllowedVolume = row.accumulateAllowedVolume + Number(value) - dictValueOrgin[row.id]
+                const totalAccumulateAllowedVolume = row.totalAccumulateAllowedVolume + Number(value) - dictValueOrgin[row.id]
+                const pendingVolume = calculateKLDoDang({ ...row, accumulateAllowedVolume })
+                grid.data.update(row.id, { pendingVolume, accumulateAllowedVolume, totalAccumulateAllowedVolume }, true);
+                validateVolume(row)
+            }
+            return isValueValid;
+        }
+        return true;
+    });
+    const updateTotalGrid = (parentId) => {
+        let tempParentId = parentId
+        while (tempParentId) {
+            const parent = grid.data.find({ by: 'id', match: tempParentId })
+            if (!parent) {
+                break;
+            }
+            const children = grid.data.findAll({ by: 'parentId', match: tempParentId })
+            const total = _.sumBy(children, "total")
+            grid.data.update(tempParentId, _.set({}, `total`, total), true);
+            tempParentId = parent.parentId
+        }
+        // calculate total of summary
+        const totalSummary = grid.data.reduce((partialSum, row) => {
+            const { total, parentId, isSummary } = row
+            if (!allIds.includes(parentId) && !isSummary)
+                return partialSum + total
+            return partialSum
+        }, 0)
+        grid.data.update("@summaryRowId", _.set({}, `total`, totalSummary), true);
+        grid.paint();
+    }
+    grid.events.on("afterEditEnd", function (value, row, column) {
+        isEditing = false
+        const { id: columnId } = column
+        if (columnId === "selected") {
+            return;
+        }
+        value = value ?? 0
+        if (dictValueOrgin[row.id] === value) {
+            return
+        }
+        const { unitCode } = row
+        if (unitCode === "%") {
+            value /= 100
+        }
+        if (dictValueOrgin[row.id] === value) {
+            return
+        }
+        const { projectStructureId, price, parentId } = row
+        grid.data.update(projectStructureId, _.set({ [columnId]: value }, `total`, roundNumber(value * price)), true);
+
+        updateTotalGrid(parentId);
+        validateVolume({ ...row, [columnId]: value })
+    });
+
+    grid.paint();
+    
+    function validateVolume(row) {
+        const { id, accumulatedVolume, acceptVolume } = row
+        if (accumulatedVolume > 0 && acceptVolume > accumulatedVolume) {
+            setAlertColumn(id)
+        } else {
+            removeAlertColumn(id)
+        }
+    }
+    grid.events.on("scroll", function (value, row, column) {
+        _.forEach(grid.data.serialize(), (row) => {
+            validateVolume(row)
+        })
+    });
+    function saveData(isSent) {
+        const allData = grid.data.serialize();
+        var checkAlert = false;
+        _.forEach(allData, (row) => {
+            if (row.accumulatedVolume > 0 && row.acceptVolume > row.accumulatedVolume) {
+                console.log('accumulatedVolume: ' + row.accumulatedVolume + ' | ' + 'acceptVolume: ' +row.acceptVolume)
+                checkAlert = true;
+            }
+        })
+
+        if (checkAlert) {
+            alert("Khối lượng nghiệm thu > Luỹ kế thực hiện, nên không cho phép Lưu dữ liệu. Vui lòng kiểm tra lại!");
+            return;
+        }
+
+        const hasData = _.filter(allData, (data) => {
+            const { workVolume, acceptVolume, notes } = data;
+            return !_.isNil(workVolume) || !_.isNil(acceptVolume) || !_.isNil(notes)
+        })
+        if (!hasData) {
+            alert("Không có dữ liệu cho lần cập nhật");
+            return;
+        }
+
+        var yKien = "";
+
+        if (isSent == "0") {
+            var ajaxParams = {
+                url: '@Url.Action("AddUpdateTimes")',
+                type: "POST",
+                data: {
+                    id: '@currentObj.ID',
+                    projectId: '@currentObj.PROJECT_ID',
+                    startDate: $('#@formId #fromDate').val(),
+                    finishDate: $('#@formId #toDate').val(),
+                    isCustomer: true,
+                    details: hasData,
+                    isSent: isSent,
+                    yKien: yKien
+                },
+                dataType: 'json',
+                success: function (response) {
+                    SubmitTimesIndex();
+                    const { Data, State } = response
+                    if (State && '@isEditingObj' === "False") {
+                        Forms.Ajax({
+                            url: `PS/VolumeAccept/IndexAcceptVolume?projectId=@currentObj.PROJECT_ID&isCustomer=true&id=${Data}`,
+                            success: (responseData) => {
+                                CloseView();
+                                Forms.AjaxLoadSuccessHandler(responseData, Forms.defaultHtmlTarget);
+                            }
+                        });
+                    }
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams)
+        }
+        else {
+            Swal.fire({
+                title: 'Gửi dữ liệu?',
+                text: "Bạn có chắc muốn Gửi dữ liệu này không?",
+                icon: 'warning',
+                input: 'text',
+                inputPlaceholder: 'Ý kiến',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Gửi',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                var yKien = result.value;
+                if (result.isConfirmed) {
+                    var ajaxParams = {
+                    url: '@Url.Action("AddUpdateTimes")',
+                    type: "POST",
+                    data: {
+                        id: '@currentObj.ID',
+                        projectId: '@currentObj.PROJECT_ID',
+                        startDate: $('#@formId #fromDate').val(),
+                        finishDate: $('#@formId #toDate').val(),
+                        isCustomer: true,
+                        details: hasData,
+                        isSent: isSent,
+                        yKien: yKien
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        SubmitTimesIndex();
+                        const { Data, State } = response
+                        if (State) {
+                            Forms.Ajax({
+                                url: `PS/VolumeAccept/IndexAcceptVolume?projectId=@currentObj.PROJECT_ID&isCustomer=true&id=${Data}`,
+                                success: (responseData) => {
+                                    CloseView();
+                                    Forms.AjaxLoadSuccessHandler(responseData, Forms.defaultHtmlTarget);
+                                }
+                            });
+                        }
+                        Message.execute(response);
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+                }
+            })
+        }
+    }
+
+    function RefreshData() {
+        const allData = grid.data.serialize();
+        
+        const hasData = _.filter(allData, (data) => {
+            const { workVolume, acceptVolume, notes } = data;
+            return !_.isNil(workVolume) || !_.isNil(acceptVolume) || !_.isNil(notes)
+        })
+        
+        var ajaxParams = {
+            url: '@Url.Action("RefreshData")',
+            type: "POST",
+            data: {
+                id: '@currentObj.ID',
+                projectId: '@currentObj.PROJECT_ID',
+                startDate: $('#@formId #fromDate').val(),
+                finishDate: $('#@formId #toDate').val(),
+                isCustomer: true,
+                details: hasData
+            },
+            dataType: 'json',
+            success: function (response) {
+                SubmitTimesIndex();
+                const { Data, State } = response
+                if (State && '@isEditingObj' === "False") {
+                    Forms.Ajax({
+                        url: `PS/VolumeAccept/IndexAcceptVolume?projectId=@currentObj.PROJECT_ID&isCustomer=true&id=${Data}`,
+                        success: (responseData) => {
+                            CloseView();
+                            Forms.AjaxLoadSuccessHandler(responseData, Forms.defaultHtmlTarget);
+                        }
+                    });
+                }
+            }
+        };
+        Forms.AjaxWithoutLoading(ajaxParams);
+    }
+    function onChangeDate() {
+        var ajaxParams = {
+            url: '@Url.Action("GetTimePeriodProjectVolumeData")',
+            type: "POST",
+            data: {
+                id: '@currentObj.ID',
+                projectId: '@currentObj.PROJECT_ID.ToString()',
+                startDate: $('#@formId #fromDate').val(),
+                finishDate: $('#@formId #toDate').val(),
+                isCustomer: true,
+            },
+            dataType: 'json',
+            success: function (response) {
+                const { Data, State } = response
+                if (State) {
+                    Data.forEach(row => {
+                        const camelObj = _.transform(row, function (result, val, key) {
+                            result[_.camelCase(key)] = val;
+                        })
+                        const { projectStructureId } = camelObj
+                        const currentRow = grid.data.find({ by: "id", match: projectStructureId })
+                        grid.data.update(projectStructureId, { ...currentRow, ...camelObj, pendingVolume: calculateKLDoDang({ ...currentRow, ...camelObj }) }, true);
+                    });
+                    grid.paint();
+                }
+            }
+        };
+        Forms.AjaxWithoutLoading(ajaxParams)
+    }
+    function updateGridCurrentStatus(status) {
+        grid.config.currentStatus = status;
+        const allowEditStatuses = grid.config.allowEditStatuses
+        const currentStatus = grid.config.currentStatus
+        if (!allowEditStatuses.includes(currentStatus)) {
+            $('#@formId #fromDate').prop('disabled', true);
+            $('#@formId #toDate').prop('disabled', true);
+        } else {
+            $('#@formId #fromDate').prop('disabled', false);
+            $('#@formId #toDate').prop('disabled', false);
+        }
+        $('#@formId #status').val(statuses[status]);
+    }
+    @{
+        Html.RenderPartial("_ProjectVolumeProgressScript", currentObj?.ID ?? Guid.Empty);
+    }
+
+
+</script>
+

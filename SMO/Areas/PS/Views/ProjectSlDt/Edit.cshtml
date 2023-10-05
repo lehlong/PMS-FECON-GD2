@@ -1,0 +1,566 @@
+﻿@model SMO.Service.PS.ProjectSlDtService
+@using Newtonsoft.Json;
+@using SMO.Core.Entities.PS;
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var gridId = Guid.NewGuid().ToString();
+    var data = Model.ObjList;
+    var projectStatus = data.FirstOrDefault()?.Project.STATUS;
+    var project = data.FirstOrDefault()?.Project;
+    var timeType = data.FirstOrDefault()?.TimePeriod.TIME_TYPE;
+    var timeTypeText = string.Empty;
+
+    var ngayQuyetToan = ViewBag.NgayQuyetToan;
+    var hanBaoHanh = ViewBag.HanBaoHanh;
+
+    foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
+    {
+        if (time.GetValue().Equals(timeType))
+        {
+            timeTypeText = time.GetName();
+            break;
+        }
+    }
+    var timePeriods = (ViewBag.ProjectTimes as IList<T_PS_TIME>).Select(x => new { x.START_DATE, x.FINISH_DATE, x.ID }).ToList();
+
+    var dataSet = data.GroupBy(x => x.CRITERIA_CODE).ToList();
+
+    var editable = false;
+    if (AuthorizeUtilities.CheckUserRightProject("RP5.3", Model.ObjDetail.PROJECT_ID))
+    {
+        editable = true;
+    }
+    if (projectStatus == "04" || projectStatus == "05")
+    {
+        editable = false;
+    }
+    string[] header = new string[] { project?.NAME, project?.CODE, project?.ID.ToString() };
+}
+<style>
+    .fade-cost {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div class="p-t-10 p-b-10 fade-cost">
+    <b>TRẠNG THÁI: @(data.FirstOrDefault()?.Project.STATUS.GetEnum<ProjectStatus>().GetName().ToUpper())</b>
+    @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-plan-cost\").click();"), "Alt+N", "arrow_back")
+    @Html.MyButton("cmdSave", "Xuất Excel", $"ExportExcel()", "Alt+N", "file_download")
+    @Html.MyButton("cmdImport", "Nhập Excel", string.Format("$(\"#import\").show();"), "Alt+N", "file_upload")
+</div>
+<div id="import" hidden>
+    <div class="modal-backdrop fade in"></div>
+    <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; padding-right: 17px;">
+        <div class="modal-dialog " role="document">
+            <div class="modal-content">
+                <div class="card">
+                    <div class="body" style="padding-top: 0px;">
+                        <div class="tab-content">
+                            <div class="page-function p-t-10">
+                                @Html.MyButton("cmdSave", "Import", $"upload()", "Alt+N", "done_all")
+                                @Html.MyButton("cmdSave", "Đóng", string.Format("$(\"#import\").hide();"), "Alt+N", "close")
+                            </div>
+                            <div class="row m-t-30">
+                                <div class="col-xs-1 col-lg-3"></div>
+                                <div class="col-lg-6 col-xs-10">
+                                    <label>Chọn file</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input type="file" accept=".xlsx,.xls" id="file_upload" name="file_upload" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row m-t-30" style="height: calc(100vh - 210px)" id="@viewId">
+    <div class="fade-cost" style="height: 100%; width: 100%" id="@gridId"></div>
+</div>
+<script type="text/javascript">
+    var editablePlanDoanhThu = false;
+    @if (editable)
+    {
+        <text>
+    editablePlanDoanhThu = true;
+        </text>
+    }
+    $(function () {
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(data));
+        console.log(rawData)
+        const timePeriods = @Html.Raw(JsonConvert.SerializeObject(timePeriods));
+        const criteriaGroup = _.chain(rawData)
+            .map(x => ({ ...x, TIME_PERIOD_INDEX: x.TimePeriod.C_ORDER, CRITERIA_NAME: x.Criteria.NAME }))
+            .map(x => _.pick(x, ["TIME_PERIOD_INDEX", "TIME_PERIOD_ID", "CRITERIA_NAME", "VALUE", "CRITERIA_CODE"]))
+            .groupBy("CRITERIA_CODE")
+            .value();
+        const gridData = []
+        _.forOwn(criteriaGroup, (value) => {
+            gridData.push({
+                ..._.chain(value).keyBy("TIME_PERIOD_INDEX").mapValues("VALUE").value(),
+                ..._.pick(value[0], ["CRITERIA_NAME", "CRITERIA_CODE"])
+            });
+        })
+
+        function validateNumber(value) {
+            return numeral(isNaN(value) ? 0 : value).format('0.[000000000]')
+        }
+
+        function calculateTotal(row) {
+            let total = 0;
+            for (var i = 0; i < timePeriods.length; i++) {
+                total += Number(row[i] ?? 0);
+            }
+            return total;
+        }
+
+        function calculateLK(row) {
+            for (var i = 0; i < timePeriods.length; i++) {
+                let accumulate = 0
+                for (var j = 0; j <= i; j++) {
+                    accumulate += Number(row[j] ?? 0)
+                }
+                _.set(row, `accumulate${i}`, accumulate)
+            }
+            return row;
+        }
+
+        const gridWithTotal = _.map(gridData, (row) => {
+            return {
+                ...calculateLK(row),
+                total: calculateTotal(row),
+            }
+        })
+
+        const columns = [
+            { id: "CRITERIA_CODE", header: [{ text: "Mã chỉ tiêu" }], width: 120 },
+            { id: "CRITERIA_NAME", header: [{ text: "Tên chỉ tiêu" }], width: 150 },
+            {
+                id: "total", header: [{ align: "right", text: "Tổng cộng" }], width: 150,
+                align: "right",
+                template: (value) => {
+                    return Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                }
+            },
+        ]
+
+        @if (ngayQuyetToan == null || hanBaoHanh == null)
+        {
+            <text>
+                for (var i = 0; i < timePeriods.length; i++) {
+            const period = timePeriods[i];
+            const startDate = moment(period.START_DATE).format("@Global.DateToStringMomentJSFormat");
+            const endDate = moment(period.FINISH_DATE).format("@Global.DateToStringMomentJSFormat");
+            columns.push({
+                id: `${i}`, header: [{
+                    text: `<div style="display: block;width: 100%;text-align: center;white-space: initial;">
+                        <strong>@timeTypeText ${i + 1}</strong>
+                        <div style="text-align: center; font-size: 0.8em">${startDate} - ${endDate}</div>
+                        </div>`
+                    , colspan: 2
+                },
+                { text: `@timeTypeText ${i + 1}`, align: 'right' }],
+                align: "right",
+                width: 150, minWidth: 150,
+                editable: editablePlanDoanhThu,
+                template: (value) => {
+                    return Number(value ?? 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                }
+            });
+            columns.push({
+                id: `accumulate${i}`, header: ["", { text: `LK @timeTypeText ${i + 1}`, align: 'right' }],
+                template: (accumulate) => {
+
+                    return Number(accumulate).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                },
+                editable: false,
+                maxWidth: 150,
+                minWidth: 150,
+                align: "right"
+            });
+        }
+            </text>
+        }
+        else
+        {
+            <text>
+                for (var i = 0; i < timePeriods.length; i++) {
+            const period = timePeriods[i];
+            const startDate = moment(period.START_DATE).format("@Global.DateToStringMomentJSFormat");
+            const endDate = moment(period.FINISH_DATE).format("@Global.DateToStringMomentJSFormat");
+
+            const date = new Date(period.START_DATE);
+            const firstDay = moment(new Date(date.getFullYear(), date.getMonth(), 1)).format("@Global.DateToStringMomentJSFormat");
+            const lastDay = moment(new Date(date.getFullYear(), date.getMonth() + 1, 0)).format("@Global.DateToStringMomentJSFormat");
+
+            var timeType = `@timeTypeText.ToString()`;
+            columns.push({
+                id: `${i}`, header: [{
+                    text: `<div style="display: block;width: 100%;text-align: center;white-space: initial;">
+                        <strong>${i == timePeriods.length - 2 ? `Kỳ quyết toán` : i == timePeriods.length - 1 ? `Kỳ hết bảo hành` : timeType + ` ` + (i + 1)} </strong >
+                        <div style="text-align: center; font-size: 0.8em">${(i == timePeriods.length - 2 || i == timePeriods.length - 1) ? (firstDay + ` - ` + lastDay) : (startDate + ` - ` + endDate)}</div>
+                        </div>`
+                    , colspan: 2
+                },
+                    { text: (i == timePeriods.length - 1 || i == timePeriods.length - 2) ? "Tiền trong kỳ" : timeType + ` ` + (i + 1)  , align: 'right' }],
+                align: "right",
+                width: 150, minWidth: 150,
+                editable: editablePlanDoanhThu,
+                template: (value) => {
+                    return Number(value ?? 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                }
+            });
+            columns.push({
+                id: `accumulate${i}`, header: ["", { text:(i == timePeriods.length - 1 || i == timePeriods.length - 2) ? "Tiền luỹ kế" : "LK " + timeType + ` ` + (i + 1), align: 'right' }],
+                template: (accumulate) => {
+
+                    return Number(accumulate).toLocaleString('en-US', { maximumFractionDigits: 0 });
+                },
+                editable: false,
+                maxWidth: 150,
+                minWidth: 150,
+                align: "right"
+            });
+        }
+            </text>
+        }
+        var grid = new dhx.Grid("@gridId", {
+            columns,
+            autoWidth: true,
+            autoHeight: true,
+            leftSplit: 3,
+            resizable: true,
+            selection: "cell",
+            headerRowHeight: 50,
+            keyNavigation: true,
+            data: _.orderBy(gridWithTotal, ["CRITERIA_CODE", "asc"]),
+            sortable: false
+        });
+
+        ExportExcel= function() {
+            grid.export.xlsx({
+                name: "KeHoachDoanhThu_DongTien.xlsx",
+                url: "@Url.Action("ExportExcelKHDoanhThuDongTien", new { header = JsonConvert.SerializeObject(header)})"
+            });
+        }
+
+        document.getElementById("@gridId").addEventListener("keydown", function (e) {
+            if (e.keyCode == 37 || e.which == 37 || e.keyCode == 38 || e.which == 38 || e.keyCode == 39 || e.which == 39 || e.keyCode == 40 || e.which == 40) {
+                grid.editEnd();
+            }
+        });
+
+        document.getElementById("@gridId").onkeypress = function (e) {
+            if (e.which == 9 || e.which == 13) {
+                return;
+            }
+            var selectedCell = grid.selection.getCell();
+            if (selectedCell == undefined) {
+                return;
+            }
+            const { row, column } = selectedCell;
+
+            if (String(column.id).includes("accumulate") || String(column.id).includes("CRITERIA_") || String(column.id).includes("total") || @projectStatus == "04" || @projectStatus == "05") {
+                return;
+            }
+            if (grid.data.getIndex(row.id) == 0 || grid.data.getIndex(row.id) == 3) {
+                return;
+            }
+            grid.editCell(row.id, column.id);
+            row[column.id] = parseFloat(e.key);
+        };
+
+    $(document).bind('paste', function (e) {
+        var selectedCell = grid.selection.getCell();
+        if (selectedCell == undefined) {
+         return;
+        }
+        const { row, column } = selectedCell;
+        if (String(column.id).includes("accumulate") || String(column.id).includes("CRITERIA_") || String(column.id).includes("total") || @projectStatus == "04"|| @projectStatus == "05") {
+            return;
+        }
+        const pastedText = (e.originalEvent.clipboardData || window.clipboardData)?.getData('text').trim().split(/\r?\n */).map(r => r.split(/\t/));
+        const indexSelectCell = grid.data.getIndex(row.id);
+        const dataCell = grid.data.getRawData();
+        var lengthText = 0;
+        if (pastedText.length > dataCell.length - indexSelectCell) {
+            lengthText = dataCell.length - indexSelectCell;
+        } else {
+            lengthText = pastedText.length;
+        }
+        try {
+            for (var i = 0; i < lengthText; i++) {
+                var index = grid.data.getIndex(dataCell[indexSelectCell + i].id);
+
+                var oldValue = dataCell[indexSelectCell + i][column.id];
+                var value = String(pastedText[i][0]).replaceAll(",", "")
+
+                if (index == 0 || index == 3) {
+                    continue;
+                } else {
+                    dataCell[indexSelectCell + i][column.id] = value;
+                    grid.paint();
+                }
+
+                let total = 0;
+                for (var j = 0; j < timePeriods.length; j++) {
+                    total += Number(dataCell[indexSelectCell + i][j] ?? 0);
+                }
+                dataCell[indexSelectCell + i].total = total;
+
+                for (var x = 0; x < timePeriods.length; x++) {
+                    let accumulate = 0
+                    for (var y = 0; y <= x; y++) {
+                        accumulate += Number(dataCell[indexSelectCell + i][y] ?? 0)
+                    }
+                    _.set(dataCell[indexSelectCell + i], `accumulate${x}`, accumulate)
+                }
+
+                if (oldValue?.toString() == value?.toString()) {
+                    continue;
+                }
+                const ajaxParams = {
+                    url: '@Url.Action("UpdateValue")',
+                    type: "POST",
+                    data: {
+                        criteriaCode: dataCell[indexSelectCell + i].CRITERIA_CODE,
+                        periodId: timePeriods[column.id].ID,
+                        value,
+                        projectId: '@Model.ObjDetail.PROJECT_ID'
+                    },
+                    dataType: 'json',
+                    success: function () {
+                        grid.paint();
+                    }
+                };
+                Forms.AjaxWithoutLoading(ajaxParams)
+            }
+            Message.func.AlertSuccess({ Message: { Message: "Cập nhật thông tin thành công", Code: "1002" } })
+        } catch (e) {
+            alert("Lỗi trong quá trình paste dữ liệu!!! Ctrl + F5 để load lại trang!!")
+            console.log(e);
+        }
+    });
+
+        var oldValue = "";
+        grid.events.on("afterEditStart", function (row, col, editorType) {
+            oldValue = row[col.id] ?? "";
+        });
+
+        grid.events.on("beforeEditEnd", function (value) {
+            value = Inputmask.unmask(value, { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+            return !isNaN(value);
+        });
+
+        grid.events.on("afterEditEnd", function (value, row, column) {
+            if (oldValue.toString() == value.toString()) {
+                return;
+            }
+            //Forms.ShowLoading();
+            const ajaxParams = {
+                url: '@Url.Action("UpdateValue")',
+                type: "POST",
+                data: {
+                    criteriaCode: row.CRITERIA_CODE,
+                    periodId: timePeriods[column.id].ID,
+                    value,
+                    projectId: '@Model.ObjDetail.PROJECT_ID'
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+
+                    grid.data.update(row.id, {
+                        ...calculateLK(row),
+                        total: calculateTotal(row),
+                    })
+                    grid.paint()
+                }
+            };
+            Forms.AjaxWithoutLoading(ajaxParams)
+        });
+
+
+        grid.events.on("beforeEditStart", function (row) {
+            const { CRITERIA_CODE } = row
+            setTimeout(function () {
+                $(".dhx_cell-editor__textarea").inputmask({ 'alias': 'decimal', 'groupSeparator': ',', 'digits': 3, 'autoGroup': true, 'autoUnmask': true });
+            }, 50);
+            return !["01", "04"].includes(CRITERIA_CODE);
+        });
+        grid.paint();
+
+        upload = function () {
+            var files = document.getElementById('file_upload').files;
+            if (files.length == 0) {
+                alert("Hãy chọn 1 file Excel trước khi Import...");
+                return;
+            }
+            var filename = files[0].name;
+            var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+            if (extension == '.XLS' || extension == '.XLSX') {
+                excelFileToJSON(files[0]);
+            } else {
+                alert("File không đúng định dạng! Vui lòng chọn file Excel...");
+            }
+        }
+
+        function excelFileToJSON(file) {
+            try {
+                $("#import").hide();
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+                reader.onload = function (e) {
+
+                    var data = e.target.result;
+                    var workbook = XLSX.read(data, {
+                        type: 'binary'
+                    });
+                    var result = {};
+                    workbook.SheetNames.forEach(function (sheetName) {
+                        var range = XLSX.utils.decode_range(workbook.Sheets[sheetName]['!ref']);
+                        range.s.c = 0;
+                        range.s.r = 5;
+                        range.e.c = columns.length;
+                        range.e.r = rawData.length;
+                        var new_range = XLSX.utils.encode_range(range);
+                        var excelInJSON = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName], { blankRows: false, defval: '', range: new_range });
+                        result = excelInJSON
+                    });
+                    var dataExcel = JSON.parse(JSON.stringify(result, null, 4))
+                    dataExcel.splice(0, 2);
+                    var dataCell = grid.data.getRawData();
+
+                    let totalDoanhThu = 0;
+                    let totalTienThu = 0;
+                    let totalTienChi = 0;
+                    for (var i = 1; i < timePeriods.length + 1; i++) {
+                        totalDoanhThu += Number(dataExcel[1][`__EMPTY_${i * 2 + 1}`] ?? 0);
+                        totalTienThu += Number(dataExcel[2][`__EMPTY_${i * 2 + 1}`] ?? 0);
+                        totalTienChi += Number(dataExcel[4][`__EMPTY_${i * 2 + 1}`] ?? 0);
+                    }
+                    grid.data._order[1].total = totalDoanhThu
+                    grid.data._order[2].total = totalTienThu
+                    grid.data._order[4].total = totalTienChi
+
+                    let accumulateDoanhThu = 0;
+                    let accumulateTienThu = 0;
+                    let accumulateTienChi = 0;
+
+                    //Cập nhật chỉ tiêu Doanh thu
+                    for (var i = 1; i < timePeriods.length + 1; i++) {
+                        var value = dataExcel[1][`__EMPTY_${i * 2 + 1}`];
+                        var oldValue = grid.data._order[1][i - 1];
+
+                        accumulateDoanhThu += dataExcel[1][`__EMPTY_${i * 2 + 1}`]
+                        grid.data._order[1][`accumulate${i - 1}`] = accumulateDoanhThu
+
+                        grid.editCell(dataCell[1].id, i)
+                        grid.data._order[1][i - 1] = dataExcel[1][`__EMPTY_${i * 2 + 1}`]
+
+                        if (oldValue?.toString() == value?.toString()) {
+                            continue;
+                        }
+                        const ajaxParams = {
+                            url: '@Url.Action("UpdateValue")',
+                            type: "POST",
+                            data: {
+                                criteriaCode: "02",
+                                periodId: timePeriods[i-1].ID,
+                                value,
+                                projectId: '@Model.ObjDetail.PROJECT_ID'
+                            },
+                            dataType: 'json',
+                            success: function () {
+                                grid.paint();
+                            }
+                        };
+                        Forms.AjaxWithoutLoading(ajaxParams)
+                    }
+
+                    //Cập nhật chỉ tiêu Tiền thu
+                    for (var i = 1; i < timePeriods.length + 1; i++) {
+                        var value = dataExcel[2][`__EMPTY_${i * 2 + 1}`];
+                        var oldValue = grid.data._order[2][i - 1];
+
+                        grid.editCell(dataCell[2].id, i)
+                        grid.data._order[2][i - 1] = dataExcel[2][`__EMPTY_${i * 2 + 1}`]
+
+                        accumulateTienThu += dataExcel[2][`__EMPTY_${i * 2 + 1}`]
+                        grid.data._order[2][`accumulate${i - 1}`] = accumulateTienThu
+
+                        if (oldValue?.toString() == value?.toString()) {
+                            continue;
+                        }
+                        const ajaxParams = {
+                            url: '@Url.Action("UpdateValue")',
+                            type: "POST",
+                            data: {
+                                criteriaCode: "03",
+                                periodId: timePeriods[i-1].ID,
+                                value,
+                                projectId: '@Model.ObjDetail.PROJECT_ID'
+                            },
+                            dataType: 'json',
+                            success: function () {
+                                grid.paint();
+                            }
+                        };
+                        Forms.AjaxWithoutLoading(ajaxParams)
+                    }
+
+                    //Cập nhật chỉ tiêu Tiền chi
+                    for (var i = 1; i < timePeriods.length + 1; i++) {
+                        var value = dataExcel[4][`__EMPTY_${i * 2 + 1}`];
+                        var oldValue = grid.data._order[4][i - 1];
+
+                        accumulateTienChi += dataExcel[4][`__EMPTY_${i * 2 + 1}`]
+                        grid.data._order[4][`accumulate${i - 1}`] = accumulateTienChi
+
+                        grid.editCell(dataCell[4].id, i)
+                        grid.data._order[4][i - 1] = dataExcel[4][`__EMPTY_${i * 2 + 1}`]
+
+                        if (oldValue?.toString() == value?.toString()) {
+                            continue;
+                        }
+                        const ajaxParams = {
+                            url: '@Url.Action("UpdateValue")',
+                            type: "POST",
+                            data: {
+                                criteriaCode: "05",
+                                periodId: timePeriods[i-1].ID,
+                                value,
+                                projectId: '@Model.ObjDetail.PROJECT_ID'
+                            },
+                            dataType: 'json',
+                            success: function () {
+                                grid.paint();
+                            }
+                        };
+                        Forms.AjaxWithoutLoading(ajaxParams)
+                    }
+                }
+                Message.func.AlertSuccess({ Message: { Message: "Cập nhật thông tin thành công", Code: "1002" } })
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    });
+</script>
+

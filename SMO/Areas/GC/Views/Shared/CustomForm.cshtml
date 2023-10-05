@@ -1,0 +1,222 @@
+﻿@{
+//var teams = SelectListUtilities.GetTeamMembers();
+}
+<div id="custom-form" class="modal" role="dialog" data-show="true" data-backdrop="static">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                @*<button type="button" name="close" class="btn btn-warning">
+                        <i class="material-icons">cancel</i>
+                        Cancel
+                    </button>*@
+                <button type="button" class="close" name="close" style="margin-right: 15px;">&times;</button>
+                <h4 class="modal-title" id="modal-header-content">Edit information of task</h4>
+            </div>
+            <div class="modal-body">
+                
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="status" class="control-label">Tình trạng</label>
+                        <div class="form-line">
+                            @*<select name="status" id="" class="form-control">
+                                <option value="not_started">Chưa bắt đầu</option>
+                                <option value="processing">Đang làm</option>
+                                <option value="done">Hoàn thành</option>
+                                <option value="wait">Đang đợi</option>
+                            </select>*@
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="start-date" class="control-label">Ngày bắt đầu</label>
+                        <div class="form-line date">
+                            <div class="input-group">
+                                <input type="text" name="startDate" class="masked-input-date form-control">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="end-date" class="control-label">Ngày kết thúc</label>
+                        <div class="form-line date">
+                            <div class="input-group">
+                                <input type="text" name="endDate" class="masked-input-date form-control">
+                                <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="priority" class="control-label">Độ ưu tiên</label>
+                        <div class="form-line">
+                            <select name="priority" id="" class="form-control selectpicker">
+                                <option value="high">Cao</option>
+                                <option value="normal">Vừa</option>
+                                <option value="low">Thấp</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="description" class="control-label">Mô tả</label>
+                        <div class="form-line">
+                            <textarea rows="1" class="form-control autosize" name="description"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12" id="check-list-container">
+                    <div class="form-group">
+                        <label class="control-label">Check lists</label>
+                    </div>
+                    <div id="task-list-table">
+                    </div>
+                    <div class="row hidden" id="content-new-task-container">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <textarea rows="1" class="form-control autosize" id="content-new-task" placeholder="Add an item"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                       
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="task-list-start-date" class="control-label">Ngày bắt đầu</label>
+                                <div class="form-line date">
+                                    <div class="input-group">
+                                        <input type="text" name="taskListStartDate" class="masked-input-date form-control" id="task-list-start-date">
+                                        <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="task-list-end-date" class="control-label">Ngày kết thúc</label>
+                                <div class="form-line date">
+                                    <div class="input-group">
+                                        <input type="text" name="taskListEndDate" class="masked-input-date form-control" id="task-list-end-date">
+                                        <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div>
+                            <a name="add-item" href="javascript:void(0);" class="btn btn-primary" onclick="addTaskRowGantt(this)" id="add-item">
+                                Add an item
+                            </a>
+                            <button type="button" id="cancel-add-task" class="btn btn-danger btn-link btn-sm hidden">
+                                <i class="material-icons">close</i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <label class="control-label" id="label-attach-file">
+                        Files attach
+                        <i class="material-icons">attach_file</i>
+                    </label>
+                    <div class="form-group " id="uploadDropzoneFieldGantt">
+                        <div class="fallback">
+                            <input name="files" type="file" multiple />
+                        </div>
+                        <div id="previewFiles"></div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label for="comment" class="control-label">Bình luận</label>
+                        <div class="form-line">
+                            <textarea rows="1" class="form-control autosize" name="comment"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!-- icon add -->
+                        <button type="button" name="save" class="btn btn-primary">
+                            <i class="material-icons">check</i>
+                            Save
+                        </button>
+                        <!-- icon delete -->
+                        <button type="button" name="delete" class="btn btn-danger">
+                            <i class="material-icons">delete</i>
+                            Delete
+                        </button>
+                        <!-- icon cancel -->
+                        <button type="button" name="close" class="btn btn-warning">
+                            <i class="material-icons">cancel</i>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="display: none">
+    <div id="template-task-row-gantt">
+        <div class="checklist-row tooltipster-row-gantt">
+            <table class="table table-hover">
+                <tr>
+                    <td style="width: 40px; padding-left: 10px;">
+                        <input name="cbx_status" type="checkbox" class="filled-in" id="cbx_id">
+                        <label for="cbx_id"></label>
+                    </td>
+                    <td style="white-space: normal" class="task-content">
+                    </td>
+                    @Html.Hidden("task-list-end-date-hidden")
+                    @Html.Hidden("task-list-start-date-hidden")
+                    @Html.Hidden("task-list-owner-hidden")
+                    <td class="td-actions text-right" style="width: 45px;">
+                        @*<button type="button" rel="tooltip" title="Edit Task" class="btn btn-primary btn-link btn-sm edit-task">
+                                <i class="material-icons">edit</i>
+                            </button>*@
+                        <button type="button" rel="tooltip" title="Remove" class="btn btn-danger btn-link btn-sm delete-task">
+                            <i class="material-icons">close</i>
+                        </button>
+                        @*<button type="button" rel="tooltip" title="Edit" class="btn btn-danger btn-link btn-sm edit-task">
+                            <i class="material-icons">edit</i>
+                        </button>*@
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div style="display: none">
+    <div id="tooltipster-template-gantt" >
+        <p>
+            <span>Content: </span>
+            <span class="tooltipster-template-content"></span>
+        </p>
+        <p>
+            <span>Owner: </span>
+            <span class="tooltipster-template-owner"></span>
+        </p>
+        <p>
+            <span>Start date: </span>
+            <span class="tooltipster-template-start-date"></span>
+        </p>
+        <p>
+            <span>End date: </span>
+            <span class="tooltipster-template-end-date"></span>
+        </p>
+    </div>
+</div>
+<div style="clear: both;"></div>
+<script>
+    $(function () {
+        Forms.CompleteUI();
+    });
+</script>

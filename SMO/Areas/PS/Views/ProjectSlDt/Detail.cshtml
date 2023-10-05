@@ -1,0 +1,64 @@
+﻿@model SMO.Service.PS.ProjectSlDtService
+@using Newtonsoft.Json;
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var gridId = Guid.NewGuid().ToString();
+    var data = Model.ObjList;
+    var timeType = data.FirstOrDefault()?.TimePeriod.TIME_TYPE;
+    var timeTypeText = string.Empty;
+
+    foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
+    {
+        if (time.GetValue().Equals(timeType))
+        {
+            timeTypeText = time.GetName();
+            break;
+        }
+    }
+
+    var dataSet = data.GroupBy(x => x.CRITERIA_CODE).ToList();
+}
+<div>
+    <div class="row" style="height: calc(100vh - 145px); margin-top:10px;" id="@viewId">
+        <div style="height: 100%; width: 100%" id="@gridId"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function () {
+        const rawData = @Html.Raw(JsonConvert.SerializeObject(data));
+        const criteriaGroup = _.chain(rawData)
+            .map(x => ({ ...x, TIME_PERIOD_INDEX: x.TimePeriod.C_ORDER, CRITERIA_NAME: x.Criteria.NAME }))
+            .map(x => _.pick(x, ["TIME_PERIOD_INDEX", "TIME_PERIOD_ID", "CRITERIA_NAME", "VALUE", "CRITERIA_CODE"]))
+            .groupBy("CRITERIA_CODE")
+            .value();
+        const gridData = []
+        _.forOwn(criteriaGroup, (value) => {
+            gridData.push({
+                ..._.chain(value).keyBy("TIME_PERIOD_INDEX").mapValues("VALUE").value(),
+                ..._.pick(value[0], ["CRITERIA_NAME", "CRITERIA_CODE"])
+            });
+        })
+        const columns = [
+            { id: "CRITERIA_CODE", header: [{ text: "Mã chỉ tiêu" }], width: 120 },
+            { id: "CRITERIA_NAME", header: [{ text: "Tên chỉ tiêu" }], width: 150 },
+        ]
+
+        for (var i = 0; i < rawData.length / gridData.length; i++) {
+            columns.push({
+                id: i, header: [{ text: `@timeTypeText ${i + 1}` }], editable: true, type: "number", format: "#,#", width: 150, minWidth: 150
+            })
+        }
+        var grid = new dhx.Grid("@gridId", {
+            columns,
+            autoWidth: true,
+            autoHeight: true,
+            leftSplit: 2,
+            resizable: true,
+            editable: false,
+            selection: "cell",
+            keyNavigation: true,
+            data: _.orderBy(gridData, ["CRITERIA_CODE", "asc"])
+        });
+    });
+</script>
+

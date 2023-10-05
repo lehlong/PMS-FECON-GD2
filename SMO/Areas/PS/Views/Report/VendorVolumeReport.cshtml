@@ -1,0 +1,262 @@
+﻿@model IEnumerable<SMO.Service.PS.Models.Report.VendorVolume.VendorVolumeReportData>
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var gridId = Guid.NewGuid().ToString();
+    var searchModel = ViewBag.SearchModel as SMO.Service.PS.Models.Report.VendorVolume.VendorVolumeReportModel;
+    searchModel.BoldRowIndexes = Model.Select((data, index) => new { data, index })
+        .Where(x => x.data.Type == SMO.Core.Entities.PS.ProjectEnum.PROJECT.ToString())
+        .Select(x => x.index).ToList();
+    searchModel.PercentageRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.UnitCode == "%").Select(x => x.index).ToList();
+    var display = ConfigHideColumn.BAO_CAO_KHOI_LUONG_THAU_PHU.GetValue().ToString();
+
+}
+
+<style>
+    .row-bold .dhx_grid-cell {
+        font-weight: bold
+    }
+
+    .grid .dhx_grid-cell {
+        word-break: break-word
+    }
+
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
+
+    .fade-report {
+        position: relative;
+        animation: fadeInBottom 1.8s;
+        animation-timing-function: ease;
+    }
+
+    @@keyframes fadeInBottom {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        to {
+            opacity: 1
+        }
+    }
+</style>
+<div class="fade-report">
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+    <div class="dropdown-hide-column">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+        <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+        </select>
+        <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+    </div>
+    <div style="height: calc(100vh - 180px)" id="@gridId" class="grid"></div>
+
+    <script type="text/javascript">
+
+    const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
+    const gridData = rawData.map(row => {
+        const { startPeriodWorkVolume, inPeriodWorkVolume, inPeriodPlanVolume, inPeriodAcceptVolume, startPeriodAcceptVolume, totalContractValue, endPeriodPlanCost } = row
+        const inPeriodPercentageWorkWithPlan = inPeriodPlanVolume > 0 ? inPeriodWorkVolume / inPeriodPlanVolume : 0
+        const endPeriodWorkVolume = startPeriodWorkVolume + inPeriodWorkVolume
+        const endPeriodAcceptVolume = startPeriodAcceptVolume + inPeriodAcceptVolume
+        const endPeriodPercentageWorkWithPlan = endPeriodPlanCost > 0 ? endPeriodWorkVolume / endPeriodPlanCost : 0
+        const endPeriodInProgressVolume = endPeriodWorkVolume - endPeriodAcceptVolume
+        const endPeriodDonePercentage = totalContractValue > 0 ? endPeriodWorkVolume / totalContractValue : 0
+        const endPeriodAcceptPercentage = endPeriodWorkVolume > 0 ? endPeriodAcceptVolume / endPeriodWorkVolume : 0
+        return {
+            ...row,
+            inPeriodPercentageWorkWithPlan,
+            endPeriodWorkVolume,
+            endPeriodAcceptVolume,
+            endPeriodPercentageWorkWithPlan,
+            endPeriodInProgressVolume,
+            endPeriodDonePercentage,
+            endPeriodAcceptPercentage
+        }
+    })
+    function displayNumber(value) {
+        return numeral(isNaN(value) || !_.isFinite(value) ? 0 : value).format('0,0.[000]')
+    }
+    function displayNumberRounded(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0')
+    }
+    function displayQuantity(value, row) {
+        const { unitCode } = row
+        if (unitCode === "%") {
+            return numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+        }
+        return numeral(isNaN(value) ? 0 : value).format('0,0.[000]')
+    }
+    function displayPercentage(value) {
+        return _.isNil(value) ? value : numeral(isNaN(value) ? 0 : value).format('0,0.[000]%')
+    }
+    const columns = [
+        {
+            id: "vendorName", header: [{ text: "Thầu phụ", align: 'center' }, { content: "selectFilter" }], width: 150,
+            template: (vendorName, row) => {
+                const { vendorCode } = row
+                return `${vendorName} - ${vendorCode}`
+            }
+        },
+        {
+            id: "contractCode", header: [{
+                text: "Số HĐ/PLHĐ", align: 'center'
+            }, { content: "inputFilter" }],
+            width: 113
+        },
+        { id: "structureCode", header: [{ text: "Mã ", align: 'center' }, { content: "selectFilter" }], width: 100 },
+        { id: "structureName", header: [{ text: "Hạng mục công việc", align: 'center' }], width: 200 },
+        { id: "unitName", header: [{ text: "Đơn vị tính", align: 'center' }], width: 112 },
+        {
+            id: "totalContractValue", header: [{ text: "Tổng KL hợp đồng", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 128
+        },
+        {
+            id: "startPeriodWorkVolume", header: [
+                { text: "ĐẦU KỲ", colspan: 2, align: 'center' },
+                { text: 'KL thực hiện', align: 'center' }
+            ], align: 'right',
+            template: displayQuantity,
+            width: 114
+        },
+        {
+            id: "startPeriodAcceptVolume", header: ["", { text: "KL nghiệm thu", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 133
+        },
+        {
+            id: "inPeriodPlanVolume", header: [
+                { text: "TRONG KỲ", colspan: 4, align: 'center' },
+                { text: 'KL kế hoạch', align: 'center' }
+            ], align: 'right',
+            template: displayQuantity,
+            width: 110
+        },
+        {
+            id: "inPeriodWorkVolume", header: ["", { text: "KL thực hiện", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 114
+        },
+        {
+            id: "inPeriodAcceptVolume", header: ["", { text: "KL nghiệm thu", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 133
+        },
+        {
+            id: "inPeriodPercentageWorkWithPlan", header: ["", { text: "%thực hiện/ kế hoạch", align: 'center' }], align: 'right',
+            template: displayPercentage,
+            width: 141
+        },
+        {
+            id: "endPeriodPlanCost", header: [
+                { text: "CUỐI KỲ", colspan: 7, align: 'center' },
+                { text: 'KL kế hoạch', align: 'center' }
+            ], align: 'right',
+            template: displayQuantity,
+            width: 110
+        },
+        {
+            id: "endPeriodWorkVolume", header: ["", { text: "KL thực hiện", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 114
+        },
+        {
+            id: "endPeriodAcceptVolume", header: ["", { text: "KL nghiệm thu", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 133
+        },
+        {
+            id: "endPeriodPercentageWorkWithPlan", header: ["", { text: "%thực hiện/ kế hoạch", align: 'center' }], align: 'right',
+            template: displayPercentage,
+            width: 141
+        },
+        {
+            id: "endPeriodInProgressVolume", header: ["", { text: "KL dở dang", align: 'center' }], align: 'right',
+            template: displayQuantity,
+            width: 110
+        },
+        {
+            id: "endPeriodDonePercentage", header: ["", {
+                text: "Tỉ lệ hoàn thành", align: 'center'
+            }], align: 'right',
+            template: displayPercentage,
+            width: 128
+        },
+        {
+            id: "endPeriodAcceptPercentage", header: ["", {
+                text: "Tỉ lệ nghiệm thu", align: 'center'
+            }], align: 'right',
+            template: displayPercentage,
+            width: 145
+        },
+    ]
+    const grid = new dhx.Grid("@gridId", {
+        columns,
+        leftSplit: 6,
+        autoHeight: true,
+        resizable: true,
+        data: gridData,
+        selection: "cell",
+        keyNavigation: true,
+        rowCss: function ({ type }) { return type === "PROJECT" || type === 0 ? "row-bold" : "" },
+    });
+
+    function ExportExcel() {
+        grid.export.xlsx({
+            name: "BC_KHOI_LUONG_THAU_PHU.xlsx",
+            url: "@Url.Action("ExportExcelVendorVolume", new { searchModel=JsonConvert.SerializeObject(searchModel)})"
+        });
+    }
+
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+
+        function updateHideColumn() {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+        }
+    $(function () {
+        for (i = 0; i < columns.length; i++) {
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+    });
+    </script>
+</div>

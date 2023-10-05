@@ -1,0 +1,81 @@
+﻿@model SMO.Service.MD.ConditionService
+@{ 
+    var frmFormCode = "frmConditionIndex";
+    var number = 1;
+}
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Tên</th>
+                <th>Loại</th>
+                <th>Mua hàng gửi lại</th>
+                <th>Xuất bán tái xuất</th>
+                <th>Xuất bán nội địa</th>
+                <th class="align-center">#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ObjList)
+            {
+                number++;
+                var chkActive = "chkActive" + number.ToString();
+                var chkInActive = "chkInActive" + number.ToString();
+                var toggleAction = string.Format("Forms.ToggleActive('{0}',{1}, this);", Url.Action("ToggleActive"), "{ id : '" + item.CODE + "' }");
+                <tr>
+                    <td>@item.CODE</td>
+                    <td>@item.NAME</td>
+                    <td>@item.TYPE</td>
+                    <td class="align-center">
+                        <div style="float:left">
+                            @Html.CheckBoxFor(m => item.MHGL_ALLOW_EDIT)
+                            <div>Sửa</div>
+                        </div>
+                        <div>
+                            @Html.CheckBoxFor(m => item.MHGL_ALLOW_SHOW)
+                            <div>Hiển thị</div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div style="float:left">
+                            @Html.CheckBoxFor(m => item.XBTX_ALLOW_EDIT)
+                            <div>Sửa</div>
+                        </div>
+                        <div>
+                            @Html.CheckBoxFor(m => item.XBTX_ALLOW_SHOW)
+                            <div>Hiển thị</div>
+                        </div>
+                    </td>
+                    <td class="align-center">
+                        <div style="float:left">
+                            @Html.CheckBoxFor(m => item.XBND_ALLOW_EDIT)
+                            <div>Sửa</div>
+                        </div>
+                        <div>
+                            @Html.CheckBoxFor(m => item.XBND_ALLOW_SHOW)
+                            <div>Hiển thị</div>
+                        </div>
+                    </td>
+                    <td class="align-center" style="width:20px; vertical-align: middle">
+                        @if (item.ACTIVE)
+                        {
+                            <input onclick="@toggleAction" id="@chkActive" type="checkbox" class="filled-in chk-col-light-blue" checked="checked" />
+                            <label for="@chkActive"></label>
+                        }
+                        else
+                        {
+                            <input onclick="@toggleAction" id="@chkInActive" type="checkbox" class="filled-in chk-col-light-blue" />
+                            <label for="@chkInActive"></label>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@{ Html.RenderPartial("Paging", Model); }

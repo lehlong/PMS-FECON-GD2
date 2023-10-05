@@ -1,0 +1,88 @@
+﻿@model SMO.Service.PS.VolumeWorkService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var vendor = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.MD.T_MD_VENDOR>()
+        .FirstOrDefault(x => x.CODE == Model.ObjDetail.VENDOR_CODE);
+    var typeDisplayText = Model.ObjDetail.IS_CUSTOMER ? "KHÁCH HÀNG" : "THẦU PHỤ";
+    var project = SMOUtilities.GetProject(Model.ObjDetail.PROJECT_ID);
+    var editable = project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue();
+}
+
+
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("UpdateTimesList", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        @Html.HiddenFor(m => m.ObjDetail.IS_CUSTOMER)
+        @Html.HiddenFor(m => m.ObjDetail.VENDOR_CODE)
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <div class="tab-content">
+                    <div class="page-function p-t-10">
+                        <div class="page-function-button m-r-20">
+                            @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-vendor\").click();"), "Alt+N", "arrow_back")
+                            @if (editable && AuthorizeUtilities.CheckUserRightProject("RP8.1", project.ID) && project.STATUS == ProjectStatus.BAT_DAU.GetValue() && project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue())
+                            {
+                                @Html.MyButton("cmdAdd", "Nhập mới", string.Format("Forms.LoadAjax({{url:'{0}'}});", @Url.Action("IndexVolumeWork", new { id = Guid.Empty, projectId = Model.ObjDetail.PROJECT_ID, isCustomer = Model.ObjDetail.IS_CUSTOMER, partnerCode = Model.ObjDetail.VENDOR_CODE })), "Alt+N", "add")
+                                @Html.MyButton("cmdDelete", "Xóa đợt nhập", string.Format("Forms.DeleteItems('{0}','chkItem');", @Url.Action("Delete")), "Alt+D", "delete")
+                            }
+                        </div>
+                    </div>
+                    <div class="m-t-20">
+                        @if (vendor != null)
+                        {
+                            <div class="col-md-4 col-xs-12">
+                                <label>Nhà thầu</label>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input class="form-control" data-val="False" readonly value="@vendor.NAME.ToUpper()">
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="col-md-4 col-xs-12">
+                            <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Từ ngày</label>
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.FILTER_FROM_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                    </div>
+                                </div>
+                                <div style="flex: 1">
+                                    <div class="form-line">
+                                        <label>Đến ngày</label>
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.FILTER_TO_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-xs-12" style="padding-top: 22px">
+                            @Html.MyButton("cmdAdd", "Tìm kiếm", "SubmitTimesIndex();", "Alt+N", "search")
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script type="text/javascript">
+        function SubmitTimesIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+
+        });
+    </script>
+</div>

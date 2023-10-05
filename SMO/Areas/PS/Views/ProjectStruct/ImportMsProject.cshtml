@@ -1,0 +1,63 @@
+﻿@model SMO.Service.PS.ProjectStructService
+
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div class="card" id="@Model.ViewId">
+    <i class="material-icons" style="position:absolute; right: 10px; top:10px; cursor:pointer;" data-dismiss="modal">close</i>
+    <div class="body" style="padding-top: 0px;">
+        <div class="tab-content">
+            <div class="page-function p-t-10">
+                <div class="page-function-button m-r-20">
+                    @Html.MyButton("cmdSave", "Import", "SubmitImportExcel()", "Alt+N", "done_all")
+                </div>
+            </div>
+            @using (Ajax.BeginForm("ImportFile", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId, @enctype = "multipart/form-data" }))
+            {
+                @Html.HiddenFor(x => x.ObjDetail.PROJECT_ID)
+                @Html.HiddenFor(x => x.Type)
+                @Html.AntiForgeryToken()
+                <div class="row m-t-30">
+                    <div class="col-xs-1 col-lg-3"></div>
+                    <div class="col-lg-6 col-xs-10">
+                        <label>Chọn file</label>
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input type="file" accept=".xlsx,.xls" id="files" name="files" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            }
+        </div>
+    </div>
+</div>
+
+
+
+<script type="text/javascript">
+    $(function () {
+        Forms.CompleteUI();
+    });
+
+    function SubmitImportExcel() {
+            var formData = new FormData($('#@Model.FormId')[0]);
+            Forms.ShowLoading();
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("ImportFile")',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    Message.execute(response);
+                    Forms.HideLoading();
+                },
+                error: Forms.AjaxErrorHandler
+            });
+        }
+</script>
+

@@ -1,0 +1,150 @@
+﻿@model SMO.Service.AD.UserService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exedit-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exhide-3.5.min.js"></script>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId, "#divResultUserOrg"), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.ObjDetail.COMPANY_ID, new { @id = "hddOrgId" })
+        <div class="card border-grey">
+            <div class="body" style="padding-top: 0px;">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons col-fecon">clear_all</i> DANH SÁCH NGƯỜI DÙNG FECON</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="page-function p-t-10" style="padding-bottom: 7px;">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdAdd", "Thêm mới", string.Format("Create();"), "Alt+N", "add")
+                        </div>
+
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME, new { placeholder = "Tìm theo tên đăng nhập hoặc họ tên", @class = "align-center", @data_val = false })
+                            </div>
+
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="ResetFormSearch();">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <div id="divTreeOrg">
+
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div id="divResultUserOrg">
+
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    }
+
+
+    <script type="text/javascript">
+        function ResetFormSearch() {
+            Forms.ResetForm('@Model.FormId');
+            $("#hddOrgId").val("");
+            var zTree = $.fn.zTree.getZTreeObj("treeOrg");
+            zTree.cancelSelectedNode();
+        }
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        function Search() {
+            var value = $("#txtUserName").val();
+            var zTree = $.fn.zTree.getZTreeObj("treeUser");
+            var nodeWithUserName = zTree.getNodesByParamFuzzy("userName", value, null);
+            var nodeWithFullName = zTree.getNodesByParamFuzzy("fullName", value, null);
+            if (nodeWithUserName != null && nodeWithUserName.length > 0) {
+                zTree.selectNode(nodeWithUserName[0]);
+            } else if (nodeWithFullName != null && nodeWithFullName.length > 0) {
+                zTree.selectNode(nodeWithFullName[0]);
+            }
+            $("#txtUserName").focus();
+        }
+
+        var settingOrganize = {
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false
+            },
+            edit: {
+                enable: false,
+                showRemoveBtn: false,
+                showRenameBtn: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onClick: OnClickOrganize
+            }
+        };
+
+        function OnClickOrganize(event, treeId, treeNode) {
+            var id = treeNode.id;
+            $("#hddOrgId").val(id);
+            SubmitIndex();
+        };
+
+        function Create() {
+            var ajaxParams = {
+                url: "@Url.Action("Create")",
+                data: { orgId: $("#hddOrgId").val() }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        }
+
+
+        function CreateUserSuccess(idUserSelected, idParent) {
+            BuildTree(idUserSelected);
+        }
+
+        function BuildTreeOrg(idUserSelected) {
+            $('#divTreeUser').html("");
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("BuildTreeOrg")',
+                type: "GET",
+                success: function (response) {
+                    $('#divTreeOrg').html(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        $(function () {
+            SubmitIndex();
+            BuildTreeOrg();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+
+

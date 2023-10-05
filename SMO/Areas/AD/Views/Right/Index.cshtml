@@ -1,0 +1,146 @@
+﻿@model SMO.Service.AD.RightService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <link href="~/Content/zTreeStyle/zTreeStyle.css" rel="stylesheet" />
+    <script src="~/Scripts/Ztree/jquery.ztree.core-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.excheck-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exedit-3.5.min.js"></script>
+    <script src="~/Scripts/Ztree/jquery.ztree.exhide-3.5.min.js"></script>
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons">clear_all</i> DANH SÁCH QUYỀN</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function" style="padding-bottom: 7px;">
+                    <div class="page-function-button m-r-20" style="float:left">
+                        @Html.MyButton("cmdAdd", "Thêm mới", string.Format("CreateRight();"), "Alt+N", "add")
+                        @Html.MyButton("cmdUpdateTree", "Cập nhật thứ tự", "UpdateTree();", "Alt+N", "done_all")
+                    </div>
+
+                    <div class="input-group page-function-search" style="margin-bottom: 7px !important">
+                        @Html.MyDropDownListFor(m => m.ObjDetail.CODE, SelectListUtilities.GetAllRight(), new { @id = "ddlRight", @data_live_search = "true", @class = "selectpicker show-tick", placeholder = "Tìm theo mã hoặc tên", @data_val = false, @OnChange = "SearchRight();" })
+
+                        <span class="input-group-addon" title="Tìm kiếm" onclick="SearchRight();">
+                            <i class="material-icons">search</i>
+                        </span>
+                    </div>
+                </div>
+
+                <div id="divTree">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function SearchRight(obj) {
+            var value = $("#ddlRight").val();
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var node = zTree.getNodesByParamFuzzy("id", value, null);
+            if (node != null) {
+                zTree.selectNode(node[0]);
+            }
+        }
+
+        var setting = {
+            view: {
+                selectedMulti: false,
+                nameIsHTML: true,
+                showTitle: false
+            },
+            edit: {
+                enable: true,
+                showRemoveBtn: false,
+                showRenameBtn: false
+            },
+            data: {
+                simpleData: {
+                    enable: true
+                }
+            },
+            callback: {
+                onClick: OnClick,
+                beforeDrop: BeforeDrop
+            }
+        };
+
+        function BeforeDrop(treeId, treeNodes, targetNode, moveType, isCopy) {
+            if (!targetNode) {
+                return false;
+            } else if (targetNode.id == zNodes[0].id) {
+                return false;
+            }
+        }
+
+        function OnClick(event, treeId, treeNode) {
+            $("#hddParent").val(treeNode.pId);
+            var id = treeNode.id;
+            var url = "@Url.Action("Edit")";
+            var ajaxParams = {
+                url: url,
+                data: { id: id }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        };
+
+        function CreateRight() {
+            var ajaxParams = {
+                url: "@Url.Action("Create")",
+                data: { parent: $("#hddParent").val() }
+            };
+            Forms.LoadAjaxRight(ajaxParams);
+        }
+
+        function BuildTree(rightSelected, isUpdateOrder) {
+            $('#divTree').html("");
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("BuildTree")',
+                type: "GET",
+                data: { rightSelected: rightSelected },
+                success: function (response) {
+                    $('#divTree').html(response);
+                    if (isUpdateOrder && isUpdateOrder == true) {
+                        UpdateTree();
+                    }
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        function UpdateTree() {
+            var zTree = $.fn.zTree.getZTreeObj("treeRight");
+            var nodes = zTree.transformToArray(zTree.getNodes());
+            var data = nodes.map(function (a) { return { id: a.id, pId: a.pId }; });
+            Forms.ShowLoading();
+            var ajaxParams = {
+                url: '@Url.Action("UpdateTree")',
+                type: "POST",
+                data: data,
+                dataType: "json",
+                contentType: 'application/json; charset=UTF-8',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams);
+        }
+
+        $(function () {
+            BuildTree();
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+    </script>
+</div>
+
+
