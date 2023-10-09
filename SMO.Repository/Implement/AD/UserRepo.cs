@@ -64,10 +64,6 @@ namespace SMO.Repository.Implement.AD
             {
                 query = query.Fetch(x => x.ListUserRight).Eager;
             }
-            if (UtilsRepo.IsPropertyExist(param, "IsFetch_ConfigHideColumn"))
-            {
-                query = query.Fetch(x => x.ConfigHideColumn).Eager;
-            }
 
             if (UtilsRepo.IsPropertyExist(param, "IsFetch_ListUserRole"))
             {

@@ -16,10 +16,12 @@ namespace SMO.Areas.PS.Controllers
     public class VolumeWorkController : Controller
     {
         private readonly VolumeWorkService _service;
+        private readonly ProjectService _projectService;
 
         public VolumeWorkController()
         {
             _service = new VolumeWorkService();
+            _projectService = new ProjectService();
         }
 
         [MyValidateAntiForgeryToken]
@@ -102,6 +104,7 @@ namespace SMO.Areas.PS.Controllers
             ViewBag.CurrentObj = service.ObjDetail;
             ViewBag.Customer = service.GetCustomer(service.ObjDetail.PROJECT_ID);
             ViewBag.ViewId = service.ViewId;
+            ViewBag.Config = _projectService.GetConfigColumn(service.ObjDetail.PROJECT_ID, ConfigHideColumn.THUC_HIEN_KHACH_HANG.GetValue());
             return PartialView(data);
         }
 
@@ -115,6 +118,7 @@ namespace SMO.Areas.PS.Controllers
             var data = service.GetPlanProgresses();
             ViewBag.CurrentObj = service.ObjDetail;
             ViewBag.ViewId = service.ViewId;
+            ViewBag.Config = _projectService.GetConfigColumn(service.ObjDetail.PROJECT_ID, ConfigHideColumn.THUC_HIEN_THAU_PHU.GetValue());
             return PartialView(data);
         }
 

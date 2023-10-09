@@ -49,7 +49,6 @@ namespace SMO.Core.Entities
         public virtual ISet<T_AD_USER_RIGHT> ListUserRight { get; set; }
         public virtual ISet<T_AD_USER_ROLE> ListUserRole { get; set; }
         public virtual ISet<T_AD_USER_HISTORY> ListUserHistory { get; set; }
-        public virtual ISet<T_PS_CONFIG_HIDE_COLUMN> ConfigHideColumn { get; set; }
 
         private T_AD_ORGANIZE _Organize;
         public virtual T_AD_ORGANIZE Organize
@@ -128,8 +127,6 @@ namespace SMO.Core.Entities
             ListUserRight = new HashSet<T_AD_USER_RIGHT>(new List<T_AD_USER_RIGHT>());
             ListUserRole = new HashSet<T_AD_USER_ROLE>(new List<T_AD_USER_ROLE>());
             ListUserHistory = new HashSet<T_AD_USER_HISTORY>(new List<T_AD_USER_HISTORY>());
-            ConfigHideColumn = new HashSet<T_PS_CONFIG_HIDE_COLUMN>(new List<T_PS_CONFIG_HIDE_COLUMN>());
-
             Organize = new T_AD_ORGANIZE();
             Title = new T_MD_TITLE();
         }

@@ -4135,6 +4135,23 @@ namespace SMO.Service.PS
             }
             return data;
         }
+
+        public T_PS_CONFIG_HIDE_COLUMN GetConfigColumn(Guid? projectId, string typeDisplay)
+        {
+            try
+            {
+                var config = (projectId == null || projectId == Guid.Empty) ? UnitOfWork.Repository<ConfigHideColumnRepo>().Queryable().FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.TYPE_DISPLAY == typeDisplay) : UnitOfWork.Repository<ConfigHideColumnRepo>().Queryable().FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.TYPE_DISPLAY == typeDisplay && x.PROJECT_ID == projectId);
+                return config == null ? new T_PS_CONFIG_HIDE_COLUMN() : config;
+            }
+            catch(Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+                return new T_PS_CONFIG_HIDE_COLUMN();
+            }
+        }
+
         internal void UpdateConfigHideColumn(ConfigHideColumnModels model)
         {
             try
@@ -4147,21 +4164,19 @@ namespace SMO.Service.PS
                 if(item != null) {
                     item.DETAILS= model.Details;
 
-                    UnitOfWork.Repository<ConfigHideColumnRepo>().Delete(item);
+                    UnitOfWork.Repository<ConfigHideColumnRepo>().Update(item);
                 }
                 else
                 {
                     UnitOfWork.Repository<ConfigHideColumnRepo>().Create(new T_PS_CONFIG_HIDE_COLUMN
                     {
-                        USER_NAME= ProfileUtilities.User.USER_NAME,
-                        PROJECT_ID= model.ProjectId,
-                        TYPE_DISPLAY= model.Display,
-                        DETAILS= model.Details,
-                    });
+                        ID = Guid.NewGuid(),
+                        USER_NAME = ProfileUtilities.User.USER_NAME,
+                        PROJECT_ID = model.ProjectId,
+                        TYPE_DISPLAY = model.Display,
+                        DETAILS = model.Details,
+                    }); 
                 }
-              
-              
-
                 UnitOfWork.Commit();
              
             }

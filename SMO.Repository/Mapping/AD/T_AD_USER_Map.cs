@@ -38,7 +38,6 @@ namespace SMO.Repository.Mapping.AD
             Map(m => m.UPDATE_DATE).Not.Insert();
             HasMany(x => x.ListUserUserGroup).KeyColumn("USER_NAME").LazyLoad().Inverse().Cascade.Delete();
             HasMany(x => x.ListUserRight).KeyColumn("USER_NAME").LazyLoad().Inverse().Cascade.Delete();
-            HasMany(x => x.ConfigHideColumn).KeyColumn("USER_NAME").LazyLoad().Inverse().Cascade.Delete();
             HasMany(x => x.ListUserRole).KeyColumn("USER_NAME").LazyLoad().Inverse().Cascade.Delete();
             HasMany(x => x.ListUserHistory).KeyColumn("USER_NAME").LazyLoad().Inverse().Cascade.Delete();
             References(x => x.Organize).Column("COMPANY_ID").Not.Insert().Not.Update().LazyLoad();

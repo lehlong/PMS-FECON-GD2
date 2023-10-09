@@ -14,6 +14,7 @@
     var ngayQuyetToan = ViewBag.NgayQuyetToan;
     var hanBaoHanh = ViewBag.HanBaoHanh;
     var display = ConfigHideColumn.KE_HOACH_SAN_LUONG.GetValue().ToString();
+    var config = ViewBag.Config as SMO.Core.Entities.PS.T_PS_CONFIG_HIDE_COLUMN;
 
     foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
     {
@@ -54,14 +55,36 @@
             opacity: 1
         }
     }
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
 </style>
 <div class="p-t-10 fade-cost">
     <b>TRẠNG THÁI: @(project.STATUS.GetEnum<ProjectStatus>().GetName().ToUpper())</b>
     @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-plan-cost\").click();"), "Alt+N", "arrow_back")
     @Html.MyButton("cmdSave", "Xuất Excel", $"ExportExcel()", "Alt+N", "file_download")
     @Html.MyButton("cmdImport", "Nhập Excel", string.Format("$(\"#import\").show();"), "Alt+N", "file_upload")
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
 </div>
-
+<div class="dropdown-hide-column">
+    <button type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+    <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+            class="selectpicker show-tick dropdown form-control" multiple>
+    </select>
+    <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+</div>
 <div id="import" hidden>
     <div class="modal-backdrop fade in"></div>
     <div class="modal fade in" tabindex="-1" role="dialog" style="display: block; padding-right: 17px;">
@@ -204,13 +227,13 @@
         @if (ngayQuyetToan == null || hanBaoHanh == null)
         {
             <text>
-                lengthTime = rawData.length / gridData.length;
+        lengthTime = rawData.length / gridData.length;
             </text>
         }
         else
         {
             <text>
-                lengthTime = rawData.length / gridData.length - 2;
+        lengthTime = rawData.length / gridData.length - 2;
             </text>
         }
         for (var i = 0; i < lengthTime; i++) {
@@ -222,7 +245,7 @@
             columns.push({
                 id: `period_${i}`, header: [{
                     text: `<div style="display: block;width: 100%;text-align: center;white-space: initial;">
-                            <strong>${timeType +` `+ (i + 1)} </strong>
+                            <strong>${timeType + ` ` + (i + 1)} </strong>
                             <div style="text-align: center; font-size: 0.8em">${(startDate + ` - ` + endDate)}</div>
                             </div>`
                     , colspan: 2
@@ -677,27 +700,27 @@
 
                         //Cập nhật khối lượng thiết kế
                         var value = dataExcel[i].__EMPTY_7
-                            grid.editCell(grid.data.getId(i), "planVolume");
-                            grid.data._order[i].planVolume = validateNumber(String(value).replaceAll(",", ""));
+                        grid.editCell(grid.data.getId(i), "planVolume");
+                        grid.data._order[i].planVolume = validateNumber(String(value).replaceAll(",", ""));
 
-                            var ajaxParams = {
-                                url: '@Url.Action("UpdateValueCustomer")',
-                                type: "POST",
-                                data: {
-                                    projectStructId: projectStructureId,
-                                    periodId: undefined,
-                                    value,
-                                    projectId: '@projectId',
-                                    total: value * price,
-                                    isCustomer: true
-                                },
-                                dataType: 'json',
-                                success: function () {
-                                    updateTotalGrid();
-                                    grid.paint();
-                                }
+                        var ajaxParams = {
+                            url: '@Url.Action("UpdateValueCustomer")',
+                            type: "POST",
+                            data: {
+                                projectStructId: projectStructureId,
+                                periodId: undefined,
+                                value,
+                                projectId: '@projectId',
+                                total: value * price,
+                                isCustomer: true
+                            },
+                            dataType: 'json',
+                            success: function () {
+                                updateTotalGrid();
+                                grid.paint();
                             }
-                            Forms.AjaxWithoutLoading(ajaxParams)
+                        }
+                        Forms.AjaxWithoutLoading(ajaxParams)
 
 
                         var totalVolumePlan = 0;
@@ -757,6 +780,66 @@
                 console.error(e);
             }
         }
+        updateHideColumn = function () {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+            var ajaxParams = {
+                url: 'PS/Project/UpdateConfigHideColumn',
+                type: "POST",
+                data: {
+                    Display: '@display',
+                    Details: JSON.stringify(lstColumeHide),
+                    ProjectId: '@projectId'
+
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            }
+            Forms.Ajax(ajaxParams)
+        }
+
+        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config.DETAILS, jsonSerializeSettings));
+        var arrConfig = JSON.parse(dataConfig);
+        if (dataConfig) {
+            for (i = 0; i < arrConfig.length; i++) {
+                grid.hideColumn(arrConfig[i]);
+            }
+        }
+        for (i = 0; i < columns.length; i++) {
+            var selected = "selected";
+            if (dataConfig) {
+                if (dataConfig.includes(columns[i].id)) {
+                    selected = "";
+                }
+            }
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+    });
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
     });
 </script>
 

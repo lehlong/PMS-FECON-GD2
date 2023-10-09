@@ -11,7 +11,8 @@ namespace SMO.Repository.Mapping.PS
     {
         public T_PS_CONFIG_HIDE_COLUMN_Map()
         {
-            CompositeId().KeyProperty(x => x.USER_NAME);
+            Id(x => x.ID).GeneratedBy.Assigned();
+            Map(x => x.USER_NAME);
             Map(x => x.TYPE_DISPLAY);
             Map(x => x.DETAILS);
             Map(x => x.PROJECT_ID);

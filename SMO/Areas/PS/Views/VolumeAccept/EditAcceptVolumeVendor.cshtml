@@ -42,10 +42,22 @@
     {
         editable = false;
     }
+    var config = ViewBag.Config as SMO.Core.Entities.PS.T_PS_CONFIG_HIDE_COLUMN;
 }
-
+<style>
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
+</style>
 <div class="row m-t-30" id="@formId">
-    <div class="col-md-4 col-xs-12"> 
+    <div class="col-md-4 col-xs-12">
         <label>Nhà thầu</label>
         <div class="form-group">
             <div class="form-line">
@@ -82,6 +94,19 @@
         </div>
     </div>
     <div class="clearfix"></div>
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+    <div class="dropdown-hide-column">
+        <button type="button" class="close" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+        <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+                class="selectpicker show-tick dropdown form-control" multiple>
+        </select>
+        <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
+    </div>
     <div style="height: calc(100vh - 302px)" id="@gridId"></div>
 </div>
 
@@ -93,18 +118,7 @@
     editableAcceptVendor = true;
         </text>
     }
-    $(function () {
-        Forms.CompleteUI();
-        @if (!new string[] {@ProjectWorkVolumeStatus.KHOI_TAO.GetValue(),
-        @ProjectWorkVolumeStatus.KHONG_XAC_NHAN.GetValue(),
-        @ProjectWorkVolumeStatus.TU_CHOI.GetValue() }.Contains(currentObj.STATUS))
-        {
-            <text>
-        $('#@formId #fromDate').prop('disabled', true);
-        $('#@formId #toDate').prop('disabled', true);
-        </text>
-        }
-    });
+
     const statuses = @Html.Raw(JsonConvert.SerializeObject(statusDict));
     const rawData = @Html.Raw(JsonConvert.SerializeObject(Model, jsonSerializeSettings));
     function validateNumber(value) {
@@ -164,7 +178,7 @@
         })
     }
 
-    function calculateKLDoDang(row) {       
+    function calculateKLDoDang(row) {
         return row.accumulatedVolume - row.accumulateAllowedVolume;
     }
 
@@ -177,7 +191,7 @@
 
     const columns = [
         {
-            id: "projectStructureType", header: [{ text: "", align: 'center'}],
+            id: "projectStructureType", header: [{ text: "#", align: 'center'}],
             template: (type, row) => {
                 const { isSummary } = row
                 if (isSummary) {
@@ -262,7 +276,7 @@
         data: gridWithTotal,
         headerRowHeight: 50
     });
-  
+
     document.getElementById("@gridId").addEventListener("keydown", myFunction);
         function myFunction(e) {
             if (e.keyCode == 37 || e.which == 37 || e.keyCode == 38 || e.which == 38 || e.keyCode == 39 || e.which == 39 || e.keyCode == 40 || e.which == 40) {
@@ -572,7 +586,7 @@
         validateVolume({ ...row, [columnId]: value })
     });
 
-   
+
     function validateVolume(row) {
         const { id, accumulatedVolume, acceptVolume } = row
         if (accumulatedVolume > 0 && acceptVolume > accumulatedVolume) {
@@ -697,12 +711,12 @@
     function RefreshData() {
         console.log("ven")
         const allData = grid.data.serialize();
-        
+
         const hasData = _.filter(allData, (data) => {
             const { workVolume, acceptVolume, notes } = data;
             return !_.isNil(workVolume) || !_.isNil(acceptVolume) || !_.isNil(notes)
         })
-        
+
             var ajaxParams = {
                 url: '@Url.Action("RefreshData")',
                 type: "POST",
@@ -777,6 +791,73 @@
         $('#@formId #status').val(statuses[status]);
 
     }
+    function updateHideColumn() {
+        var lstColumn = $("#hide-column-update").val();
+        var allColumn = [];
+        for (i = 0; i < columns.length; i++) {
+            allColumn.push(columns[i].id)
+        }
+        var lstColumeHide = _.difference(allColumn, lstColumn);
+
+        for (i = 0; i < columns.length; i++) {
+            grid.showColumn(columns[i].id)
+        }
+        for (i = 0; i < lstColumeHide.length; i++) {
+            grid.hideColumn(lstColumeHide[i]);
+        }
+        $("div.dropdown-hide-column").hide();
+        var ajaxParams = {
+            url: 'PS/Project/UpdateConfigHideColumn',
+            type: "POST",
+            data: {
+                Display: '@display',
+                Details: JSON.stringify(lstColumeHide),
+                ProjectId: '@project.ID'
+
+            },
+            dataType: 'json',
+            success: function (response) {
+                Message.execute(response);
+            }
+        }
+        Forms.Ajax(ajaxParams)
+    }
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+    $(function () {
+        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config.DETAILS, jsonSerializeSettings));
+        var arrConfig = JSON.parse(dataConfig);
+        if (dataConfig) {
+            for (i = 0; i < arrConfig.length; i++) {
+                grid.hideColumn(arrConfig[i]);
+            }
+        }
+        for (i = 0; i < columns.length; i++) {
+            var selected = "selected";
+            if (dataConfig) {
+                if (dataConfig.includes(columns[i].id)) {
+                    selected = "";
+                }
+            }
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+        @if (!new string[] {@ProjectWorkVolumeStatus.KHOI_TAO.GetValue(),
+        @ProjectWorkVolumeStatus.KHONG_XAC_NHAN.GetValue(),
+        @ProjectWorkVolumeStatus.TU_CHOI.GetValue() }.Contains(currentObj.STATUS))
+        {
+            <text>
+            $('#@formId #fromDate').prop('disabled', true);
+        $('#@formId #toDate').prop('disabled', true);
+        </text>
+        }
+    });
     @{
         Html.RenderPartial("_ProjectVolumeProgressScript", currentObj?.ID ?? Guid.Empty);
     }

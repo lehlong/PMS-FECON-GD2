@@ -71,12 +71,6 @@
                 x.fromDate= x.fromDate==null?x.fromDate: moment(x.fromDate).format("DD/MM/YYYY"),
                 x.toDate = x.toDate == null ? x.toDate : moment(x.toDate).format("DD/MM/YYYY")
         })
-        //var length = rawData.length
-        //for (var i = 0; i < length; i++) {
-        //    var x= rawData[i]
-        //    x.fromDate = x.fromDate == null ? x.fromDate : moment(x.fromDate).format("DD/MM/YYYY")
-        //    x.toDate = x.toDate == null ? x.toDate : moment(x.toDate).format("DD/MM/YYYY")
-        //}
     const columns = [
         { id: "stt", header: [{ text: "STT" }, { content: "inputFilter" }], width: 80 },
         { id: "username", header: [{ text: "Họ và tên" }, { content: "inputFilter" }], width: 320 },
@@ -111,13 +105,12 @@
         });
     }
 
-
-    function showDropdown() {
-        $("div.dropdown-hide-column").show();
-    }
-    $('.close').bind('click', function () {
-        $("div.dropdown-hide-column").hide();
-    });
+        function showDropdown() {
+            $("div.dropdown-hide-column").show();
+        }
+        $('.close').bind('click', function () {
+            $("div.dropdown-hide-column").hide();
+        });
 
         function updateHideColumn() {
             var lstColumn = $("#hide-column-update").val();
@@ -151,33 +144,26 @@
             Forms.Ajax(ajaxParams)
         }
 
-    $(function () {
-
-        for (i = 0; i < columns.length; i++) {
-            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
-                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+        $(function () {
+            const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config.DETAILS, jsonSerializeSettings));
+            var arrConfig = JSON.parse(dataConfig);
+            if (dataConfig) {
+                for (i = 0; i < arrConfig.length; i++) {
+                    grid.hideColumn(arrConfig[i]);
+                }
             }
-            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
-                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            for (i = 0; i < columns.length; i++) {
+                var selected = "selected";
+                if (dataConfig) {
+                    if (dataConfig.includes(columns[i].id)) {
+                        selected = "";
+                    }
+                }
+                if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                    $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+                }
             }
-        }
-
-        console.log(columns)
-        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config, jsonSerializeSettings));
-        var lstHideColumnData = JSON.parse(dataConfig.details);
-        var allColumn = [];
-        for (i = 0; i < columns.length; i++) {
-            allColumn.push(columns[i].id)
-        }
-        for (i = 0; i < columns.length; i++) {
-            grid.showColumn(columns[i].id)
-        }
-        for (i = 0; i < lstHideColumnData.length; i++) {
-            grid.hideColumn(lstHideColumnData[i]);
-        }
-
-        Forms.CompleteUI();
-
-    });
+            Forms.CompleteUI();
+        });
     </script>
 </div>

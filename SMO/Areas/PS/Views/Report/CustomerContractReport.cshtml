@@ -9,6 +9,7 @@
     searchModel.BoldRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.IsSummary).Select(x => x.index).ToList();
     searchModel.PercentageRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.UnitCode == "%").Select(x => x.index).ToList();
     var display = ConfigHideColumn.BAO_CAO_THUC_HIEN_HOP_DONG_KHACH_HANG.GetValue().ToString();
+    var config = ViewBag.Config as SMO.Core.Entities.PS.T_PS_CONFIG_HIDE_COLUMN;
 }
 <style>
     .row-bold .dhx_grid-cell {
@@ -285,7 +286,6 @@
     });
 
     function ExportExcel() {
-        debugger;
         grid.export.xlsx({
             name: "BC_THUC_HIEN_HOP_DONG_KHACH_HANG.xlsx",
             url: "@Url.Action("ExportCustomerContract", new { searchModel=JsonConvert.SerializeObject(searchModel)})"
@@ -299,29 +299,56 @@
         $("div.dropdown-hide-column").hide();
     });
 
-    function updateHideColumn() {
-        var lstColumn = $("#hide-column-update").val();
-        var allColumn = [];
-        for (i = 0; i < columns.length; i++) {           
-            allColumn.push(columns[i].id)
+        function updateHideColumn() {
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+            var ajaxParams = {
+                url: 'PS/Project/UpdateConfigHideColumn',
+                type: "POST",
+                data: {
+                    Display: '@display',
+                    Details: JSON.stringify(lstColumeHide)
+
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            }
+            Forms.Ajax(ajaxParams)
         }
-        var lstColumeHide = _.difference(allColumn, lstColumn); 
-        
-        for (i = 0; i < columns.length; i++) {
-            grid.showColumn(columns[i].id)
-        }
-        for (i = 0; i < lstColumeHide.length; i++) {
-            grid.hideColumn(lstColumeHide[i]);
-        }    
-        $("div.dropdown-hide-column").hide();
-    }
-    $(function () {
-        for (i = 0; i < columns.length; i++) {
+        $(function () {
+        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config.DETAILS, jsonSerializeSettings));
+            var arrConfig = JSON.parse(dataConfig);
+            if (dataConfig) {
+                for (i = 0; i < arrConfig.length; i++) {
+                    grid.hideColumn(arrConfig[i]);
+                }
+            }
+            for (i = 0; i < columns.length; i++) {
+                var selected = "selected";
+                if (dataConfig) {
+                    if (dataConfig.includes(columns[i].id)) {
+                        selected = "";
+                    }
+                }
             if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
-                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[0].text}</option>`)
             }
             if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
-                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[1].text}</option>`)
             }
         }
         Forms.CompleteUI();

@@ -15,10 +15,12 @@ namespace SMO.Areas.PS.Controllers
     public class ProjectSlDtController : Controller
     {
         private readonly ProjectSlDtService _service;
+        private readonly ProjectService _projectService;
 
         public ProjectSlDtController()
         {
             _service = new ProjectSlDtService();
+            _projectService = new ProjectService();
         }
 
         [MyValidateAntiForgeryToken]
@@ -27,7 +29,7 @@ namespace SMO.Areas.PS.Controllers
             _service.ObjDetail.PROJECT_ID = projectId;
             _service.Search();
             ViewBag.ProjectTimes = _service.GetProjectTime();
-
+            ViewBag.Config = _projectService.GetConfigColumn(projectId, ConfigHideColumn.KE_HOACH_DOANH_THU_DONG_TIEN.GetValue());
             ViewBag.HanBaoHanh = _service.GetHanBaoHanh(projectId);
             ViewBag.NgayQuyetToan = _service.GetNgayQuyetToan(projectId);
 

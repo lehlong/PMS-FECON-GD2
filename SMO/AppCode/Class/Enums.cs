@@ -277,6 +277,8 @@
         KE_HOACH_SAN_LUONG,
         [EnumValue("EditPlanCostVendor")]
         KE_HOACH_CHI_PHI,
+        [EnumValue("EditDtdt")]
+        KE_HOACH_DOANH_THU_DONG_TIEN,
         [EnumValue("EditVolumeWorkCustomer")]
         THUC_HIEN_KHACH_HANG,
         [EnumValue("EditVolumeWorkVendor")]

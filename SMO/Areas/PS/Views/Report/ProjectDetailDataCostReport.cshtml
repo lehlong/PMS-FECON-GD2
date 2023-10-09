@@ -10,6 +10,7 @@
         .Select(x => x.index).ToList();
     searchModel.PercentageRowIndexes = Model.Select((data, index) => new { data, index }).Where(x => x.data.UnitCode == "%").Select(x => x.index).ToList();
     var display = ConfigHideColumn.XUAT_DU_LIEU_CHI_TIET_CHI_PHI_DU_AN.GetValue().ToString();
+    var config = ViewBag.Config as SMO.Core.Entities.PS.T_PS_CONFIG_HIDE_COLUMN;
 
     var project = SMOUtilities.GetProject(searchModel.ProjectId);
     var timeType = project.TIME_TYPE;
@@ -310,14 +311,41 @@
                 grid.hideColumn(lstColumeHide[i]);
             }
             $("div.dropdown-hide-column").hide();
+            var ajaxParams = {
+                url: 'PS/Project/UpdateConfigHideColumn',
+                type: "POST",
+                data: {
+                    Display: '@display',
+                    Details: JSON.stringify(lstColumeHide)
+
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            }
+            Forms.Ajax(ajaxParams)
         }
-    $(function () {
-        for (i = 0; i < columns.length; i++) {
+        $(function () {
+        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config.DETAILS, jsonSerializeSettings));
+            var arrConfig = JSON.parse(dataConfig);
+            if (dataConfig) {
+                for (i = 0; i < arrConfig.length; i++) {
+                    grid.hideColumn(arrConfig[i]);
+                }
+            }
+            for (i = 0; i < columns.length; i++) {
+                var selected = "selected";
+                if (dataConfig) {
+                    if (dataConfig.includes(columns[i].id)) {
+                        selected = "";
+                    }
+                }
             if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
-                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[0].text}</option>`)
             }
             if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
-                $("#hide-column-update").append(`<option selected value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[1].text}</option>`)
             }
         }
         Forms.CompleteUI();

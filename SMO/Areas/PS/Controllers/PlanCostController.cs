@@ -15,10 +15,12 @@ namespace SMO.Areas.PS.Controllers
     public class PlanCostController : Controller
     {
         private readonly PlanCostService _service;
+        private readonly ProjectService _projectService;
 
         public PlanCostController()
         {
             _service = new PlanCostService();
+            _projectService = new ProjectService();
         }
         [MyValidateAntiForgeryToken]
         public ActionResult IndexPlanCost(Guid projectId, bool isCustomer)
@@ -46,6 +48,7 @@ namespace SMO.Areas.PS.Controllers
             var data = _service.GetPlanCosts();
             ViewBag.ProjectTimes = _service.GetProjectTime();
             ViewBag.ProjectId = projectId;
+            ViewBag.Config = _projectService.GetConfigColumn(projectId, ConfigHideColumn.KE_HOACH_CHI_PHI.GetValue());
             ViewBag.HanBaoHanh = _service.UnitOfWork.Repository<ProjectRepo>().Queryable().FirstOrDefault(x => x.ID == projectId)?.HAN_BAO_HANH;
             ViewBag.NgayQuyetToan = _service.UnitOfWork.Repository<ProjectRepo>().Queryable().FirstOrDefault(x => x.ID == projectId)?.NGAY_QUYET_TOAN;
 
@@ -60,7 +63,7 @@ namespace SMO.Areas.PS.Controllers
             var data = _service.GetPlanCosts();
             ViewBag.ProjectTimes = _service.GetProjectTime();
             ViewBag.ProjectId = projectId;
-
+            ViewBag.Config = _projectService.GetConfigColumn(projectId, ConfigHideColumn.KE_HOACH_SAN_LUONG.GetValue());
             ViewBag.HanBaoHanh = _service.UnitOfWork.Repository<ProjectRepo>().Queryable().FirstOrDefault(x => x.ID == projectId)?.HAN_BAO_HANH;
             ViewBag.NgayQuyetToan = _service.UnitOfWork.Repository<ProjectRepo>().Queryable().FirstOrDefault(x => x.ID == projectId)?.NGAY_QUYET_TOAN;
 

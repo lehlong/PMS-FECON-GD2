@@ -14,6 +14,7 @@
     var ngayQuyetToan = ViewBag.NgayQuyetToan;
     var hanBaoHanh = ViewBag.HanBaoHanh;
     var display = ConfigHideColumn.KE_HOACH_CHI_PHI.GetValue().ToString();
+    var config = ViewBag.Config as SMO.Core.Entities.PS.T_PS_CONFIG_HIDE_COLUMN;
 
     foreach (ProjectTimeTypeEnum time in Enum.GetValues(typeof(ProjectTimeTypeEnum)))
     {
@@ -63,12 +64,35 @@
             opacity: 1
         }
     }
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
 </style>
 <div class="p-t-10 fade-cost">
     <b>TRẠNG THÁI: @(project.STATUS.GetEnum<ProjectStatus>().GetName().ToUpper())</b>
     @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-plan-cost\").click();"), "Alt+N", "arrow_back")
     @Html.MyButton("cmdSave", "Xuất Excel", $"ExportExcel()", "Alt+N", "file_download")
     @Html.MyButton("cmdImport", "Nhập Excel", string.Format("$(\"#import\").show();"), "Alt+N", "file_upload")
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+</div>
+<div class="dropdown-hide-column">
+    <button type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+    <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+            class="selectpicker show-tick dropdown form-control" multiple>
+    </select>
+    <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
 </div>
 <div id="import" hidden>
     <div class="modal-backdrop fade in"></div>
@@ -170,7 +194,7 @@
             { id: "genCode", header: [{ text: "Mã hạng mục" }, { content: "inputFilter" }] },
             { id: "projectStructureName", header: [{ text: "Hạng mục công việc" }, { content: "inputFilter" }], maxWidth: 350 },
             {
-                id: "projectStructureType", header: [{ text: "" }],
+                id: "projectStructureType", header: [{ text: "#" }],
                 template: (type) => {
                     return `<image src="Content/Images/IconProject/${type}.png"></image>`
                 },
@@ -198,7 +222,7 @@
                 template: displayTotalVolumePlan
             },
             { id: "startDate", header: [{ text: "Ngày bắt đầu" }] },
-            { id: "finishDate", header: [{ text: "Ngày kết thúc" }]},
+            { id: "finishDate", header: [{ text: "Ngày kết thúc" }] },
             { id: "duration", header: [{ text: "Số ngày thi công" }], type: "number", format: "#,#" },
 
         ]
@@ -207,16 +231,16 @@
         @if (ngayQuyetToan == null || hanBaoHanh == null)
         {
             <text>
-                lengthTime = rawData.length / gridData.length;
+        lengthTime = rawData.length / gridData.length;
             </text>
         }
         else
         {
             <text>
-                lengthTime = rawData.length / gridData.length - 2;
+        lengthTime = rawData.length / gridData.length - 2;
             </text>
         }
-        for (var i = 0; i < lengthTime ; i++) {
+        for (var i = 0; i < lengthTime; i++) {
             const period = timePeriods[i];
             const startDate = moment(period.START_DATE).format("@Global.DateToStringMomentJSFormat");
             const endDate = moment(period.FINISH_DATE).format("@Global.DateToStringMomentJSFormat");
@@ -269,7 +293,7 @@
             sortable: false
         });
 
-        ExportExcel= function() {
+        ExportExcel = function () {
             grid.export.xlsx({
                 name: "KeHoachChiPhi.xlsx",
                 url: "@Url.Action("ExportExcelKHChiPhi", new { header = JsonConvert.SerializeObject(header) })"
@@ -374,7 +398,7 @@
             e.stopPropagation();
             e.preventDefault();
             var selectedCell = grid.selection.getCell();
-            if (selectedCell == undefined || @project.STATUS == "04"|| @project.STATUS == "05") {
+            if (selectedCell == undefined || @project.STATUS == "04" || @project.STATUS == "05") {
                 return;
             }
             const { row, column } = selectedCell;
@@ -645,26 +669,26 @@
                 const { price, id } = data || {};
                 const children = _.filter(grid.data.serialize(), ['parentId', id]);
 
-                    for (var i = 0; i < lengthTime; i++) {
-                        const value = _.get(data, `period_${i}`)
-                        if (!(value && price)) {
-                            const total = _.chain(children)
-                                .map((row) => {
-                                    const childPrice = _.get(row, 'price')
-                                    const periodTotal = _.get(row, `periodTotal_${i}`)
-                                    const quantity = _.get(row, `period_${i}`)
-                                    const calculateTotal = quantity * childPrice;
-                                    return calculateTotal > 0 ? calculateTotal : Number(periodTotal);
-                                })
-                                .sum()
-                                .value();
-                            const updateObj = {}
+                for (var i = 0; i < lengthTime; i++) {
+                    const value = _.get(data, `period_${i}`)
+                    if (!(value && price)) {
+                        const total = _.chain(children)
+                            .map((row) => {
+                                const childPrice = _.get(row, 'price')
+                                const periodTotal = _.get(row, `periodTotal_${i}`)
+                                const quantity = _.get(row, `period_${i}`)
+                                const calculateTotal = quantity * childPrice;
+                                return calculateTotal > 0 ? calculateTotal : Number(periodTotal);
+                            })
+                            .sum()
+                            .value();
+                        const updateObj = {}
 
-                            grid.data.update(id, _.set(updateObj, `periodTotal_${i}`, total), true);
-                        } else {
-                            const updateObj = {}
-                            grid.data.update(id, _.set(updateObj, `periodTotal_${i}`, value * price), true);
-                        }
+                        grid.data.update(id, _.set(updateObj, `periodTotal_${i}`, total), true);
+                    } else {
+                        const updateObj = {}
+                        grid.data.update(id, _.set(updateObj, `periodTotal_${i}`, value * price), true);
+                    }
                 }
                 const totalVolumePlan = calculateTotalVolumePlan(data)
                 grid.data.update(id, _.set({}, `totalVolumePlan`, totalVolumePlan), true);
@@ -673,7 +697,7 @@
         }
 
         function updateData() {
-            const lv1 = _.filter(gridData, { 'genCode': '@project.CODE', 'projectStructureType': 'WBS'})[0]
+            const lv1 = _.filter(gridData, { 'genCode': '@project.CODE', 'projectStructureType': 'WBS' })[0]
             const lv2 = _.filter(gridData, ['parentId', lv1?.projectStructureId])
 
             _.forEach(lv2, (child) => {
@@ -682,22 +706,22 @@
                 _.forEach(timePeriods, (timePeriod, periodIndex) => {
 
                     const { ID: periodId } = timePeriod
-                     const ajaxParams = {
-                         url: '@Url.Action("UpdateParentTotal")',
-                         type: "POST",
-                         data: {
-                             projectStructId: parentId,
-                             periodId,
-                             total: _.chain(grid.data.serialize())
-                                 .find(["id", parentId])
-                                 .get(`periodTotal_${periodIndex}`),
-                             projectId: '@projectId',
-                             isCustomer: false
-                         },
-                         dataType: 'json',
-                         success: () => { }
-                     };
-                     Forms.AjaxWithoutLoading(ajaxParams)
+                    const ajaxParams = {
+                        url: '@Url.Action("UpdateParentTotal")',
+                        type: "POST",
+                        data: {
+                            projectStructId: parentId,
+                            periodId,
+                            total: _.chain(grid.data.serialize())
+                                .find(["id", parentId])
+                                .get(`periodTotal_${periodIndex}`),
+                            projectId: '@projectId',
+                            isCustomer: false
+                        },
+                        dataType: 'json',
+                        success: () => { }
+                    };
+                    Forms.AjaxWithoutLoading(ajaxParams)
                 })
 
             })
@@ -802,5 +826,68 @@
                 console.error(e);
             }
         }
+
+        updateHideColumn = function(){
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+            var ajaxParams = {
+                url: 'PS/Project/UpdateConfigHideColumn',
+                type: "POST",
+                data: {
+                    Display: '@display',
+                    Details: JSON.stringify(lstColumeHide),
+                    ProjectId: '@projectId'
+
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            }
+            Forms.Ajax(ajaxParams)
+        }
+
+        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config.DETAILS, jsonSerializeSettings));
+        var arrConfig = JSON.parse(dataConfig);
+        if (dataConfig) {
+            for (i = 0; i < arrConfig.length; i++) {
+                grid.hideColumn(arrConfig[i]);
+            }
+        }
+        for (i = 0; i < columns.length; i++) {
+            var selected = "selected";
+            if (dataConfig) {
+                if (dataConfig.includes(columns[i].id)) {
+                    selected = "";
+                }
+            }
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
     });
+
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
+    });
+
 </script>

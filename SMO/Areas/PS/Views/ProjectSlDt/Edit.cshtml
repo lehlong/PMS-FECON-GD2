@@ -1,14 +1,19 @@
 ﻿@model SMO.Service.PS.ProjectSlDtService
+@using Newtonsoft.Json.Serialization;
 @using Newtonsoft.Json;
 @using SMO.Core.Entities.PS;
 @{
     var viewId = Guid.NewGuid().ToString();
     var gridId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
     var data = Model.ObjList;
     var projectStatus = data.FirstOrDefault()?.Project.STATUS;
     var project = data.FirstOrDefault()?.Project;
     var timeType = data.FirstOrDefault()?.TimePeriod.TIME_TYPE;
     var timeTypeText = string.Empty;
+
+    var display = ConfigHideColumn.KE_HOACH_DOANH_THU_DONG_TIEN.GetValue().ToString();
+    var config = ViewBag.Config as SMO.Core.Entities.PS.T_PS_CONFIG_HIDE_COLUMN;
 
     var ngayQuyetToan = ViewBag.NgayQuyetToan;
     var hanBaoHanh = ViewBag.HanBaoHanh;
@@ -53,12 +58,36 @@
             opacity: 1
         }
     }
+
+    .dropdown-hide-column {
+        display: none;
+        width: 22%;
+        position: absolute;
+        z-index: 1000;
+        background-color: white;
+        padding: 15px 20px;
+        box-shadow: 1px 1px 5px #8d8d7a;
+        left: 77.3%;
+    }
 </style>
 <div class="p-t-10 p-b-10 fade-cost">
     <b>TRẠNG THÁI: @(data.FirstOrDefault()?.Project.STATUS.GetEnum<ProjectStatus>().GetName().ToUpper())</b>
     @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#close-plan-cost\").click();"), "Alt+N", "arrow_back")
     @Html.MyButton("cmdSave", "Xuất Excel", $"ExportExcel()", "Alt+N", "file_download")
     @Html.MyButton("cmdImport", "Nhập Excel", string.Format("$(\"#import\").show();"), "Alt+N", "file_upload")
+    <div class="waves-effect btn btn-default" type="button" style="padding:8px;float:right" data-toggle="dropdown" onclick="showDropdown()">
+        <i class="material-icons">settings</i>
+    </div>
+</div>
+<div class="dropdown-hide-column">
+    <button type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <h5>Ẩn/Hiện cột (Bỏ tích để ẩn cột)</h5>
+    <select id="hide-column-update" name="" data-val="true" data-live-search="true" data-show-subtext="true" data-hide-disabled="true"
+            class="selectpicker show-tick dropdown form-control" multiple>
+    </select>
+    <div class="btn btn-primary mr-2" style="margin-top: 22px; position: relative; left: 40%;" onclick="updateHideColumn();">Lưu</div>
 </div>
 <div id="import" hidden>
     <div class="modal-backdrop fade in"></div>
@@ -163,7 +192,7 @@
         @if (ngayQuyetToan == null || hanBaoHanh == null)
         {
             <text>
-                for (var i = 0; i < timePeriods.length; i++) {
+        for (var i = 0; i < timePeriods.length; i++) {
             const period = timePeriods[i];
             const startDate = moment(period.START_DATE).format("@Global.DateToStringMomentJSFormat");
             const endDate = moment(period.FINISH_DATE).format("@Global.DateToStringMomentJSFormat");
@@ -200,7 +229,7 @@
         else
         {
             <text>
-                for (var i = 0; i < timePeriods.length; i++) {
+        for (var i = 0; i < timePeriods.length; i++) {
             const period = timePeriods[i];
             const startDate = moment(period.START_DATE).format("@Global.DateToStringMomentJSFormat");
             const endDate = moment(period.FINISH_DATE).format("@Global.DateToStringMomentJSFormat");
@@ -218,7 +247,7 @@
                         </div>`
                     , colspan: 2
                 },
-                    { text: (i == timePeriods.length - 1 || i == timePeriods.length - 2) ? "Tiền trong kỳ" : timeType + ` ` + (i + 1)  , align: 'right' }],
+                { text: (i == timePeriods.length - 1 || i == timePeriods.length - 2) ? "Tiền trong kỳ" : timeType + ` ` + (i + 1), align: 'right' }],
                 align: "right",
                 width: 150, minWidth: 150,
                 editable: editablePlanDoanhThu,
@@ -227,7 +256,7 @@
                 }
             });
             columns.push({
-                id: `accumulate${i}`, header: ["", { text:(i == timePeriods.length - 1 || i == timePeriods.length - 2) ? "Tiền luỹ kế" : "LK " + timeType + ` ` + (i + 1), align: 'right' }],
+                id: `accumulate${i}`, header: ["", { text: (i == timePeriods.length - 1 || i == timePeriods.length - 2) ? "Tiền luỹ kế" : "LK " + timeType + ` ` + (i + 1), align: 'right' }],
                 template: (accumulate) => {
 
                     return Number(accumulate).toLocaleString('en-US', { maximumFractionDigits: 0 });
@@ -253,7 +282,7 @@
             sortable: false
         });
 
-        ExportExcel= function() {
+        ExportExcel = function () {
             grid.export.xlsx({
                 name: "KeHoachDoanhThu_DongTien.xlsx",
                 url: "@Url.Action("ExportExcelKHDoanhThuDongTien", new { header = JsonConvert.SerializeObject(header)})"
@@ -286,77 +315,77 @@
             row[column.id] = parseFloat(e.key);
         };
 
-    $(document).bind('paste', function (e) {
-        var selectedCell = grid.selection.getCell();
-        if (selectedCell == undefined) {
-         return;
-        }
-        const { row, column } = selectedCell;
-        if (String(column.id).includes("accumulate") || String(column.id).includes("CRITERIA_") || String(column.id).includes("total") || @projectStatus == "04"|| @projectStatus == "05") {
-            return;
-        }
-        const pastedText = (e.originalEvent.clipboardData || window.clipboardData)?.getData('text').trim().split(/\r?\n */).map(r => r.split(/\t/));
-        const indexSelectCell = grid.data.getIndex(row.id);
-        const dataCell = grid.data.getRawData();
-        var lengthText = 0;
-        if (pastedText.length > dataCell.length - indexSelectCell) {
-            lengthText = dataCell.length - indexSelectCell;
-        } else {
-            lengthText = pastedText.length;
-        }
-        try {
-            for (var i = 0; i < lengthText; i++) {
-                var index = grid.data.getIndex(dataCell[indexSelectCell + i].id);
+        $(document).bind('paste', function (e) {
+            var selectedCell = grid.selection.getCell();
+            if (selectedCell == undefined) {
+                return;
+            }
+            const { row, column } = selectedCell;
+            if (String(column.id).includes("accumulate") || String(column.id).includes("CRITERIA_") || String(column.id).includes("total") || @projectStatus == "04" || @projectStatus == "05") {
+                return;
+            }
+            const pastedText = (e.originalEvent.clipboardData || window.clipboardData)?.getData('text').trim().split(/\r?\n */).map(r => r.split(/\t/));
+            const indexSelectCell = grid.data.getIndex(row.id);
+            const dataCell = grid.data.getRawData();
+            var lengthText = 0;
+            if (pastedText.length > dataCell.length - indexSelectCell) {
+                lengthText = dataCell.length - indexSelectCell;
+            } else {
+                lengthText = pastedText.length;
+            }
+            try {
+                for (var i = 0; i < lengthText; i++) {
+                    var index = grid.data.getIndex(dataCell[indexSelectCell + i].id);
 
-                var oldValue = dataCell[indexSelectCell + i][column.id];
-                var value = String(pastedText[i][0]).replaceAll(",", "")
+                    var oldValue = dataCell[indexSelectCell + i][column.id];
+                    var value = String(pastedText[i][0]).replaceAll(",", "")
 
-                if (index == 0 || index == 3) {
-                    continue;
-                } else {
-                    dataCell[indexSelectCell + i][column.id] = value;
-                    grid.paint();
-                }
-
-                let total = 0;
-                for (var j = 0; j < timePeriods.length; j++) {
-                    total += Number(dataCell[indexSelectCell + i][j] ?? 0);
-                }
-                dataCell[indexSelectCell + i].total = total;
-
-                for (var x = 0; x < timePeriods.length; x++) {
-                    let accumulate = 0
-                    for (var y = 0; y <= x; y++) {
-                        accumulate += Number(dataCell[indexSelectCell + i][y] ?? 0)
-                    }
-                    _.set(dataCell[indexSelectCell + i], `accumulate${x}`, accumulate)
-                }
-
-                if (oldValue?.toString() == value?.toString()) {
-                    continue;
-                }
-                const ajaxParams = {
-                    url: '@Url.Action("UpdateValue")',
-                    type: "POST",
-                    data: {
-                        criteriaCode: dataCell[indexSelectCell + i].CRITERIA_CODE,
-                        periodId: timePeriods[column.id].ID,
-                        value,
-                        projectId: '@Model.ObjDetail.PROJECT_ID'
-                    },
-                    dataType: 'json',
-                    success: function () {
+                    if (index == 0 || index == 3) {
+                        continue;
+                    } else {
+                        dataCell[indexSelectCell + i][column.id] = value;
                         grid.paint();
                     }
-                };
-                Forms.AjaxWithoutLoading(ajaxParams)
+
+                    let total = 0;
+                    for (var j = 0; j < timePeriods.length; j++) {
+                        total += Number(dataCell[indexSelectCell + i][j] ?? 0);
+                    }
+                    dataCell[indexSelectCell + i].total = total;
+
+                    for (var x = 0; x < timePeriods.length; x++) {
+                        let accumulate = 0
+                        for (var y = 0; y <= x; y++) {
+                            accumulate += Number(dataCell[indexSelectCell + i][y] ?? 0)
+                        }
+                        _.set(dataCell[indexSelectCell + i], `accumulate${x}`, accumulate)
+                    }
+
+                    if (oldValue?.toString() == value?.toString()) {
+                        continue;
+                    }
+                    const ajaxParams = {
+                        url: '@Url.Action("UpdateValue")',
+                        type: "POST",
+                        data: {
+                            criteriaCode: dataCell[indexSelectCell + i].CRITERIA_CODE,
+                            periodId: timePeriods[column.id].ID,
+                            value,
+                            projectId: '@Model.ObjDetail.PROJECT_ID'
+                        },
+                        dataType: 'json',
+                        success: function () {
+                            grid.paint();
+                        }
+                    };
+                    Forms.AjaxWithoutLoading(ajaxParams)
+                }
+                Message.func.AlertSuccess({ Message: { Message: "Cập nhật thông tin thành công", Code: "1002" } })
+            } catch (e) {
+                alert("Lỗi trong quá trình paste dữ liệu!!! Ctrl + F5 để load lại trang!!")
+                console.log(e);
             }
-            Message.func.AlertSuccess({ Message: { Message: "Cập nhật thông tin thành công", Code: "1002" } })
-        } catch (e) {
-            alert("Lỗi trong quá trình paste dữ liệu!!! Ctrl + F5 để load lại trang!!")
-            console.log(e);
-        }
-    });
+        });
 
         var oldValue = "";
         grid.events.on("afterEditStart", function (row, col, editorType) {
@@ -482,7 +511,7 @@
                             type: "POST",
                             data: {
                                 criteriaCode: "02",
-                                periodId: timePeriods[i-1].ID,
+                                periodId: timePeriods[i - 1].ID,
                                 value,
                                 projectId: '@Model.ObjDetail.PROJECT_ID'
                             },
@@ -513,7 +542,7 @@
                             type: "POST",
                             data: {
                                 criteriaCode: "03",
-                                periodId: timePeriods[i-1].ID,
+                                periodId: timePeriods[i - 1].ID,
                                 value,
                                 projectId: '@Model.ObjDetail.PROJECT_ID'
                             },
@@ -544,7 +573,7 @@
                             type: "POST",
                             data: {
                                 criteriaCode: "05",
-                                periodId: timePeriods[i-1].ID,
+                                periodId: timePeriods[i - 1].ID,
                                 value,
                                 projectId: '@Model.ObjDetail.PROJECT_ID'
                             },
@@ -561,6 +590,66 @@
                 console.error(e);
             }
         }
+        updateHideColumn = function(){
+            var lstColumn = $("#hide-column-update").val();
+            var allColumn = [];
+            for (i = 0; i < columns.length; i++) {
+                allColumn.push(columns[i].id)
+            }
+            var lstColumeHide = _.difference(allColumn, lstColumn);
+
+            for (i = 0; i < columns.length; i++) {
+                grid.showColumn(columns[i].id)
+            }
+            for (i = 0; i < lstColumeHide.length; i++) {
+                grid.hideColumn(lstColumeHide[i]);
+            }
+            $("div.dropdown-hide-column").hide();
+            var ajaxParams = {
+                url: 'PS/Project/UpdateConfigHideColumn',
+                type: "POST",
+                data: {
+                    Display: '@display',
+                    Details: JSON.stringify(lstColumeHide),
+                    ProjectId: '@project.ID'
+
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            }
+            Forms.Ajax(ajaxParams)
+        }
+
+        const dataConfig = @Html.Raw(JsonConvert.SerializeObject(config.DETAILS, jsonSerializeSettings));
+        var arrConfig = JSON.parse(dataConfig);
+        if (dataConfig) {
+            for (i = 0; i < arrConfig.length; i++) {
+                grid.hideColumn(arrConfig[i]);
+            }
+        }
+        for (i = 0; i < columns.length; i++) {
+            var selected = "selected";
+            if (dataConfig) {
+                if (dataConfig.includes(columns[i].id)) {
+                    selected = "";
+                }
+            }
+            if (columns[i].header[0].text != '' && columns[i].header[0].text != undefined) {
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[0].text}</option>`)
+            }
+            if (columns[i].header[1].text != '' && columns[i].header[1].text != undefined) {
+                $("#hide-column-update").append(`<option ${selected} value=${columns[i].id} >${columns[i].header[1].text}</option>`)
+            }
+        }
+        Forms.CompleteUI();
+    });
+    function showDropdown() {
+        $("div.dropdown-hide-column").show();
+    }
+    $('.close').bind('click', function () {
+        $("div.dropdown-hide-column").hide();
     });
 </script>
 

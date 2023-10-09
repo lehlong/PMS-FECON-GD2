@@ -14,10 +14,12 @@ namespace SMO.Areas.PS.Controllers
     public class VolumeAcceptController : Controller
     {
         private readonly VolumeAcceptService _service;
+        private readonly ProjectService _projectService;
 
         public VolumeAcceptController()
         {
             _service = new VolumeAcceptService();
+            _projectService = new ProjectService();
         }
         public ActionResult IndexAcceptVolume(Guid id, Guid projectId, bool isCustomer, string partnerCode)
         {
@@ -71,6 +73,7 @@ namespace SMO.Areas.PS.Controllers
             var data = service.GetAcceptVolumes();
             ViewBag.CurrentObj = service.ObjDetail;
             ViewBag.Customer = service.GetCustomer(service.ObjDetail.PROJECT_ID);
+            ViewBag.Config = _projectService.GetConfigColumn(service.ObjDetail.PROJECT_ID, ConfigHideColumn.NGHIEM_THU_KHACH_HANG.GetValue());
             return PartialView(data);
         }
 
@@ -84,6 +87,7 @@ namespace SMO.Areas.PS.Controllers
 
             var data = service.GetAcceptVolumes();
             ViewBag.CurrentObj = service.ObjDetail;
+            ViewBag.Config = _projectService.GetConfigColumn(service.ObjDetail.PROJECT_ID, ConfigHideColumn.NGHIEM_THU_THAU_PHU.GetValue());
             return PartialView(data);
         }
 
