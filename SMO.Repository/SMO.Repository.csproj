@@ -168,6 +168,7 @@
     <Compile Include="Implement\PS\ActivityRepo.cs" />
     <Compile Include="Implement\PS\BoqRepo.cs" />
     <Compile Include="Implement\PS\CommentRepo.cs" />
+    <Compile Include="Implement\PS\ConfigDashboardRepo.cs" />
     <Compile Include="Implement\PS\ConfigHideColumnRepo.cs" />
     <Compile Include="Implement\PS\ContractDetailRepo.cs" />
     <Compile Include="Implement\PS\ContractFileRepo.cs" />
@@ -185,6 +186,7 @@
     <Compile Include="Implement\PS\ProjectResourceRepo.cs" />
     <Compile Include="Implement\PS\ProjectSlDtRepo.cs" />
     <Compile Include="Implement\PS\ProjectStructRepo.cs" />
+    <Compile Include="Implement\PS\ProjectStructVersionRepo.cs" />
     <Compile Include="Implement\PS\ProjectTimeRepo.cs" />
     <Compile Include="Implement\PS\ReferenceRepo.cs" />
     <Compile Include="Implement\PS\TaskRepo.cs" />
@@ -284,6 +286,7 @@
     <Compile Include="Interface\PS\IActivityRepo.cs" />
     <Compile Include="Interface\PS\IBoqRepo.cs" />
     <Compile Include="Interface\PS\ICommentRepo.cs" />
+    <Compile Include="Interface\PS\IConfigDashboardRepo.cs" />
     <Compile Include="Interface\PS\IConfigHideColumnRepo.cs" />
     <Compile Include="Interface\PS\IContractDetailRepo.cs" />
     <Compile Include="Interface\PS\IContractFileRepo.cs" />
@@ -301,6 +304,7 @@
     <Compile Include="Interface\PS\IProjectResourceRepo.cs" />
     <Compile Include="Interface\PS\IProjectSlDtRepo.cs" />
     <Compile Include="Interface\PS\IProjectStructRepo.cs" />
+    <Compile Include="Interface\PS\IProjectStructVersionRepo.cs" />
     <Compile Include="Interface\PS\IProjectTimeRepo.cs" />
     <Compile Include="Interface\PS\IReferenceRepo.cs" />
     <Compile Include="Interface\PS\ITaskRepo.cs" />
@@ -407,6 +411,7 @@
     <Compile Include="Mapping\PS\T_PS_ACTIVITY_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_BOQ_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_COMMENT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_CONFIG_DASHBOARD_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_CONFIG_HIDE_COLUMN_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_CONTRACT_DETAIL_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_CONTRACT_FILE_Map.cs" />
@@ -422,6 +427,7 @@
     <Compile Include="Mapping\PS\T_PS_PROJECT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_SAP_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_VERSION_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_USER_RIGHT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_REFERENCE_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_RESOURCE_Map.cs" />

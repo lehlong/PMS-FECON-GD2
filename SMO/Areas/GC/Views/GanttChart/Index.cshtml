@@ -11,13 +11,14 @@
     var boqCodes = SelectListUtilities.GetBoqCodeInProject(projectId);
     var statuses = SelectListUtilities.GetProjectStructStatus(isAddBlank: false);
     var project = SMOUtilities.GetProject(projectId);
+    var lstVersion = SelectListUtilities.GetVersionStructCost(projectId);
     var editable = false;
-    
+
     if (AuthorizeUtilities.CheckUserRightProject("RP2.2", projectId))
     {
         editable = true;
     }
-    if(project.STATUS == "04" || project.STATUS == "05")
+    if (project.STATUS == "04" || project.STATUS == "05")
     {
         editable = false;
     }
@@ -32,9 +33,7 @@
     @@keyframes fadeInBottom {
         from {
             opacity: 0;
-            transform: translateY(100%);
         }
-
         to {
             opacity: 1
         }
@@ -63,6 +62,46 @@
             .checked_label .material-icons.icon_color {
                 color: #0288D1;
             }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+            .dropdown-content a {
+                color: black;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+            }
+
+                .dropdown-content a:hover {
+                    background-color: #f1f1f1
+                }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+
+        .dropdown .dropdown-toggle{
+            background: none !important;
+        }
+        .gantt-menu-item .bootstrap-select {
+            width: 100px !important;
+        }
     </style>
     <link href="~/Content/gantt-chart.css" rel="stylesheet" />
     <link href="~/Properties/dhtmlx-gantt/codebase/dhtmlxgantt.min.css?v=7.1.7"
@@ -71,7 +110,7 @@
     <script src="~/Scripts/GanttChart/dhtmlxgantt.js?v=7.1.8"></script>
     <script type="text/javascript" src="~/Scripts/GanttChart/nav_menu.js?v=7.1.7"></script>
     <script type="text/javascript" src="~/Scripts/GanttChart/zoom.js?v=7.1.7"></script>
-    
+
     <div class="gantt-demo-header">
         <ul class="gantt-controls">
             <li class="gantt-menu-item">
@@ -106,34 +145,51 @@
                 </label>
             </li>
 
-            <li class="gantt-menu-item gantt-menu-item-right p-r-10">
-                <a title="Xuất dữ liệu" href="@Url.Action("ExportExcelDataCHIPHI", "Project", new {@area="PS", projectId=projectId})" target="_blank">
-                    @*<span class="material-icons">cloud_download</span>*@
-                    <img src="Theme/images/excel.png" height="25" width="25" />
-                </a>
+            <li class="dropdown gantt-menu-item gantt-menu-item-right">
+                <a title="Menu"><span class="material-icons">menu</span></a>
+                <div class="dropdown-content">
+                    <a style="float:left" title="Đồng bộ lên SAP" onclick="UpdateProjectSAP()">
+                        <span class="material-icons">sync</span> Đồng bộ lên SAP
+                    </a>
+                    @if (editable)
+                    {
+                        <a style="float:left;" title="Thay đổi ngày bắt đầu, kết thúc hạng mục" onclick="changeDate();">
+                            <span class="material-icons">event</span>Đổi ngày
+                        </a>
+                        <a style="float:left" data-action="changeStatus" title="Thay đổi trạng thái">
+                            <span class="material-icons">check_circle</span>Đổi trạng thái
+                        </a>
+                        <a style="float:left" title="Upload cây cấu trúc từ file excel" data-action="importFile" data-project-id="@projectId" data-structure-type="@((int)ProjectStructureType.COST)" data-disabled="@(project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue())">
+                            <span class="material-icons">publish</span>Upload dữ liệu
+                        </a>
+                    }
+                    <a style="float:left" title="Tải file cấu trúc mẫu" href="@Url.Action("ExportExcelTemplateCHIPHI", "Project", new {@area="PS"})" target="_blank">
+                        <span class="material-icons">file_download</span>Tải template
+                    </a>
+                    <a style="float:left" title="Xuất dữ liệu cây cấu trúc" href="@Url.Action("ExportExcelDataCHIPHI", "Project", new {@area="PS", projectId=projectId})" target="_blank">
+                        <img src="Theme/images/excel.png" height="22" width="22" /><span style="padding:0 11px">Xuất Excel</span>
+                    </a>
+                </div>
             </li>
 
-            @if (editable)
-            {
-                <li class="gantt-menu-item gantt-menu-item-right">
-                    <a title="Upload cây cấu trúc từ file excel" data-action="importFile" data-project-id="@projectId" data-structure-type="@((int)ProjectStructureType.COST)" data-disabled="@(project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue())">
-                        <span class="material-icons">publish</span>
-                    </a>
-                </li>
-            }
             <li class="gantt-menu-item gantt-menu-item-right">
-                <a title="Tải file cấu trúc mẫu" href="@Url.Action("ExportExcelTemplateCHIPHI", "Project", new {@area="PS"})" target="_blank">
-                    <span class="material-icons">file_download</span>
+                <a title="Lưu version" onclick="SaveVersion()">
+                    <span class="material-icons">save</span> Lưu version
                 </a>
+            </li>
+
+            <li class="gantt-menu-item gantt-menu-item-right" style="margin: 4px 0; width: 100px;">
+                <select name="" data-val="true"
+                        class="selectpicker show-tick dropdown" style="margin: 4px 0; width: 100px;" onchange="onChangeVersion(this.value);">
+                    @foreach (var item in lstVersion)
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                </select>
             </li>
 
             @if (editable)
             {
-                <li class="gantt-menu-item gantt-menu-item-right">
-                    <a data-action="changeStatus" title="Thay đổi trạng thái">
-                        <span class="material-icons">check_circle</span>Đổi trạng thái
-                    </a>
-                </li>
                 <li class="gantt-menu-item gantt-menu-item-right" id="enable-edit">
                     <a title="Bật chế độ chỉnh sửa" onclick="enableEdit();">
                         <span class="material-icons">edit</span>
@@ -148,12 +204,6 @@
             </li>
 
             <li class="gantt-menu-item gantt-menu-item-right">
-                <a title="Đồng bộ lên SAP" onclick="UpdateProjectSAP()">
-                    <span class="material-icons">sync</span>
-                </a>
-            </li>
-
-            <li class="gantt-menu-item gantt-menu-item-right">
                 <a title="Thông tin dự án" onclick="$('#close-struct').click();">
                     <span class="material-icons">arrow_back</span>
                 </a>
@@ -164,24 +214,25 @@
     <div>
         <div id="gantt-chart" style="width: 100%; height: calc(100vh - 200px);"></div>
     </div>
+
     @*<datalist id="dataListUnit">
-        @foreach (var item in units)
-        {
-            <option value="@item.Value - @item.Text"></option>
-        }
-    </datalist>
-    <datalist id="dataListStatus">
-        @foreach (var item in statuses)
-        {
-            <option value="@item.Text"></option>
-        }
-    </datalist>
-    <datalist id="dataListBoq">
-        @foreach (var item in boqs)
-        {
-            <option value="@item.Text"></option>
-        }
-    </datalist>*@
+            @foreach (var item in units)
+            {
+                <option value="@item.Value - @item.Text"></option>
+            }
+        </datalist>
+        <datalist id="dataListStatus">
+            @foreach (var item in statuses)
+            {
+                <option value="@item.Text"></option>
+            }
+        </datalist>
+        <datalist id="dataListBoq">
+            @foreach (var item in boqs)
+            {
+                <option value="@item.Text"></option>
+            }
+        </datalist>*@
 
     <script type="text/template" id="tmplUnit">
         <select class="selectUnit">
@@ -652,6 +703,113 @@
     }
     //var timeInterval = setInterval(function () { Alert(); },300000);
     //clearInterval(timeInterval);
+
+    function changeDate() {
+       var selectedTasks = gantt.getTaskBy("selected", true) || [];
+        if (selectedTasks.length === 0) {
+            return Swal.fire(
+                'Chưa chọn hạng mục?',
+                'Phải chọn ít nhất 1 hạng mục công việc để thay đổi ngày',
+                'question'
+            );
+        }
+        Swal.fire({
+            title: 'Thay đổi thời gian hạng mục!',
+            text: "Chọn từ ngày hoặc đến ngày để thay đổi thời gian của 1 hạng mục công việc",
+            icon: 'warning',
+            html: '<div class="col-md-12">' +
+                '<div class= "row">' +
+                '<div class="col-md-6">' +
+                '<label>Từ ngày</label>' +
+                '<input class="form-control datepicker" id="startDate" />' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                '<label>Đến ngày</label>' +
+                '<input class="form-control datepicker" id="toDate" />' +
+                '</div>' +
+                '</div>' +
+                '</div > ',
+            preConfirm: function () {
+                return new Promise((resolve, reject) => {
+                    resolve({
+                        fromDate: $("#startDate").val(),
+                        toDate: $("#toDate").val(),
+                    });
+                });
+            },
+            didOpen: function () {
+                Forms.CompleteUI();
+            },
+            showCancelButton: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            confirmButtonColor: '#207ce5',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Huỷ',
+            confirmButtonText: 'Thay đổi',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                console.log(result)
+                const ajaxParams = {
+                    url: `PS/ProjectStruct/UpdateDate`,
+                    type: "POST",
+                    data: {
+                        structuresId: selectedTasks.map(x => x.id),
+                        projectId: selectedTasks[0].projectId,
+                        fromDate: result.value.fromDate,
+                        toDate: result.value.toDate,
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                        refreshGC();
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        })
+    }
+
+    function SaveVersion() {
+        Swal.fire({
+            title: 'Lưu version?',
+            text: "Bạn có chắc chắn muốn lưu lại version của cây cấu trúc?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Huỷ'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var ajaxParams = {
+                    url: 'PS/ProjectStruct/SaveVersionStructCost',
+                    type: "POST",
+                    data: { projectId: '@projectId' },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                        onClickTree();
+                    }
+                };
+                Forms.Ajax(ajaxParams);
+            }
+        })
+    }
+
+    function onChangeVersion(value) {
+        try {
+            gantt.clearAll();
+            if (value == 0) {
+                refreshGC();
+            } else {
+                gantt.load(`/api/Data/GetGanttChartDataVersion?projectId=@projectId&isCostStructure=true&version=${value}`)
+            }
+        }
+        catch (ex) {
+            console.log(ex)
+        }
+    }
 
 </script>
     <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>

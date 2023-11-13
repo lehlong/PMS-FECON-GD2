@@ -289,7 +289,7 @@ namespace SMO.Service.PS
                 return $"Số Hợp đồng/Phụ lục: {contract?.CONTRACT_NUMBER}";
             }
         }
-       
+
 
         #endregion
 
@@ -846,29 +846,29 @@ namespace SMO.Service.PS
                         if (checkErrorObj == false)
                         {
                             var workVendor = volumeWorkVendorDetail.Where(v => v.projectStructId == ven.ID);
-                                var contractDetail = contractVendorDetail.FirstOrDefault(x => x.detail.PROJECT_STRUCT_ID == ven.ID);
-                                var contract = contractVendor.FirstOrDefault(x => x.ID == contractDetail?.detail?.CONTRACT_ID);
-                                var rangeNoRef = new ProjectCostControlReportData
-                                {
-                                    Id = ven.ID,
-                                    ParentId = ven.PARENT_ID,
-                                    Type = ven.TYPE,
-                                    Order = order++,
-                                    OrderNullRef = ven.TYPE == "PROJECT" ? 0 : dataVen.Count() + dataCus.Count() + order++,
-                                    VendorName = contract?.Vendor?.NAME,
-                                    ProjectCode = project.CODE,
-                                    StructureCode = ven.GEN_CODE,
-                                    StructureName = ven.TEXT,
-                                    UnitCode = ven.UNIT_CODE,
-                                    UnitName = ven.UNIT_CODE,
-                                    CostPlanVolume = ven.QUANTITY,
-                                    CostPlanPrice = ven.PRICE,
-                                    CostPlanTotal = ven.QUANTITY * ven.PRICE,
-                                    PerformanceCostVolume = workVendor.Sum(v => v.value),
-                                    PerformanceCostPrice = contractDetail?.detail?.UNIT_PRICE,
-                                    PerformanceCostTotal = workVendor.Sum(v => v.total)
-                                };
-                                data.Add(rangeNoRef);
+                            var contractDetail = contractVendorDetail.FirstOrDefault(x => x.detail.PROJECT_STRUCT_ID == ven.ID);
+                            var contract = contractVendor.FirstOrDefault(x => x.ID == contractDetail?.detail?.CONTRACT_ID);
+                            var rangeNoRef = new ProjectCostControlReportData
+                            {
+                                Id = ven.ID,
+                                ParentId = ven.PARENT_ID,
+                                Type = ven.TYPE,
+                                Order = order++,
+                                OrderNullRef = ven.TYPE == "PROJECT" ? 0 : dataVen.Count() + dataCus.Count() + order++,
+                                VendorName = contract?.Vendor?.NAME,
+                                ProjectCode = project.CODE,
+                                StructureCode = ven.GEN_CODE,
+                                StructureName = ven.TEXT,
+                                UnitCode = ven.UNIT_CODE,
+                                UnitName = ven.UNIT_CODE,
+                                CostPlanVolume = ven.QUANTITY,
+                                CostPlanPrice = ven.PRICE,
+                                CostPlanTotal = ven.QUANTITY * ven.PRICE,
+                                PerformanceCostVolume = workVendor.Sum(v => v.value),
+                                PerformanceCostPrice = contractDetail?.detail?.UNIT_PRICE,
+                                PerformanceCostTotal = workVendor.Sum(v => v.total)
+                            };
+                            data.Add(rangeNoRef);
                         }
                         else
                         {
@@ -1598,21 +1598,21 @@ namespace SMO.Service.PS
                 IWorkbook templateWorkbook;
                 templateWorkbook = new XSSFWorkbook(fs);
                 fs.Close();
-                ISheet sheet = templateWorkbook.GetSheetAt(0);            
+                ISheet sheet = templateWorkbook.GetSheetAt(0);
                 InitHeader(sheet, config);
 
                 var startRow = config.StartRow;
 
                 for (int i = 0; i < data.Count(); i++)
                 {
-                    var dataRow = data[i];                    
+                    var dataRow = data[i];
                     IRow rowCur = ReportUtilities.CreateRow(ref sheet, startRow++, dataRow.Count());
                     for (int j = 0; j < dataRow.Count(); j++)
                     {
-                        var valueStr = dataRow.ElementAt(j);                       
-                       
-                            rowCur.Cells[j].SetCellValue(valueStr);
-                        
+                        var valueStr = dataRow.ElementAt(j);
+
+                        rowCur.Cells[j].SetCellValue(valueStr);
+
                         if (config.BoldRowIndexes.Contains(i))
                         {
                             var cellStyle = templateWorkbook.CreateCellStyle();
@@ -3054,6 +3054,31 @@ namespace SMO.Service.PS
             }
         }
 
+        internal void SaveConfigDashboard(Guid projectId, string order)
+        {
+            UnitOfWork.Clear();
+            UnitOfWork.BeginTransaction();
+
+            var config = UnitOfWork.Repository<ConfigDashboardRepo>().Queryable().FirstOrDefault(x => x.PROJECT_ID == projectId && x.USER_NAME == ProfileUtilities.User.USER_NAME);
+
+            if (config == null)
+            {
+                UnitOfWork.Repository<ConfigDashboardRepo>().Create(new T_PS_CONFIG_DASHBOARD
+                {
+                    ID = Guid.NewGuid(),
+                    PROJECT_ID = projectId,
+                    C_ORDER = order.ToString(),
+                    USER_NAME = ProfileUtilities.User?.USER_NAME,
+                });
+            }
+            else
+            {
+                config.C_ORDER = order.ToString();
+                UnitOfWork.Repository<ConfigDashboardRepo>().Update(config);
+            }
+            UnitOfWork.Commit();
+        }
+    
         internal void SaveFileComment(Guid projectId, string fileName, string filePath, string mimeType)
         {
             UnitOfWork.Clear();
@@ -3071,13 +3096,25 @@ namespace SMO.Service.PS
                     });
             UnitOfWork.Commit();
         }
-        internal IList<T_PS_COMMENT> GetAllComment(Guid projectId)
+        internal List<T_PS_COMMENT> GetAllComment(Guid projectId)
         {
             return UnitOfWork.Repository<CommentRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).OrderBy(x => x.CREATE_DATE).ToList();
         }
         internal IList<T_PS_RESOURCE> GetResourceProject(Guid projectId)
         {
             return UnitOfWork.Repository<ProjectResourceRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).ToList();
+        }
+        internal List<string> GetAllConfigDashboard(Guid projectId)
+        {
+            var config = UnitOfWork.Repository<ConfigDashboardRepo>().Queryable().FirstOrDefault(x => x.PROJECT_ID == projectId && x.USER_NAME == ProfileUtilities.User.USER_NAME);
+            if (config != null)
+            {
+                return config.C_ORDER.ToString().Replace("/", "").Replace("[", "").Replace("]", "").Split(',').ToList();
+            }
+            else
+            {
+                return new List<string>();
+            }
         }
 
         internal ProjectStructureProgressStatus GetStatusFromAction(ProjectStructureProgressAction action)
@@ -3542,6 +3579,236 @@ namespace SMO.Service.PS
         }
 
 
+        public ViewDashboardModel GetDataDashboard(Guid projectId, DateTime fromDate, DateTime toDate)
+        {
+            try
+            {
+                DateTime endMonth = new DateTime(toDate.Year, toDate.Month, DateTime.DaysInMonth(toDate.Year, toDate.Month));
+                var listProjectStruct = UnitOfWork.Repository<ProjectStructRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).ToList();
+
+                var allPlanDtdt = UnitOfWork.Repository<ProjectSlDtRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).ToList();
+
+                var allVolumeWorkHeader = UnitOfWork.Repository<VolumeWorkRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).ToList();
+                var allVolumeAcceptHeader = UnitOfWork.Repository<VolumeAcceptRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).ToList();
+
+                var allVolumeWorkDetail = UnitOfWork.Repository<VolumeWorkDetailRepo>().GetAll().ToList();
+                var allVolumeAcceptDetail = UnitOfWork.Repository<VolumeAcceptDetailRepo>().GetAll().ToList();
+
+                var allTimeInProject = UnitOfWork.Repository<ProjectTimeRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).OrderBy(x => x.C_ORDER).ToList();
+
+                var valuePlanCostCustomer = (from x in UnitOfWork.Repository<PlanCostRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && (x.TimePeriod.FINISH_DATE <= toDate || x.TimePeriod.FINISH_DATE == endMonth) /*fromDate <= x.TimePeriod.FINISH_DATE && toDate >= x.TimePeriod.FINISH_DATE*/ && x.IS_CUSTOMER == true)
+                                             group x by x.PROJECT_STRUCT_ID into y
+                                             select new
+                                             {
+                                                 projectStructId = y.Key,
+                                                 value = y.Sum(x => x.VALUE),
+                                             }).ToList();
+                var valuePlanCostVendor = (from x in UnitOfWork.Repository<PlanCostRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && (x.TimePeriod.FINISH_DATE <= toDate || x.TimePeriod.FINISH_DATE == endMonth) /*fromDate <= x.TimePeriod.FINISH_DATE && toDate >= x.TimePeriod.FINISH_DATE*/ && x.IS_CUSTOMER == false)
+                                           group x by x.PROJECT_STRUCT_ID into y
+                                           select new
+                                           {
+                                               projectStructId = y.Key,
+                                               value = y.Sum(x => x.VALUE),
+                                           }).ToList();
+
+                var allPlanCostCustomer = UnitOfWork.Repository<PlanCostRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && x.IS_CUSTOMER == true).ToList();
+                var allPlanCostVendor = UnitOfWork.Repository<PlanCostRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && x.IS_CUSTOMER == false).ToList();
+
+                var dataDashboard = new ViewDashboardModel();
+                //Get Config
+                dataDashboard.ConfigDashboard = GetAllConfigDashboard(projectId);
+
+                //Get CA
+                var CA = UnitOfWork.Repository<Repository.Implement.PS.ContractRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && x.CONTRACT_TYPE.Contains("KD"));
+                dataDashboard.CA = CA.Count() == 0 ? 0 : CA.Sum(x => x.CONTRACT_VALUE);
+
+                //Get BAC
+                var BAC = UnitOfWork.Repository<ProjectRepo>().Queryable().Where(x => x.ID == projectId);
+                var checkBAC = BAC.Count() == 0 ? 0 : BAC.FirstOrDefault().TOTAL_COST;
+                dataDashboard.BAC = checkBAC == null ? 0 : checkBAC;
+
+                //Get WP            
+                dataDashboard.WP = (from x in listProjectStruct
+                                    join y in valuePlanCostCustomer on x.ID equals y.projectStructId
+                                    select new { projectId = x.PROJECT_ID, price = x.PRICE, value = y.value }).Sum(x => x.price * x.value);
+
+                //Get WD
+                dataDashboard.WD = (from x in allVolumeWorkDetail
+                                    join y in allVolumeWorkHeader.Where(x => x.IS_CUSTOMER == true && x.STATUS == "05" && x.TO_DATE <= toDate) on x.HEADER_ID equals y.ID
+                                    select new { value = x.VALUE, price = x.PRICE }).Sum(x => x.price * x.value);
+
+                //Get ACW
+                dataDashboard.ACW = (from x in allVolumeAcceptDetail
+                                     join y in allVolumeAcceptHeader.Where(x => x.IS_CUSTOMER == true && x.STATUS == "05" && x.TO_DATE <= toDate) on x.HEADER_ID equals y.ID
+                                     select new { value = x.VALUE, price = x.PRICE }).Sum(x => x.price * x.value);
+
+                //Get PE
+                dataDashboard.PE = (from x in listProjectStruct
+                                    join y in valuePlanCostVendor on x.ID equals y.projectStructId
+                                    select new { projectId = x.PROJECT_ID, price = x.PRICE, value = y.value }).Sum(x => x.price * x.value);
+
+                //Get AC
+                dataDashboard.AC = (from x in allVolumeWorkDetail
+                                    join y in allVolumeWorkHeader.Where(x => x.IS_CUSTOMER == false && x.STATUS == "05" && x.TO_DATE <= toDate) on x.HEADER_ID equals y.ID
+                                    select new { value = x.VALUE, price = x.PRICE }).Sum(x => x.price * x.value);
+
+                //Get NT
+                dataDashboard.NT = (from x in allVolumeAcceptDetail
+                                    join y in allVolumeAcceptHeader.Where(x => x.IS_CUSTOMER == false && x.STATUS == "05" && fromDate <= x.TO_DATE && toDate >= x.TO_DATE) on x.HEADER_ID equals y.ID
+                                    select new { value = x.VALUE, price = x.PRICE }).Sum(x => x.price * x.value);
+
+                //Get DTDK
+                var DTDK = UnitOfWork.Repository<ProjectStructRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && x.TYPE == "BOQ").Sum(x => x.PLAN_VOLUME * x.PRICE);
+                dataDashboard.DTDK = DTDK == null ? 0 : DTDK;
+
+                //Get TSLNKH
+                dataDashboard.TSLNKH = dataDashboard.CA == 0 ? 0 : ((dataDashboard.CA - dataDashboard.BAC) / dataDashboard.CA) * 100;
+
+                //Get SPI
+                dataDashboard.SPI = dataDashboard.WD == 0 || dataDashboard.WP == 0 ? 0 : dataDashboard.WD / dataDashboard.WP;
+
+                //Get API
+                dataDashboard.API = dataDashboard.ACW == 0 || dataDashboard.WD == 0 ? 0 : dataDashboard.ACW / dataDashboard.WD;
+
+                //Get BCWP
+                dataDashboard.BCWP = dataDashboard.PE * dataDashboard.SPI;
+
+                //Get CPI
+                dataDashboard.CPI = dataDashboard.BCWP == 0 || dataDashboard.AC == 0 ? 0: dataDashboard.BCWP / dataDashboard.AC;
+
+                //Get EAC
+                dataDashboard.EAC = dataDashboard.BAC - dataDashboard.BCWP == 0 || dataDashboard.CPI * dataDashboard.SPI == 0 ? 0 : dataDashboard.AC + ((dataDashboard.BAC - dataDashboard.BCWP) / (dataDashboard.CPI * dataDashboard.SPI));
+
+                //Get TSLNDK
+                dataDashboard.TSLNDK = dataDashboard.CA - dataDashboard.EAC == 0 || dataDashboard.CA == 0 ? 0 : ((dataDashboard.CA - dataDashboard.EAC) / dataDashboard.CA) * 100;
+
+                //Get TSLNTT
+                dataDashboard.TSLNTT = dataDashboard.WD - dataDashboard.AC == 0 || dataDashboard.WD == 0 ? 0 : ((dataDashboard.WD - dataDashboard.AC) / dataDashboard.WD) * 100;
+
+
+                //GetDataDashboardCustomer
+                var dataRevenue_Customer = (from x in allPlanDtdt.Where(x => x.CRITERIA_CODE == "02")
+                                             group x by x.TIME_PERIOD_ID into y
+                                             select new
+                                             {
+                                                 projectTimeId = y.Key,
+                                                 total = y.Sum(x => x.VALUE),
+                                             }).ToList();
+
+                var allPlanCostByTimeId_Customer = (from x in allPlanCostCustomer
+                                                    join y in listProjectStruct on x.PROJECT_STRUCT_ID equals y.ID
+                                                    select new { timeId = x.TIME_PERIOD_ID, value = x.VALUE, price = y.PRICE }).ToList();
+                var dataPlanCost_Customer = (from x in allPlanCostByTimeId_Customer
+                                             group x by x.timeId into y
+                                             select new
+                                             {
+                                                 projectTimeId = y.Key,
+                                                 total = y.Sum(x => x.value * x.price),
+                                             }).ToList();
+
+                var allVolumeWorkDetailByTimeId_Customer = (from x in allVolumeWorkDetail
+                                                            join y in allVolumeWorkHeader.Where(x => x.IS_CUSTOMER == true && x.STATUS == "05") on x.HEADER_ID equals y.ID
+                                                            select new { timeId = y.TIME_PERIOD_ID, value = x.VALUE, price = x.PRICE }).ToList();
+
+                var dataVolumeWork_Customer = (from x in allVolumeWorkDetailByTimeId_Customer
+                                               group x by x.timeId into y
+                                               select new
+                                               {
+                                                   projectTimeId = y.Key,
+                                                   total = y.Sum(x => x.value * x.price),
+                                               }).ToList();
+
+                var allVolumeAcceptDetailByTimeId_Customer = (from x in allVolumeAcceptDetail
+                                                              join y in allVolumeAcceptHeader.Where(x => x.IS_CUSTOMER == true && x.STATUS == "05") on x.HEADER_ID equals y.ID
+                                                              select new { timeId = y.TIME_PERIOD_ID, value = x.VALUE, price = x.PRICE }).ToList();
+                var dataVolumeAccept_Customer = (from x in allVolumeAcceptDetailByTimeId_Customer
+                                                 group x by x.timeId into y
+                                                 select new
+                                                 {
+                                                     projectTimeId = y.Key,
+                                                     total = y.Sum(x => x.value * x.price),
+                                                 }).ToList();
+
+                dataDashboard.DataDashboardBoq = (from x in (from x in allTimeInProject
+                                                             join y in dataPlanCost_Customer on x.ID equals y.projectTimeId
+                                                             select new { stringTime = (x.MONTH + "/" + x.YEAR).ToString(), time = x.ID, planCost = y.total }).ToList()
+                                                  join y in (from x in allTimeInProject
+                                                             join y in dataVolumeWork_Customer on x.ID equals y.projectTimeId into a
+                                                             from b in a.DefaultIfEmpty()
+                                                             select new { timeId = x.ID, volumeWork = b?.total ?? 0 }).ToList() on x.time equals y.timeId
+                                                  join z in (from x in allTimeInProject
+                                                             join y in dataVolumeAccept_Customer on x.ID equals y.projectTimeId into a
+                                                             from b in a.DefaultIfEmpty()
+                                                             select new { timeId = x.ID, volumeAccept = b?.total ?? 0 }).ToList() on x.time equals z.timeId
+                                                  join k in (from x in allTimeInProject
+                                                             join y in dataRevenue_Customer on x.ID equals y.projectTimeId into a
+                                                             from b in a.DefaultIfEmpty()
+                                                             select new { timeId = x.ID, volumeRevenue = b?.total ?? 0 }).ToList() on x.time equals k.timeId
+
+                                                  select new { x.stringTime, x.planCost, y.volumeWork, z.volumeAccept, k.volumeRevenue }).ToArray();
+
+
+                //GetDataDashboardVendor
+                var allPlanCostByTimeId_Vendor = (from x in allPlanCostVendor
+                                                    join y in listProjectStruct on x.PROJECT_STRUCT_ID equals y.ID
+                                                    select new { timeId = x.TIME_PERIOD_ID, value = x.VALUE, price = y.PRICE }).ToList();
+                var dataPlanCost_Vendor = (from x in allPlanCostByTimeId_Vendor
+                                             group x by x.timeId into y
+                                             select new
+                                             {
+                                                 projectTimeId = y.Key,
+                                                 total = y.Sum(x => x.value * x.price),
+                                             }).ToList();
+
+                var allVolumeWorkDetailByTimeId_Vendor = (from x in allVolumeWorkDetail
+                                                            join y in allVolumeWorkHeader.Where(x => x.IS_CUSTOMER == false && x.STATUS == "05") on x.HEADER_ID equals y.ID
+                                                            select new { timeId = y.TIME_PERIOD_ID, value = x.VALUE, price = x.PRICE }).ToList();
+
+                var dataVolumeWork_Vendor = (from x in allVolumeWorkDetailByTimeId_Vendor
+                                               group x by x.timeId into y
+                                               select new
+                                               {
+                                                   projectTimeId = y.Key,
+                                                   total = y.Sum(x => x.value * x.price),
+                                               }).ToList();
+
+                var allVolumeAcceptDetailByTimeId_Vendor = (from x in allVolumeAcceptDetail
+                                                              join y in allVolumeAcceptHeader.Where(x => x.IS_CUSTOMER == false && x.STATUS == "05") on x.HEADER_ID equals y.ID
+                                                              select new { timeId = y.TIME_PERIOD_ID, value = x.VALUE, price = x.PRICE }).ToList();
+                var dataVolumeAccept_Vendor = (from x in allVolumeAcceptDetailByTimeId_Vendor
+                                                 group x by x.timeId into y
+                                                 select new
+                                                 {
+                                                     projectTimeId = y.Key,
+                                                     total = y.Sum(x => x.value * x.price),
+                                                 }).ToList();
+
+                dataDashboard.DataDashboardCost = (from x in (from x in allTimeInProject
+                                                             join y in dataPlanCost_Vendor on x.ID equals y.projectTimeId
+                                                             select new { stringTime = (x.MONTH + "/" + x.YEAR).ToString(), time = x.ID, planCost = y.total }).ToList()
+                                                  join y in (from x in allTimeInProject
+                                                             join y in dataVolumeWork_Vendor on x.ID equals y.projectTimeId into a
+                                                             from b in a.DefaultIfEmpty()
+                                                             select new { timeId = x.ID, volumeWork = b?.total ?? 0 }).ToList() on x.time equals y.timeId
+                                                  join z in (from x in allTimeInProject
+                                                             join y in dataVolumeAccept_Vendor on x.ID equals y.projectTimeId into a
+                                                             from b in a.DefaultIfEmpty()
+                                                             select new { timeId = x.ID, volumeAccept = b?.total ?? 0 }).ToList() on x.time equals z.timeId
+                                                  select new { x.stringTime, x.planCost, y.volumeWork, z.volumeAccept }).ToArray();
+
+                dataDashboard.DataDashboardCostLevel2 = GetDataCostLevel2(projectId,fromDate,toDate);
+                return dataDashboard;
+            }
+            catch (Exception ex)
+            {
+                this.State = false;
+                this.ErrorMessage = "Có lỗi xẩy ra trong quá trình xem dashboard";
+                this.Exception = ex;
+                return new ViewDashboardModel();
+            }
+        }
+
+
         //Lấy dữ liệu lên dashboard
         public decimal? GetCA(Guid projectId)
         {
@@ -3768,7 +4035,6 @@ namespace SMO.Service.PS
             }
 
         }
-
         public Array GetDataDashboardBOQ(Guid projectId)
         {
             try
@@ -3846,7 +4112,6 @@ namespace SMO.Service.PS
             }
 
         }
-
         public Array GetDataDashboardChiPhi(Guid projectId)
         {
             try
@@ -3945,7 +4210,6 @@ namespace SMO.Service.PS
             }
 
         }
-
         public ArrayList GetDataCostLevel2(Guid projectId, DateTime fromDate, DateTime toDate)
         {
             try
@@ -4028,20 +4292,20 @@ namespace SMO.Service.PS
             {
                 lstProject = lstProject.Where(x => x.DON_VI == model.CompanyId);
             }
-            if (model.ProjectId!= null && model.ProjectId!=Guid.Empty)
+            if (model.ProjectId != null && model.ProjectId != Guid.Empty)
             {
                 lstProject = lstProject.Where(x => x.ID == model.ProjectId);
             }
 
             var count = 0;
             foreach (var project in lstProject)
-            {               
-                var userFecon = UnitOfWork.Repository<ProjectResourceRepo>().Queryable().Where(x =>x.PROJECT_ID == project.ID && model.FromDate<= x.FROM_DATE && x.TO_DATE<= model.ToDate).ToList();
+            {
+                var userFecon = UnitOfWork.Repository<ProjectResourceRepo>().Queryable().Where(x => x.PROJECT_ID == project.ID && model.FromDate <= x.FROM_DATE && x.TO_DATE <= model.ToDate).ToList();
                 if (!string.IsNullOrEmpty(model.Username))
                 {
                     userFecon = userFecon.Where(x => x.User.FULL_NAME.ToLower().Contains(model.Username.ToLower())).ToList();
                 }
-             
+
 
                 var otherUser = UnitOfWork.Repository<ProjectResourceOtherRepo>().Queryable().Where(x => x.PROJECT_ID == project.ID && model.FromDate <= x.FROM_DATE && x.TO_DATE <= model.ToDate).ToList();
                 if (!string.IsNullOrEmpty(model.ResourceOther))
@@ -4051,14 +4315,14 @@ namespace SMO.Service.PS
 
                 if (!string.IsNullOrEmpty(model.Role))
                 {
-                    userFecon = userFecon.Where(x =>x.ProjectRole != null? x.ProjectRole.NAME.ToLower().Contains(model.Role.ToLower()): x.PROJECT_ROLE_ID==model.Role).ToList();
-                    otherUser = otherUser.Where(x => x.VAI_TRO!= null? x.VAI_TRO.ToLower().Contains(model.Role.ToLower()): x.VAI_TRO==model.Role).ToList();
+                    userFecon = userFecon.Where(x => x.ProjectRole != null ? x.ProjectRole.NAME.ToLower().Contains(model.Role.ToLower()) : x.PROJECT_ROLE_ID == model.Role).ToList();
+                    otherUser = otherUser.Where(x => x.VAI_TRO != null ? x.VAI_TRO.ToLower().Contains(model.Role.ToLower()) : x.VAI_TRO == model.Role).ToList();
                 }
 
                 switch (model.TypeResource)
                 {
                     case "FECON":
-                        if(userFecon.Count() != 0)
+                        if (userFecon.Count() != 0)
                         {
                             data.Add(new ProjectResourceData
                             {
@@ -4068,7 +4332,8 @@ namespace SMO.Service.PS
                         }
                         break;
                     case "OTHER":
-                        if (otherUser.Count() != 0) {
+                        if (otherUser.Count() != 0)
+                        {
 
                             data.Add(new ProjectResourceData
                             {
@@ -4077,8 +4342,8 @@ namespace SMO.Service.PS
                             });
                         }
                         break;
-                    default: 
-                        if(otherUser.Count() + userFecon.Count() != 0)
+                    default:
+                        if (otherUser.Count() + userFecon.Count() != 0)
                         {
                             data.Add(new ProjectResourceData
                             {
@@ -4087,7 +4352,7 @@ namespace SMO.Service.PS
                             });
                         }
                         break;
-                } 
+                }
                 if (string.IsNullOrEmpty(model.TypeResource) || model.TypeResource == "FECON")
                 {
                     foreach (var user in userFecon)
@@ -4106,8 +4371,8 @@ namespace SMO.Service.PS
                             NumberCccd = null,
                             FromDate = user.FROM_DATE,
                             ToDate = user.TO_DATE,
-                        };                       
-                        data.Add(item);                   
+                        };
+                        data.Add(item);
                     }
                 }
                 if (string.IsNullOrEmpty(model.TypeResource) || model.TypeResource == "OTHER")
@@ -4119,7 +4384,7 @@ namespace SMO.Service.PS
                             Stt = count++,
                             Username = other.FULL_NAME,
                             ProjectRole = other.VAI_TRO,
-                            PhoneNumber = other.PHONE,  
+                            PhoneNumber = other.PHONE,
                             Email = other.EMAIL,
                             TypeResource = "Đối tác",
                             OtherResource = other.FULL_NAME,
@@ -4128,14 +4393,13 @@ namespace SMO.Service.PS
                             NumberCccd = other.CMT,
                             FromDate = other.FROM_DATE,
                             ToDate = other.TO_DATE,
-                        };                       
-                       data.Add(item);                      
+                        };
+                        data.Add(item);
                     }
                 }
             }
             return data;
         }
-
         public T_PS_CONFIG_HIDE_COLUMN GetConfigColumn(Guid? projectId, string typeDisplay)
         {
             try
@@ -4143,7 +4407,7 @@ namespace SMO.Service.PS
                 var config = (projectId == null || projectId == Guid.Empty) ? UnitOfWork.Repository<ConfigHideColumnRepo>().Queryable().FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.TYPE_DISPLAY == typeDisplay) : UnitOfWork.Repository<ConfigHideColumnRepo>().Queryable().FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.TYPE_DISPLAY == typeDisplay && x.PROJECT_ID == projectId);
                 return config == null ? new T_PS_CONFIG_HIDE_COLUMN() : config;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 UnitOfWork.Rollback();
                 this.State = false;
@@ -4151,18 +4415,18 @@ namespace SMO.Service.PS
                 return new T_PS_CONFIG_HIDE_COLUMN();
             }
         }
-
         internal void UpdateConfigHideColumn(ConfigHideColumnModels model)
         {
             try
             {
                 var item = (model.ProjectId == null || model.ProjectId == Guid.Empty) ? UnitOfWork.Repository<ConfigHideColumnRepo>().Queryable().FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.TYPE_DISPLAY == model.Display) : UnitOfWork.Repository<ConfigHideColumnRepo>().Queryable().FirstOrDefault(x => x.USER_NAME == ProfileUtilities.User.USER_NAME && x.PROJECT_ID == model.ProjectId && x.TYPE_DISPLAY == model.Display);
-                
+
                 UnitOfWork.Clear();
                 UnitOfWork.BeginTransaction();
 
-                if(item != null) {
-                    item.DETAILS= model.Details;
+                if (item != null)
+                {
+                    item.DETAILS = model.Details;
 
                     UnitOfWork.Repository<ConfigHideColumnRepo>().Update(item);
                 }
@@ -4175,10 +4439,10 @@ namespace SMO.Service.PS
                         PROJECT_ID = model.ProjectId,
                         TYPE_DISPLAY = model.Display,
                         DETAILS = model.Details,
-                    }); 
+                    });
                 }
                 UnitOfWork.Commit();
-             
+
             }
             catch (Exception ex)
             {

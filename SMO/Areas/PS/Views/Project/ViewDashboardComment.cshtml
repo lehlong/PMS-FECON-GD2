@@ -1,0 +1,228 @@
+﻿@model List<SMO.Core.Entities.PS.T_PS_COMMENT>
+@{
+    var projectId = ViewBag.ProjectId;
+    var resource = ViewBag.Resource as List<SMO.Core.Entities.PS.T_PS_RESOURCE>;
+}
+<style>
+    .container-comment {
+        margin-bottom: 0 !important;
+        margin-top: 22px;
+    }
+
+    .list-function {
+        display: flex;
+        flex-flow: row;
+        gap: 10px;
+        align-items: center
+    }
+
+    .function-icon {
+        cursor: pointer;
+    }
+
+    .box-comment {
+        height: calc(100vh - 200px);
+        padding: 12px 0px;
+        margin-bottom: 12px;
+        overflow-x:auto;
+    }
+
+    .message-other {
+        width: fit-content;
+        word-break: break-word;
+        background: gainsboro;
+        padding: 8px 16px;
+    }
+
+    .my-message {
+        background: aliceblue;
+        padding: 8px 16px;
+        width: fit-content;
+        word-break: break-word;
+    }
+
+    .no-padding {
+        padding: 0;
+    }
+</style>
+<input type="file" id="file-upload-comment" name="files" style="display:none;" onchange="uploadFileComment();">
+<div class="card">
+    <div class="body" style="padding-top: 0px;">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a style="padding-left:0px"><i class="material-icons">comment</i> TRAO ĐỔI DASHBOARD</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="col-md-12 container-comment">
+                <div class="border-grey box-comment">
+                    @foreach (var comment in Model)
+                    {
+                        if (comment.USER_NAME != ProfileUtilities.User.USER_NAME)
+                        {
+                            <div class="col-md-12" style="margin-bottom: 0 !important">
+                                <div class="row">
+                                    <div class="col-md-10 no-padding">
+                                        <div class="message-other">
+                                            <i style="font-size:10px">@comment.USER_NAME @(comment.CREATE_DATE?.ToString("dd/MM/yyyy, hh:mm:ss tt"))</i>
+                                            @if (comment.MIME_TYPE != null && comment.IS_FILE.Trim() == "Y")
+                                            {
+                                                if (comment.MIME_TYPE.Contains("image"))
+                                                {
+                                                    <div><a href="@comment.PATH_FILE" target="_blank"><img src="@comment.PATH_FILE" style="width:320px" /></a></div>
+                                                }
+                                                else
+                                                {
+                                                    <div><a href="@comment.PATH_FILE" target="_blank">@comment.MESSENGER</a></div>
+                                                }
+                                            }
+                                            else if (comment.MESSENGER.Contains("http"))
+                                            {
+                                                <div><a href="@comment.MESSENGER" target="_blank">@comment.MESSENGER</a></div>
+                                            }
+                                            else
+                                            {
+                                                <div>@comment.MESSENGER</div>
+                                            }
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2"></div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-md-12" style="margin-bottom: 0 !important">
+                                <div class="row">
+                                    <div class="col-md-2 no-padding"></div>
+                                    <div class="col-md-10" style="display: flex; justify-content: end; padding: 0;">
+                                        <div class="my-message">
+                                            <i style="font-size:10px">@comment.USER_NAME @(comment.CREATE_DATE?.ToString("dd/MM/yyyy, hh:mm:ss tt"))</i>
+                                            @if (comment.MIME_TYPE != null && comment.IS_FILE.Trim() == "Y")
+                                            {
+                                                if (comment.MIME_TYPE.Contains("image"))
+                                                {
+                                                    <div><a href="@comment.PATH_FILE" target="_blank"><img src="@comment.PATH_FILE" style="width:320px" /></a></div>
+                                                }
+                                                else
+                                                {
+                                                   <div><a href="@comment.PATH_FILE" target="_blank">@comment.MESSENGER</a></div>
+                                                }
+                                            }
+                                            else if (comment.MESSENGER.Contains("http"))
+                                            {
+                                                <div><a href="@comment.MESSENGER" target="_blank">@comment.MESSENGER</a></div>
+                                            }
+                                            else
+                                            {
+                                                <div>@comment.MESSENGER</div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group list-function">
+                    <div style="flex: 10">
+                        <div class="form-line">
+                            <input class="form-control" id="comment-detail" onenter />
+                        </div>
+                    </div>
+                    <div style="flex: 2">
+                        <div class="form-line">
+                            <i class="material-icons function-icon" onclick="onClickSendComment()">send</i>
+                            <i class="material-icons function-icon" onclick="$('#file-upload-comment').click();">attach_file</i>
+                            <i class="material-icons function-icon" onclick="scrollToBottom();">expand_more</i>   
+                            <i class="material-icons function-icon" onclick="Forms.CloseRightContent();">close</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="tag-name" style="width: 236px; background: #fff; height: auto; position: fixed; bottom: 8%; right: 11%; box-shadow: 0 3px 10px rgb(0 0 0 / 20%);display:none ">
+    @foreach (var item in resource)
+    {
+        <div style="height: 36px; background: #fff; padding: 8px 12px; cursor:pointer" onclick="addUserToInput('@item.USER_NAME')">@item.USER_NAME - @item.User.FULL_NAME</div>
+    }
+</div>
+<script>
+    $(function () {
+        setTimeout(scrollToBottom(), 1000);
+    });
+    function scrollToBottom() {
+        var element = document.querySelector('.box-comment');
+        element.scrollTop = element.scrollHeight;
+    }
+
+    $("#comment-detail").on("keypress", function (event) {
+        if (event.which == 13 && !event.shiftKey) {
+            event.preventDefault();
+            onClickSendComment();
+        }
+    });
+    function onClickSendComment() {
+        var comment = $("#comment-detail").val();
+        if (!comment) return;
+        var dateTimeNow = new Date();
+        var ajaxParams = {
+            url: 'PS/Project/SaveComment',
+            type: "POST",
+            data: {
+                projectId: '@projectId',
+                comment: comment,
+            },
+            success: function () {
+                $(".box-comment").append(
+                `<div class="col-md-12" style="margin-bottom: 0 !important">
+                    <div class="row">
+                        <div class="col-md-2 no-padding"></div>
+                            <div class="col-md-10" style="display: flex; justify-content: end; padding: 0;">
+                                <div class="my-message">
+                                    <i style="font-size:10px">@ProfileUtilities.User.USER_NAME ${dateTimeNow.toLocaleString()}</i>
+                                    <div>${comment}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`);
+                $("#comment-detail").val("");
+                scrollToBottom();
+            }
+        }
+        Forms.AjaxWithoutLoading(ajaxParams);
+    }
+    function uploadFileComment() {
+        var formdata = new FormData();
+        var fileInput = document.getElementById('file-upload-comment');
+        for (i = 0; i < fileInput.files.length; i++) {
+            formdata.append(fileInput.files[i].name, fileInput.files[i]);
+        }
+        formdata.append('projectId', '@projectId');
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'PS/Project/SaveFileComment');
+        xhr.send(formdata);
+
+        return false;
+    }
+
+    $("#comment-detail").keydown(function (e) {
+        if (e.shiftKey == true && e.which == 50) {
+            $("#tag-name").show();
+        }
+        if (e.which == 8) {
+            $("#tag-name").hide();
+        }
+    });
+    function addUserToInput(username) {
+        $("#tag-name").hide();
+        $("#comment-detail").val($("#comment-detail").val() + username)
+    }
+
+</script>

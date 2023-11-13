@@ -71,7 +71,8 @@
     <link href="~/Theme/css/materialize.css" rel="stylesheet" />
     <link href="~/Theme/plugins/bootstrap-datepicker-1.6.4/css/bootstrap-datepicker.min.css" rel="stylesheet" />
     <script src="~/Scripts/jquery-1.10.2.js?v=1.1"></script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    @*<script src="~/Scripts/D2SCoreJS/DragDropColumn.js"></script>*@
     @* select 2*@
     <link href="~/Properties/select2/css/select2.min.css" rel="stylesheet" />
     <script src="~/Properties/select2/js/select2.min.js"></script>
@@ -98,6 +99,47 @@
     @* tooltip *@
     <link href="~/Content/tooltip.css" rel="stylesheet" />
     <script type="module" src="https://unpkg.com/tooltipper@1/tooltipper.min.mjs"></script>
+    <style>
+        @@keyframes fadeInDiv {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @@-moz-keyframes fadeInDiv { /* Firefox */
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @@-webkit-keyframes fadeInDiv { /* Safari and Chrome */
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @@-o-keyframes fadeInDiv { /* Opera */
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 <body class="theme-indigo ls-closed">
     @Html.Hidden("antiForgeryToken", Html.GetAntiForgeryToken())

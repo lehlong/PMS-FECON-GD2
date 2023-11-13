@@ -17,10 +17,12 @@ namespace SMO.Areas.GC.API
     public class TaskController : ApiController
     {
         private readonly ProjectStructService _service;
+        private readonly ProjectStructVersionService _serviceVersion;
 
         public TaskController()
         {
             _service = new ProjectStructService();
+            _serviceVersion = new ProjectStructVersionService();
         }
         // GET api/Task
         public IEnumerable<TaskDto> Get(Guid projectId, bool isCostStructure)
@@ -53,6 +55,40 @@ namespace SMO.Areas.GC.API
             var taskDtos = _service.ObjList.Where(x => x.ACTIVE == true).Select(t => (TaskDto)t).ToList();
 
             _service.InitContractCode(taskDtos, isCostStructure);
+            return taskDtos;
+        }
+
+        public IEnumerable<TaskDto> GetVersion(Guid projectId, bool isCostStructure, int version)
+        {
+            if (projectId == Guid.Empty)
+            {
+                throw new ArgumentException("message", nameof(projectId));
+            }
+            _serviceVersion.ObjDetail.PROJECT_ID = projectId;
+            _serviceVersion.ObjDetail.VERSION = version;
+
+            if (isCostStructure)
+            {
+                _serviceVersion.ObjDetail.TYPE = string.Join(",", new List<string>()
+                                            {
+                                                ProjectEnum.PROJECT.ToString(),
+                                                ProjectEnum.ACTIVITY.ToString(),
+                                                ProjectEnum.WBS.ToString()
+                                            });
+            }
+            else
+            {
+                _serviceVersion.ObjDetail.TYPE = string.Join(",", new List<string>()
+                                            {
+                                                ProjectEnum.PROJECT.ToString(),
+                                                ProjectEnum.BOQ.ToString(),
+                                            });
+            }
+            _serviceVersion.Search();
+
+            var taskDtos = _serviceVersion.ObjList.Where(x => x.VERSION == version).Select(t => (TaskDto)t).ToList();
+
+            _serviceVersion.InitContractCode(taskDtos, isCostStructure);
             return taskDtos;
         }
 

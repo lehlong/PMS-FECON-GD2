@@ -1,0 +1,650 @@
+﻿@model SMO.Service.PS.Models.ViewDashboardModel
+@using SMO.Core.Entities.PS
+@{
+    var projectId = ViewBag.ProjectId;
+    var project = SMOUtilities.GetProject(projectId) as T_PS_PROJECT;
+    var billion = 1000000000;
+    var colorSPI = Model.SPI < 0.85M ? "#DF013A" : Model.SPI >= 0.85M && Model.SPI < 0.95M ? "#FFBF00" : Model.SPI >= 0.95M && Model.SPI < 1.05M ? "rgb(51, 155, 148)" : "#CC2EFA";
+    var colorCPI = Model.CPI < 0.85M ? "#DF013A" : Model.CPI >= 0.85M && Model.CPI < 0.95M ? "#FFBF00" : Model.CPI >= 0.95M && Model.CPI < 1.05M ? "rgb(51, 155, 148)" : "#CC2EFA";
+    var colorAPI = Model.API < 0.85M ? "#DF013A" : Model.API >= 0.85M && Model.API < 0.95M ? "#FFBF00" : Model.API >= 0.95M && Model.API < 1.05M ? "rgb(51, 155, 148)" : "#CC2EFA";
+
+    int dayProject = (project.FINISH_DATE - project.START_DATE).Days;
+    int dayWorked = (DateTime.Now - project.START_DATE).Days;
+    var percentageDayDone = (Convert.ToDecimal(dayWorked) / Convert.ToDecimal(dayProject) * 100);
+}
+<style>
+    .sub-text {
+        position: absolute;
+        top: 12px;
+        right: 34px;
+        font-size: 18px;
+        color: rgb(242, 142, 43);
+    }
+
+    .badges-title {
+        margin: 4px 0px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    .badges-green {
+        min-height: 120px;
+        color: white;
+        background-color: rgb(51, 155, 148);
+        margin-bottom: 0px !important;
+        text-align: center;
+        outline: 3px solid white;
+        display: grid;
+        padding: 8px 12px;
+        cursor: grab
+    }
+
+    .badges-orange {
+        min-height: 120px;
+        color: white;
+        background-color: rgb(242, 142, 43);
+        margin-bottom: 0px !important;
+        text-align: center;
+        outline: 3px solid white;
+        display: grid;
+        padding: 8px 12px;
+        cursor: grab;
+    }
+
+    .badges-white {
+        min-height: 120px;
+        color: black;
+        margin-bottom: 0px !important;
+        text-align: center;
+        border: solid 1px #ccc;
+        outline: 3px solid white;
+        padding: 8px 12px;
+        cursor: grab;
+    }
+
+    .title-project {
+        color: rgb(51, 155, 148);
+        font-size: 24px;
+        padding: 16px 0px;
+    }
+
+    .name-project {
+        color: rgb(255, 130, 71);
+    }
+
+    .flex-dashboard {
+        display: flex;
+        flex-flow: row;
+        gap: 10px;
+    }
+</style>
+
+<!--BIỂU ĐỒ SẢN LƯỢNG-->
+<script type="text/javascript">
+    try {
+        var rawDataBOQ = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.DataDashboardBoq));
+        var dataDashboardBOQ = [];
+
+        for (i = 0; i < rawDataBOQ.length; i++) {
+            var planCostLK = rawDataBOQ[i].planCost;
+            var volumeWorkLK = rawDataBOQ[i].volumeWork;
+            var volumeAcceptLK = rawDataBOQ[i].volumeAccept;
+            var volumeRevenueLK = rawDataBOQ[i].volumeRevenue;
+            for (j = 0; j < i; j++) {
+                planCostLK += rawDataBOQ[j].planCost;
+                volumeWorkLK += rawDataBOQ[j].volumeWork;
+                volumeAcceptLK += rawDataBOQ[j].volumeAccept;
+                volumeRevenueLK += rawDataBOQ[j].volumeRevenue;
+            }
+
+            dataDashboardBOQ.push([rawDataBOQ[i].stringTime, Math.round(rawDataBOQ[i].planCost), Math.round(rawDataBOQ[i].volumeWork), Math.round(rawDataBOQ[i].volumeAccept), Math.round(rawDataBOQ[i].volumeRevenue), Math.round(planCostLK), Math.round(volumeWorkLK), Math.round(volumeAcceptLK), Math.round(volumeRevenueLK)]);
+        }
+        dataDashboardBOQ.unshift(['Tháng', 'SL Kế hoạch', 'SL Thực hiện', 'Doanh thu', 'Doanh thu KH', 'SL Kế hoạch (LK)', 'SL Thực hiện (LK)', 'Doanh thu (LK)', 'Doanh thu KH (LK)'])
+
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawVisualization);
+
+        function drawVisualization() {
+            // Some raw data (not necessarily accurate)
+            var dataBOQ = google.visualization.arrayToDataTable(dataDashboardBOQ);
+
+            var options = {
+                title: 'BIỂU ĐỒ SẢN LƯỢNG',
+                titleTextStyle: {
+                    fontSize: 16,
+                    fontName: 'Nunito',
+                },
+                titlePosition: 'out',
+                vAxis: { title: 'Giá trị sản lượng phát sinh', format: 'short' },
+                hAxis: { title: 'Kỳ thời gian' },
+                fontSize: 12,
+                fontName: 'Nunito',
+                selectionMode: 'multiple',
+                animation: {
+                    duration: 2000,
+                    easing: 'inAndOut',
+                    startup: true
+                },
+                tooltip: {
+                    showColorCode: true
+                },
+                legend: {
+                    position: 'top'
+                },
+                chartArea: { width: '90%', height: '75%' },
+                series: {
+                    0: { type: 'bars', color: 'rgb(0, 153, 198)' },
+                    1: { type: 'bars', color: 'rgb(255, 153, 0)' },
+                    2: { type: 'bars', color: 'rgb(51, 102, 204)' },
+                    3: { type: 'bars', color: 'rgb(51, 155, 148)' },
+                    4: { type: 'line', color: 'rgb(0, 153, 198)' },
+                    5: { type: 'line', color: 'rgb(255, 153, 0)' },
+                    6: { type: 'line', color: 'rgb(51, 102, 204)' },
+                    7: { type: 'line', color: 'rgb(51, 155, 148)' }
+                },
+                width: dataBOQ.getNumberOfRows() * 110,
+                bar: { groupWidth: 65 },
+            };
+
+            var chart = new google.visualization.ComboChart(document.getElementById('chart_div_bieudosanluong'));
+            chart.draw(dataBOQ, options);
+        }
+    } catch (ex) {
+        console.log("LỖI BIỂU ĐỒ SẢN LƯỢNG!")
+    }
+
+</script>
+
+<!--BIỂU ĐỒ CHI PHÍ-->
+<script type="text/javascript">
+    try {
+        var rawDataCost = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.DataDashboardCost));
+
+        var dataDashboardCost = [];
+
+        for (i = 0; i < rawDataCost.length; i++) {
+            var planCostLK = rawDataCost[i].planCost;
+            var volumeWorkLK = rawDataCost[i].volumeWork;
+            var volumeAcceptLK = rawDataCost[i].volumeAccept;
+            for (j = 0; j < i; j++) {
+                planCostLK += rawDataCost[j].planCost;
+                volumeWorkLK += rawDataCost[j].volumeWork;
+                volumeAcceptLK += rawDataCost[j].volumeAccept;
+            }
+
+            dataDashboardCost.push([rawDataCost[i].stringTime, Math.round(rawDataCost[i].planCost), Math.round(rawDataCost[i].volumeWork), Math.round(rawDataCost[i].volumeAccept), Math.round(planCostLK), Math.round(volumeWorkLK), Math.round(volumeAcceptLK)]);
+        }
+        dataDashboardCost.unshift(['Tháng', 'CP Kế hoạch', 'CP Thực hiện', 'CP Nghiệm thu', 'CP Kế hoạch (LK)', 'CP Thực hiện (LK)', 'CP Nghiệm thu (LK)'])
+
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawVisualization);
+
+        function drawVisualization() {
+            // Some raw data (not necessarily accurate)
+            var dataCost = google.visualization.arrayToDataTable(dataDashboardCost);
+
+            var options = {
+                title: 'BIỂU ĐỒ CHI PHÍ',
+                titleTextStyle: {
+                    fontSize: 16,
+                    fontName: 'Nunito',
+                },
+                titlePosition: 'out',
+                vAxis: { title: 'Giá trị chi phí phát sinh', format: 'short' },
+                hAxis: { title: 'Kỳ thời gian' },
+                fontSize: 12,
+                fontName: 'Nunito',
+                selectionMode: 'multiple',
+                animation: {
+                    duration: 2000,
+                    easing: 'inAndOut',
+                    startup: true
+                },
+                tooltip: {
+                    showColorCode: true
+                },
+                legend: {
+                    position: 'top'
+                },
+                chartArea: { width: '90%', height: '75%' },
+                series: {
+                    0: { type: 'bars', color: 'rgb(0, 153, 198)' },
+                    1: { type: 'bars', color: 'rgb(255, 153, 0)' },
+                    2: { type: 'bars', color: 'rgb(51, 102, 204)' },
+                    3: { type: 'line', color: 'rgb(0, 153, 198)' },
+                    4: { type: 'line', color: 'rgb(255, 153, 0)' },
+                    5: { type: 'line', color: 'rgb(51, 102, 204)' }
+                },
+                width: dataCost.getNumberOfRows() * 110,
+                bar: { groupWidth: 65 },
+            };
+
+            var chart = new google.visualization.ComboChart(document.getElementById('chart_div_bieudochiphi'));
+            chart.draw(dataCost, options);
+        }
+    } catch (ex) {
+        console.log("LỖI BIỂU ĐỒ CHI PHÍ!")
+    }
+
+</script>
+
+<!--BIỂU ĐỒ CHI PHÍ CẤP 2-->
+<script type="text/javascript">
+    try {
+        var rawDataCostLevel2 = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.DataDashboardCostLevel2));
+        var rawDataCostLevel2WithOrder = _.orderBy(rawDataCostLevel2, ['SumPlanCostVendor'], ['desc']);
+
+        var dataDashboardCostLevel2 = [];
+        var dataDashboardCostLevel2WithOrder = [];
+
+        for (i = 0; i < rawDataCostLevel2.length; i++) {
+            var percentage = (rawDataCostLevel2[i].SumVolumeWork > 0 && rawDataCostLevel2[i].CostData > 0) ? (rawDataCostLevel2[i].SumVolumeWork / rawDataCostLevel2[i].CostData * 100) : 0;
+            var color = '';
+            if (percentage < 85 && percentage > 0) {
+                color = 'color:#CC2EFA'
+            } else if (percentage >= 85 && percentage < 95) {
+                color = 'color:rgb(51, 155, 148)'
+            } else if (percentage >= 95 && percentage < 105) {
+                color = 'color:#FFBF00'
+            } else {
+                color = 'color:#DF013A'
+            }
+
+            dataDashboardCostLevel2.push([
+                `${rawDataCostLevel2[i].Text} (${rawDataCostLevel2[i].Code})`,
+                rawDataCostLevel2[i].SumPlanCostVendor,
+                (rawDataCostLevel2[i].SumPlanCostVendor).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+                `Hạng mục chi phí: ${rawDataCostLevel2[i].Text} (${rawDataCostLevel2[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2[i].Code}
+                Chi phí TH LK : ${rawDataCostLevel2[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Chi phí KH LK : ${rawDataCostLevel2[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Tổng ngân sách : ${rawDataCostLevel2[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`,
+                rawDataCostLevel2[i].SumVolumeWork,
+                (rawDataCostLevel2[i].SumVolumeWork).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+                `Hạng mục chi phí: ${rawDataCostLevel2[i].Text} (${rawDataCostLevel2[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2[i].Code}
+                Chi phí TH LK : ${rawDataCostLevel2[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Chi phí KH LK : ${rawDataCostLevel2[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Tổng ngân sách : ${rawDataCostLevel2[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`,
+                `${color}`
+            ]);
+        }
+
+        for (i = 0; i < rawDataCostLevel2WithOrder.length; i++) {
+            var percentage = (rawDataCostLevel2WithOrder[i].SumVolumeWork > 0 && rawDataCostLevel2WithOrder[i].CostData > 0) ? (rawDataCostLevel2WithOrder[i].SumVolumeWork / rawDataCostLevel2WithOrder[i].CostData * 100) : 0;
+            var color = '';
+            if (percentage < 85 && percentage > 0) {
+                color = 'color:#CC2EFA'
+            } else if (percentage >= 85 && percentage < 95) {
+                color = 'color:rgb(51, 155, 148)'
+            } else if (percentage >= 95 && percentage < 105) {
+                color = 'color:#FFBF00'
+            } else {
+                color = 'color:#DF013A'
+            }
+
+            dataDashboardCostLevel2WithOrder.push([
+                `${rawDataCostLevel2WithOrder[i].Text} (${rawDataCostLevel2WithOrder[i].Code})`,
+                rawDataCostLevel2WithOrder[i].SumPlanCostVendor,
+                (rawDataCostLevel2WithOrder[i].SumPlanCostVendor).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+                `Hạng mục chi phí: ${rawDataCostLevel2WithOrder[i].Text} (${rawDataCostLevel2WithOrder[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2WithOrder[i].Code}
+                Chi phí TH LK : ${rawDataCostLevel2WithOrder[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Chi phí KH LK : ${rawDataCostLevel2WithOrder[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Tổng ngân sách : ${rawDataCostLevel2WithOrder[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`,
+                rawDataCostLevel2WithOrder[i].SumVolumeWork,
+                (rawDataCostLevel2WithOrder[i].SumVolumeWork).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
+                `Hạng mục chi phí: ${rawDataCostLevel2WithOrder[i].Text} (${rawDataCostLevel2WithOrder[i].Code})
+                Mã hạng mục: ${rawDataCostLevel2WithOrder[i].Code}
+                Chi phí TH LK : ${rawDataCostLevel2WithOrder[i].SumVolumeWork.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Chi phí KH LK : ${rawDataCostLevel2WithOrder[i].CostData.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Tổng ngân sách : ${rawDataCostLevel2WithOrder[i].SumPlanCostVendor.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                Đánh giá TH-KH: ${percentage.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %`,
+                `${color}`
+            ]);
+        }
+
+        $("#remainingBudget").text(numeral(isNaN(rawDataCostLevel2[0].SumPlanCostVendor - rawDataCostLevel2[0].SumVolumeWork) ? 0 : rawDataCostLevel2[0].SumPlanCostVendor - rawDataCostLevel2[0].SumVolumeWork).format('0,0'));
+
+        dataDashboardCostLevel2.unshift(['Hạng mục chi phí', 'Tổng ngân sách', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, 'Chi phí thực hiện (LK)', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, { role: 'style' }])
+        dataDashboardCostLevel2WithOrder.unshift(['Hạng mục chi phí', 'Tổng ngân sách', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, 'Chi phí thực hiện (LK)', { role: 'annotation' }, { type: 'string', role: 'tooltip' }, { role: 'style' }])
+
+        google.charts.load('current', { packages: ['corechart', 'bar'] });
+        google.charts.setOnLoadCallback(drawMultSeries);
+
+        $("#sort-code").click(function () {
+            google.charts.setOnLoadCallback(drawMultSeries);
+        });
+        $("#sort-ab").click(function () {
+            google.charts.setOnLoadCallback(drawMultSeriesWithOrder);
+        });
+
+        function drawMultSeries() {
+            var data = google.visualization.arrayToDataTable(dataDashboardCostLevel2);
+
+            var options = {
+                title: 'CHI PHÍ THỰC HIỆN DỰ ÁN',
+                titleTextStyle: {
+                    fontSize: 16,
+                    fontName: 'Nunito',
+                },
+                titlePosition: 'out',
+                fontName: 'Nunito',
+                animation: {
+                    duration: 2000,
+                    easing: 'inAndOut',
+                    startup: true
+                },
+                chartArea: '',
+                hAxis: {
+                    title: 'Chi phí dự án',
+                    minValue: 0,
+                    format: 'short'
+                },
+                vAxis: {
+                    title: 'Hạng mục chi phí',
+                    textStyle: {
+                        fontSize: 12,
+                        fontName: 'Nunito',
+                    }
+                },
+                legend: {
+                    position: 'top'
+                },
+                height: '',
+                bar: { groupWidth: 36 },
+                annotations: {
+                    alwaysOutside: true,
+                    textStyle: {
+                        fontSize: 12,
+                        auraColor: 'none',
+                        fontName: 'Nunito',
+                    },
+                },
+                series: {
+                    0: { color: '#337ab7' }
+                },
+            };
+            if (rawDataCostLevel2.length <= 2) {
+                options.height = 220
+                options.chartArea = { width: '64%', height: '60%' }
+            } else if (rawDataCostLevel2.length > 2 && rawDataCostLevel2.length <= 6) {
+                options.height = rawDataCostLevel2.length * 90
+                options.chartArea = { width: '64%', height: '60%' }
+            } else if (rawDataCostLevel2.length > 10) {
+                options.height = rawDataCostLevel2.length * 70
+                options.chartArea = { width: '60%', height: '85%' }
+            } else if (rawDataCostLevel2.length > 6 && rawDataCostLevel2.length <= 9) {
+                options.height = rawDataCostLevel2.length * 70
+                options.chartArea = { width: '64%', height: '80%' }
+            }
+
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div_level2'));
+            chart.draw(data, options);
+        }
+        function drawMultSeriesWithOrder() {
+            var data = google.visualization.arrayToDataTable(dataDashboardCostLevel2WithOrder);
+
+            var options = {
+                title: 'CHI PHÍ THỰC HIỆN DỰ ÁN',
+                titleTextStyle: {
+                    fontSize: 16,
+                    fontName: 'Nunito',
+                },
+                fontName: 'Nunito',
+                titlePosition: 'out',
+                animation: {
+                    duration: 2000,
+                    easing: 'inAndOut',
+                    startup: true
+                },
+                chartArea: '',
+                hAxis: {
+                    title: 'Chi phí dự án',
+                    minValue: 0,
+                    format: 'short'
+                },
+                vAxis: {
+                    title: 'Hạng mục chi phí',
+                    textStyle: {
+                        fontSize: 12,
+                        fontName: 'Nunito',
+                    }
+                },
+                legend: {
+                    position: 'top'
+                },
+                height: '',
+                bar: { groupWidth: 36 },
+                annotations: {
+                    alwaysOutside: true,
+                    textStyle: {
+                        fontSize: 12,
+                        auraColor: 'none',
+                        fontName: 'Nunito',
+                    },
+                },
+                series: {
+                    0: { color: '#337ab7' }
+                },
+            };
+            if (rawDataCostLevel2.length <= 2) {
+                options.height = 220
+                options.chartArea = { width: '64%', height: '60%' }
+            } else if (rawDataCostLevel2.length > 2 && rawDataCostLevel2.length <= 6) {
+                options.height = rawDataCostLevel2.length * 90
+                options.chartArea = { width: '64%', height: '60%' }
+            } else if (rawDataCostLevel2.length > 10) {
+                options.height = rawDataCostLevel2.length * 70
+                options.chartArea = { width: '60%', height: '85%' }
+            } else if (rawDataCostLevel2.length > 6 && rawDataCostLevel2.length <= 9) {
+                options.height = rawDataCostLevel2.length * 70
+                options.chartArea = { width: '64%', height: '80%' }
+            }
+
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div_level2'));
+            chart.draw(data, options);
+        }
+    } catch (ex) {
+        console.log("LỖI BIỂU ĐỒ CHI PHÍ CẤP 2!")
+    }
+
+</script>
+
+<div id="div-dashboard-project">
+    <div class="col-md-12" style=" margin-bottom: 0px;">
+        <div class="row">
+            <div class="col-md-6" style="margin-bottom: 0px !important; padding: 0px 4px 0px 0px;">
+                <div class="row sortable">
+                    <div class="col-md-3 badges-green badges-dashboard" id="CA" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("CA"))">
+                        <div>Giá trị hợp đồng</div>
+                        <div>(CA)</div>
+                        <div class="badges-title">@((Model.CA / billion).ToString("0.00"))</div>
+                        <div>Tỷ</div>
+                    </div>
+                    <div class="col-md-3 badges-orange badges-dashboard" id="ACW" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("ACW"))">
+                        <div>SL nghiệm thu</div>
+                        <div>(ACW)</div>
+                        <div class="badges-title">@((Model.ACW / billion).ToString("0.00"))</div>
+                        <div>Tỷ</div>
+                    </div>
+                    <div class="col-md-3 badges-orange badges-dashboard" id="WD-WP" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("WD-WP"))">
+                        <div>Sản lượng TH/KH</div>
+                        <div>(WD/WP)</div>
+                        <div class="badges-title">@((Model.WD / billion).ToString("0.00") + "/" + (Model.WP / billion)?.ToString("0.00"))</div>
+                        <div>Tỷ</div>
+                    </div>
+                    <div class="col-md-3 badges-white badges-dashboard" id="SPI" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("SPI"))">
+                        <div>SPI</div>
+                        <div>(Chỉ số hoàn thành SL)</div>
+                        <div class="badges-title" style="color:@colorSPI">@(Model.SPI?.ToString("0.00"))</div>
+                    </div>
+                    <div class="col-md-3 badges-green badges-dashboard" id="BAC"  data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("BAC"))">
+                        <div>Ngân sách được giao</div>
+                        <div>(BAC)</div>
+                        <div class="badges-title">@((Model.BAC / billion)?.ToString("0.00"))</div>
+                        <div>Tỷ</div>
+                    </div>
+                    <div class="col-md-3 badges-orange badges-dashboard" id="EAC"  data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("EAC"))">
+                        <div>CP dự kiến khi xong</div>
+                        <div>(EAC)</div>
+                        <div class="badges-title">@((Model.EAC / billion)?.ToString("0.00"))</div>
+                        <div>Tỷ</div>
+                    </div>
+                    <div class="col-md-3 badges-orange badges-dashboard" id="AC-PE"  data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("AC-PE"))">
+                        <div>Chi phí TH/KH</div>
+                        <div>(AC/PE)</div>
+                        <div class="badges-title">@((Model.AC / billion).ToString("0.00") + "/" + (Model.PE / billion)?.ToString("0.00"))</div>
+                        <div>Tỷ</div>
+                    </div>
+                    <div class="col-md-3 badges-white badges-dashboard" id="CPI" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("CPI"))">
+                        <div>CPI</div>
+                        <div>(Chỉ số TH ngân sách)</div>
+                        <div class="badges-title" style="color:@colorCPI">@(Model.CPI?.ToString("0.00"))</div>
+                    </div>
+                    <div class="col-md-3 badges-green badges-dashboard" id="TSLNKH" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("TSLNKH"))">
+                        <div>Tỷ suất LN kế hoạch</div>
+                        <div class="badges-title">@((Model.TSLNKH / billion)?.ToString("0.00"))</div>
+                        <div>%</div>
+                    </div>
+                    <div class="col-md-3 badges-orange badges-dashboard" id="TSLNDK" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("TSLNDK"))">
+                        <div>Tỷ suất LN dự kiến</div>
+                        <div class="badges-title">@((Model.TSLNDK / billion)?.ToString("0.00"))</div>
+                        <div>%</div>
+                    </div>
+                    <div class="col-md-3 badges-orange badges-dashboard" id="TSLNTT" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("TSLNTT"))">
+                        <div>Tỷ suất LN thực tế</div>
+                        <div class="badges-title">@((Model.TSLNTT / billion).ToString("0.00"))</div>
+                        <div>%</div>
+                    </div>
+                    <div class="col-md-3 badges-white badges-dashboard" id="API" data-index="@Model.ConfigDashboard.FindIndex(x => x.Contains("API"))">
+                        <div>API</div>
+                        <div>(Chỉ số nghiệm thu)</div>
+                        <div class="badges-title" style="color:@colorAPI">@(Model.API.ToString("0.00"))</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6" style="margin-bottom: 0px !important; padding: 0 0 0 4px;">
+                <div class="col-md-12" style="border: solid 1px #ccc; height: 360px; padding: 0">
+                    <div id="chart_div_level2" style="height: 100%; overflow-x: hidden; overflow-y: auto"></div>
+                    <div class="sub-text">Ngân sách còn lại: <span id="remainingBudget"></span></div>
+                    <div style="position: absolute; top: 1px; left: 4px;">
+                        <i class="material-icons sort-plan" id="sort-code" style="color: rgb(51, 155, 148); cursor:pointer">toc</i>
+                        <i class="material-icons sort-plan" id="sort-ab" style="color: rgb(242, 142, 43); cursor:pointer">sort</i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-6" style="overflow: auto; resize: horizontal;padding: 0px 4px 0px 0px;">
+                <div class="col-md-12" style="border: solid 1px #ccc; height: 500px; padding: 0">
+                    <div id="chart_div_bieudochiphi" style="height: 100%; overflow-x: auto; overflow-y: hidden;cursor:grab"></div>
+                    <img class="chart_div_bieudochiphi_error" src="~/Content/Images/nodata-dashboard.jpg" style="display:none" />
+                </div>
+            </div>
+            <div class="col-md-6" style="overflow: auto; resize: horizontal; padding: 0px 0px 0px 4px;">
+                <div class="col-md-12" style="border: solid 1px #ccc; height: 500px; padding: 0">
+                    <div id="chart_div_bieudosanluong" style="height: 100%; overflow-x: auto; overflow-y: hidden;cursor:grab"></div>
+                    <img class="chart_div_bieudosanluong_error" src="~/Content/Images/nodata-dashboard.jpg" style="display:none" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        Forms.CompleteUI();
+        $('.sortable').each(function () {
+            var $this = $(this);
+            $this.append($this.find('.badges-dashboard').get().sort(function (a, b) {
+                return $(a).data('index') - $(b).data('index');
+            }));
+        });
+        $(".sortable").sortable({
+            change: function (event, ui) {
+
+            },
+            stop: function (event, ui) {
+                var dataOrder = []
+                for (i = 0; i < event.target.children.length; i++) {
+                    dataOrder.push(event.target.children[i].id)
+                }
+                var ajaxParams = {
+                    url: 'PS/Project/SaveConfigDashboard',
+                    type: "POST",
+                    data: {
+                        projectId: '@projectId',
+                        config: JSON.stringify(dataOrder),
+                    },
+                }
+                Forms.AjaxWithoutLoading(ajaxParams);
+            }
+        });
+    });
+
+    const vendor = document.querySelector('#chart_div_bieudochiphi');
+    const customer = document.querySelector('#chart_div_bieudosanluong');
+
+    let mouseDown = false;
+    let startX, scrollLeft;
+
+    let startDraggingVendor = function (e) {
+        mouseDown = true;
+        startX = e.pageX - vendor.offsetLeft;
+        scrollLeft = vendor.scrollLeft;
+    };
+    let startDraggingCustomer = function (e) {
+        mouseDown = true;
+        startX = e.pageX - customer.offsetLeft;
+        scrollLeft = customer.scrollLeft;
+    };
+    let stopDragging = function (event) {
+        mouseDown = false;
+    };
+
+    vendor.addEventListener('mousemove', (e) => {
+        e.preventDefault();
+        if (!mouseDown) { return; }
+        const x = e.pageX - vendor.offsetLeft;
+        const scroll = x - startX;
+        vendor.scrollLeft = scrollLeft - scroll;
+    });
+    customer.addEventListener('mousemove', (e) => {
+        e.preventDefault();
+        if (!mouseDown) { return; }
+        const x = e.pageX - customer.offsetLeft;
+        const scroll = x - startX;
+        customer.scrollLeft = scrollLeft - scroll;
+    });
+
+    vendor.addEventListener('mousedown', startDraggingVendor, false);
+    vendor.addEventListener('mouseup', stopDragging, false);
+    vendor.addEventListener('mouseleave', stopDragging, false);
+    customer.addEventListener('mousedown', startDraggingCustomer, false);
+    customer.addEventListener('mouseup', stopDragging, false);
+    customer.addEventListener('mouseleave', stopDragging, false);
+
+    //Thay đổi ngày - load lại biểu đồ
+    function onChangeDate() {
+        $("#div-dashboard-project").empty();
+        var toDate = $("#toDate").val();
+        var fromDate = $("#fromDate").val();
+        var ajaxParams = {
+            url: '@Url.Action("ViewDashboardByTime")',
+            data: {
+                projectId: '@project.ID',
+                startDate: fromDate,
+                finishDate: toDate
+            },
+            htmlTarget: "#div-dashboard-project"
+        };
+        Forms.LoadAjax(ajaxParams);
+    }
+</script>

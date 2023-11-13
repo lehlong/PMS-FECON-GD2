@@ -151,6 +151,7 @@
     <Compile Include="Entities\PS\T_PS_COMMENT.cs" />
     <Compile Include="Entities\PS\T_PS_ACTIVITY.cs" />
     <Compile Include="Entities\PS\T_PS_BOQ.cs" />
+    <Compile Include="Entities\PS\T_PS_CONFIG_DASHBOARD.cs" />
     <Compile Include="Entities\PS\T_PS_CONFIG_HIDE_COLUMN.cs" />
     <Compile Include="Entities\PS\T_PS_CONTRACT.cs" />
     <Compile Include="Entities\PS\T_PS_CONTRACT_DETAIL.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="Entities\PS\T_PS_PROJECT.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_SAP.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_VERSION.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_USER_RIGHT.cs" />
     <Compile Include="Entities\PS\T_PS_REFERENCE.cs" />
     <Compile Include="Entities\PS\T_PS_RESOURCE.cs" />

@@ -2,6 +2,7 @@
 using SMO.Core.Entities.MD;
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace SMO.Core.Entities.PS

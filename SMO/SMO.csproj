@@ -649,6 +649,7 @@
     <Compile Include="Service\PS\Models\UpdateValueModel.cs" />
     <Compile Include="Service\PS\Models\UpdateValueVolumeWorkModel.cs" />
     <Compile Include="Service\PS\Models\VenderVolumeReportModel.cs" />
+    <Compile Include="Service\PS\Models\ViewDashboardModel.cs" />
     <Compile Include="Service\PS\Models\VolumeWorkViewModel.cs" />
     <Compile Include="Service\PS\PlanCostService.cs" />
     <Compile Include="Service\PS\PlanProgressService.cs" />
@@ -659,6 +660,7 @@
     <Compile Include="Service\PS\ProjectService.cs" />
     <Compile Include="Service\PS\ProjectSlDtService.cs" />
     <Compile Include="Service\PS\ProjectStructService.cs" />
+    <Compile Include="Service\PS\ProjectStructVersionService.cs" />
     <Compile Include="Service\PS\ProjectTimeService.cs" />
     <Compile Include="Service\PS\ReferenceService.cs" />
     <Compile Include="Service\PS\TaskService.cs" />
@@ -896,6 +898,7 @@
     <Content Include="Content\Images\icon_safari.png" />
     <Content Include="Content\Images\login_bkgr.jpg" />
     <Content Include="Content\Images\logo-petrolimex.png" />
+    <Content Include="Content\Images\nodata-dashboard.jpg" />
     <Content Include="Content\Images\petrolimex.png" />
     <Content Include="Content\LogoSMO.png" />
     <Content Include="Content\stylePrint.css" />
@@ -1262,7 +1265,6 @@
     <Content Include="Areas\PS\Views\ProjectSlDt\Detail.cshtml" />
     <Content Include="Areas\PS\Views\ProjectStruct\ImportMsProject.cshtml" />
     <Content Include="Areas\PS\Views\Project\Detail.cshtml" />
-    <Content Include="Areas\PS\Views\Project\GetDataDashboardByTime.cshtml" />
     <Content Include="Areas\PS\Views\Project\ListProjectHome.cshtml" />
     <Content Include="Areas\PS\Views\Project\Plan.cshtml" />
     <Content Include="Areas\PS\Views\Project\ProgressHistory.cshtml" />
@@ -1274,7 +1276,6 @@
     <Content Include="Areas\PS\Views\Project\StructureView.cshtml" />
     <Content Include="Areas\PS\Views\Project\ViewBaoCao.cshtml" />
     <Content Include="Areas\PS\Views\Project\ViewDashboard.cshtml" />
-    <Content Include="Areas\PS\Views\Project\ViewDashboardCode.cshtml" />
     <Content Include="Areas\PS\Views\Project\ViewGeneralInformation.cshtml" />
     <Content Include="Areas\PS\Views\Project\ViewListBaoCao.cshtml" />
     <Content Include="Areas\PS\Views\Project\VolumeProgressHistory.cshtml" />
@@ -1339,11 +1340,14 @@
     <Content Include="Areas\PS\Views\Contract\AddNewTask.cshtml" />
     <Content Include="Areas\PS\Views\Report\ProjectResourceIndex.cshtml" />
     <Content Include="Areas\PS\Views\Report\ProjectResourceReport.cshtml" />
+    <Content Include="Areas\PS\Views\Project\ViewDashboardByTime.cshtml" />
+    <Content Include="Areas\PS\Views\Project\ViewDashboardComment.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Content Include="Scripts\D2SCoreJS\DragDropColumn.js" />
     <Content Include="Scripts\GanttChart\config_gantt_chart.js" />
     <Content Include="Scripts\GanttChart\dhtmlxgantt.js" />
     <Content Include="Scripts\GanttChart\nav_menu.js" />

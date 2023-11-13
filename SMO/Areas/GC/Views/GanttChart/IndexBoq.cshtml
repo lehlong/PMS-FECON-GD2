@@ -125,6 +125,11 @@
             @if (editable)
             {
                 <li class="gantt-menu-item gantt-menu-item-right">
+                    <a title="Thay đổi ngày bắt đầu, kết thúc hạng mục" onclick="changeDate();">
+                        <span class="material-icons">event</span>Đổi ngày
+                    </a>
+                </li>
+                <li class="gantt-menu-item gantt-menu-item-right">
                     <a data-action="changeStatus" title="Thay đổi trạng thái">
                         <span class="material-icons">check_circle</span>Đổi trạng thái
                     </a>
@@ -542,6 +547,71 @@
             data
         }
         Forms.AjaxWithoutLoading(ajaxParams)
+    }
+    function changeDate() {
+        var selectedTasks = gantt.getTaskBy("selected", true) || [];
+        if (selectedTasks.length === 0) {
+            return Swal.fire(
+                'Chưa chọn hạng mục?',
+                'Phải chọn ít nhất 1 hạng mục công việc để thay đổi ngày',
+                'question'
+            );
+        }
+        Swal.fire({
+            title: 'Thay đổi thời gian hạng mục!',
+            text: "Chọn từ ngày hoặc đến ngày để thay đổi thời gian của 1 hạng mục công việc",
+            icon: 'warning',
+            html: '<div class="col-md-12">' +
+                '<div class= "row">' +
+                '<div class="col-md-6">' +
+                '<label>Từ ngày</label>' +
+                '<input class="form-control datepicker" id="startDate" />' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                '<label>Đến ngày</label>' +
+                '<input class="form-control datepicker" id="toDate" />' +
+                '</div>' +
+                '</div>' +
+                '</div > ',
+            preConfirm: function () {
+                return new Promise((resolve, reject) => {
+                    resolve({
+                        fromDate: $("#startDate").val(),
+                        toDate: $("#toDate").val(),
+                    });
+                });
+            },
+            didOpen: function () {
+                Forms.CompleteUI();
+            },
+            showCancelButton: true,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            confirmButtonColor: '#207ce5',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Huỷ',
+            confirmButtonText: 'Thay đổi',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                console.log(result)
+                const ajaxParams = {
+                    url: `PS/ProjectStruct/UpdateDate`,
+                    type: "POST",
+                    data: {
+                        structuresId: selectedTasks.map(x => x.id),
+                        projectId: selectedTasks[0].projectId,
+                        fromDate: result.value.fromDate,
+                        toDate: result.value.toDate,
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        Message.execute(response);
+                        refreshGC();
+                    }
+                };
+                Forms.Ajax(ajaxParams)
+            }
+        })
     }
 </script>
     <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>

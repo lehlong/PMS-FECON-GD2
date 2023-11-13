@@ -239,6 +239,7 @@
         resizable: true,
         data: _.orderBy(dataReport, ['projectCode', 'orderNullRef'], ['asc', 'asc']),
         selection: "cell",
+        dragItem: "column",
         keyNavigation: true,
         rowCss: function ({ type }) { return type === "PROJECT" || type === 0 ? "row-bold" : "" },
     });

@@ -287,11 +287,36 @@ namespace SMO.Areas.PS.Controllers
             {
                 _service.Get(projectId);
             }
-            var ticket = new UserService().GetTicket();
-            ViewBag.Ticket = ticket;
             return PartialView(_service);
         }
-
+        public ActionResult ViewDashboardByTime(Guid projectId, string startDate, string finishDate)
+        {
+            if (projectId != Guid.Empty)
+            {
+                _service.Get(projectId);
+            }
+            DateTime fromDate = _service.ObjDetail.START_DATE;
+            DateTime toDate = DateTime.Now;
+            if (startDate != null || finishDate != null)
+            {
+                fromDate = DateTime.Parse(startDate);
+                toDate = DateTime.Parse(finishDate);
+            }
+            var dataDashboard = _service.GetDataDashboard(projectId, fromDate, toDate);
+            ViewBag.ProjectId = projectId;
+            return PartialView(dataDashboard);
+        }
+        public ActionResult ViewDashboardComment(Guid projectId)
+        {
+            var data = new List<T_PS_COMMENT>();
+            if (projectId != Guid.Empty)
+            {
+                data = _service.GetAllComment(projectId);
+            }
+            ViewBag.ProjectId = projectId;
+            ViewBag.Resource = _service.GetResourceProject(projectId);
+            return PartialView(data);
+        }
         public ActionResult ViewDashboardCode(Guid projectId, string startDate, string finishDate)
         {
             if (projectId != Guid.Empty)
@@ -305,6 +330,7 @@ namespace SMO.Areas.PS.Controllers
                 fromDate = DateTime.Parse(startDate);
                 toDate = DateTime.Parse(finishDate);
             }
+            var hihi = _service.GetDataDashboard(projectId, fromDate, toDate);
             ViewBag.CA = _service.GetCA(projectId);
             ViewBag.BAC = _service.GetBAC(projectId);
             ViewBag.WP = _service.GetWP(projectId, fromDate, toDate);
@@ -657,6 +683,11 @@ namespace SMO.Areas.PS.Controllers
         {
             _service.SaveComment(projectId, comment);
         }
+        public void SaveConfigDashboard(Guid projectId, string config)
+        {
+            _service.SaveConfigDashboard(projectId, config);
+        }
+
         [HttpPost]
         public void SaveFileComment()
         {

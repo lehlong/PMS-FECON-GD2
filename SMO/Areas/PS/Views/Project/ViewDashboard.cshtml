@@ -1,38 +1,103 @@
 ﻿@model SMO.Service.PS.ProjectService
+@{
+    int dayProject = (Model.ObjDetail.FINISH_DATE - Model.ObjDetail.START_DATE).Days;
+    int dayWorked = (DateTime.Now - Model.ObjDetail.START_DATE).Days;
+    var percentageDayDone = (Convert.ToDecimal(dayWorked) / Convert.ToDecimal(dayProject) * 100);
+}
+<style>
+    #div-dashboard-project, .div-title-project, .div-remaining-days {
+        animation: fadeInDiv 2s;
+        -moz-animation: fadeInDiv 2s;
+        -webkit-animation: fadeInDiv 2s; 
+        -o-animation: fadeInDiv 2s;
+    }
+    .title-project {
+        color: rgb(51, 155, 148);
+        font-size: 24px;
+        padding: 16px 0px;
+    }
+    .name-project {
+        color: rgb(255, 130, 71);
+    }
+    .icon-comment {
+        position: fixed;
+        right: 2%;
+        bottom: 2%;
+        cursor: pointer;
+    }
+</style>
 
-@if (Model.ObjDetail.TIME_TYPE == "01")
-{
-    <script type='text/javascript' src='https://pmsbi.fecon.com.vn/javascripts/api/viz_v1.js'></script>
-    <div class='tableauPlaceholder' style='width: 1500px; height: 847px;'>
-        <object class='tableauViz' width='1500'
-                height='847' style='display:none;'>
-            <param name='host_url' value='https%3A%2F%2Fpmsbi.fecon.com.vn%2F' />
-            <param name='embed_code_version' value='3' />
-            <param name='site_root' value='' />
-            <param name='name' value='Fecon_PMS_Dashboard_Week&#47;Dashboard1' />
-            <param name='tabs' value='no' />
-            <param name='toolbar' value='no' />
-            <param name="ticket" value="@ViewBag.Ticket" />
-            <param name='showAppBanner' value='false' />
-            <param name='filter' value='MA_DA=@Model.ObjDetail.CODE' />
-        </object>
+<div class="col-md-12 div-title-project" style="margin-bottom: 0">
+    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
+        <div style="flex: 10">
+            <div class="title-project">BÁO CÁO DỰ ÁN: <span class="name-project">@Model.ObjDetail.NAME.ToUpper()</span></div>
+        </div>
+        <div style="flex: 1">
+            <div class="form-line">
+                <label>Từ ngày</label>
+                <input class="form-control datepicker" id="fromDate" type="text" value="@Model.ObjDetail.START_DATE">
+            </div>
+        </div>
+        <div style="flex: 1">
+            <div class="form-line">
+                <label>Đến ngày</label>
+                <input class="form-control datepicker" id="toDate" type="text" value="@Model.ObjDetail.FINISH_DATE" onchange="onChangeDate();">
+            </div>
+        </div>
     </div>
-}
-else
-{
-    <script type='text/javascript' src='https://pmsbi.fecon.com.vn/javascripts/api/viz_v1.js'></script>
-    <div class='tableauPlaceholder' style='width: 1500px; height: 847px;'>
-        <object class='tableauViz' width='1500'
-                height='847' style='display:none;'>
-            <param name='host_url' value='https%3A%2F%2Fpmsbi.fecon.com.vn%2F' />
-            <param name='embed_code_version' value='3' />
-            <param name='site_root' value='' />
-            <param name='name' value='Fecon_PMS_Dashboard_Month&#47;Dashboard1' />
-            <param name='tabs' value='no' />
-            <param name='toolbar' value='no' />
-            <param name="ticket" value="@ViewBag.Ticket" />
-            <param name='showAppBanner' value='false' />
-            <param name='filter' value='MA_DA=@Model.ObjDetail.CODE' />
-        </object>
+</div>
+<div class="col-md-12 div-remaining-days" style="margin-bottom:0">
+    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;align-items:center">
+        <div style="flex: 4"></div>
+        <div style="flex: 1;text-align:right">
+            <p style="font-weight:bold">@Model.ObjDetail.START_DATE.ToString("dd/MM/yyyy")</p>
+        </div>
+        <div style="flex: 6">
+            <div class="progress" style="margin-bottom: 8px; background: #DEEAEE; height: 30px;">
+                <div class="progress-bar" role="progressbar" style="width: @(percentageDayDone > 100 ? 100 : percentageDayDone)%; background-color: #337ab7;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    <label style="font-weight: 100; padding: 4px;">@dayWorked ngày | @percentageDayDone.ToString("0.0") %</label>
+                </div>
+            </div>
+        </div>
+        <div style="flex: 1">
+            <p  style="font-weight:bold">@Model.ObjDetail.FINISH_DATE.ToString("dd/MM/yyyy")</p>
+        </div>
     </div>
-}
+</div>
+<div id="div-dashboard-project"></div>
+
+<div class="icon-comment" onclick="loadDashboardComment();">
+    <img src="~/Theme/images/message.png" style="height:42px" />
+</div>
+<script>
+    $(function () {
+        Forms.CompleteUI();
+        //Kéo thả các chỉ tiêu
+        $(".sortable").sortable();
+    });
+
+    //Thay đổi ngày - load lại biểu đồ
+    function onChangeDate() {
+        $("#div-dashboard-project").empty();
+        var toDate = $("#toDate").val();
+        var fromDate = $("#fromDate").val();
+        var ajaxParams = {
+            url: '@Url.Action("ViewDashboardByTime")',
+            data: {
+                projectId: '@Model.ObjDetail.ID',
+                startDate: fromDate,
+                finishDate: toDate
+            },
+            htmlTarget: "#div-dashboard-project"
+        };
+        Forms.LoadAjax(ajaxParams);
+    }
+
+    function loadDashboardComment() {
+        var ajaxParams = {
+            url: "@Url.Action("ViewDashboardComment")",
+            data: { projectId : '@Model.ObjDetail.ID' }
+        };
+        Forms.LoadAjaxRight(ajaxParams);
+    }
+</script>

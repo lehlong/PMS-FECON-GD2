@@ -206,6 +206,28 @@ namespace SMO.Areas.PS.Controllers
         }
 
         [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public ActionResult UpdateDate(Guid projectId, DateTime? fromDate,DateTime? toDate, IList<Guid> structuresId)
+        {
+            var result = new TransferObject
+            {
+                Type = TransferType.AlertSuccessAndJsCommand
+            };
+            _service.UpdateDate(projectId, fromDate, toDate, structuresId);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        [HttpPost]
         public ActionResult SaveActivityFromContractVendor(string data)
         {
             var result = new TransferObject
@@ -229,6 +251,25 @@ namespace SMO.Areas.PS.Controllers
                 result.Type = TransferType.AlertDanger;
                 SMOUtilities.GetMessage("1004", _service, result);
                 SMOUtilities.GetMessage("1004", _projectService, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        public ActionResult SaveVersionStructCost(Guid projectId)
+        {
+            var result = new TransferObject
+            {
+                Type = TransferType.AlertSuccessAndJsCommand
+            };
+            _service.SaveVersionStructCost(projectId);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1001", _service, result);
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1004", _service, result);
             }
             return result.ToJsonResult();
         }

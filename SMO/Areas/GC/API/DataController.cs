@@ -27,5 +27,20 @@ namespace SMO.Areas.GC.API
             };
             return Json(gantt, settings);
         }
+
+        [HttpGet]
+        public IHttpActionResult GetGanttChartDataVersion([FromUri] Guid projectId, [FromUri] bool isCostStructure, [FromUri] int version)
+        {
+            var gantt = new GanttDto
+            {
+                data = new TaskController().GetVersion(projectId, isCostStructure, version),
+                links = new LinkController().Get(projectId)
+            };
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            return Json(gantt, settings);
+        }
     }
 }

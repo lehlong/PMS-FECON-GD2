@@ -49,7 +49,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult VendorVolumeReport(VendorVolumeReportModel model)
         {
             var reportData = _service.GenerateVendorVolumeReport(model);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.BAO_CAO_KHOI_LUONG_THAU_PHU.GetValue());
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.BAO_CAO_KHOI_LUONG_THAU_PHU.GetValue());
             ViewBag.SearchModel = model;
             return PartialView(reportData);
         }
@@ -154,7 +154,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult ProjectDetailDataCostReport(ProjectDetailDataCostModel model)
         {
             var reportData = _service.GenerateProjectDetailDataReport(model, isCustomer: false);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.XUAT_DU_LIEU_CHI_TIET_CHI_PHI_DU_AN.GetValue());
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.XUAT_DU_LIEU_CHI_TIET_CHI_PHI_DU_AN.GetValue());
             ViewBag.SearchModel = model;
             return PartialView(reportData);
         }
@@ -255,7 +255,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult CustomerContractReport(CustomerContractReportModel model)
         {
             var reportData = _service.GenerateCustomerContractReport(model);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.BAO_CAO_THUC_HIEN_HOP_DONG_KHACH_HANG.GetValue());
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.BAO_CAO_THUC_HIEN_HOP_DONG_KHACH_HANG.GetValue());
             ViewBag.SearchModel = model;
             return PartialView(reportData);
         }
@@ -384,7 +384,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult VendorMonitoringReport(VendorMonitoringReportModel model)
         {
             var reportData = _service.GenerateVendorMonitoringReport(model);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.BAO_CAO_THEO_DOI_THAU_PHU.GetValue());
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.BAO_CAO_THEO_DOI_THAU_PHU.GetValue());
             ViewBag.SearchModel = model;
             return PartialView(reportData);
         }
@@ -511,7 +511,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult ProjectDetailDataBoqReport(ProjectDetailDataCostModel model)
         {
             var reportData = _service.GenerateProjectDetailDataReport(model, isCustomer: true);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.XUAT_DU_LIEU_CHI_TIET_DU_AN_BOQ.GetValue());
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.XUAT_DU_LIEU_CHI_TIET_DU_AN_BOQ.GetValue());
             ViewBag.SearchModel = model;
             return PartialView(reportData);
         }
@@ -611,7 +611,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult SummaryProjectReport(SummaryProjectReportModel model)
         {
             var reportData = _service.GenerateSummaryProjectReport(model);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.BAO_CAO_TONG_HOP_DU_AN.GetValue());
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.BAO_CAO_TONG_HOP_DU_AN.GetValue());
             ViewBag.SearchModel = model;
             return PartialView(reportData);
         }
@@ -741,7 +741,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult ProjectCostControlReport(ProjectCostControlReportModel model)
         {
             var reportData = _service.GenerateProjectCostControlReport(model);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.BAO_CAO_KIEM_SOAT_CHI_PHI_DU_AN.GetValue());
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.BAO_CAO_KIEM_SOAT_CHI_PHI_DU_AN.GetValue());
             ViewBag.SearchModel = model;
             return PartialView(reportData.OrderBy(x => x.ProjectCode).ThenBy(x => x.Order));
         }
@@ -868,7 +868,7 @@ namespace SMO.Areas.PS.Controllers
         public ActionResult ProjectResourceReport(ProjectResourceModel model)
         {
             var data = _service.GenerateProjectResourceData(model);
-            ViewBag.Config = _service.GetConfigColumn(model.ProjectId, ConfigHideColumn.BAO_CAO_DANH_SACH_NHAN_SU_DU_AN.GetValue());  
+            ViewBag.Config = _service.GetConfigColumn(Guid.Empty, ConfigHideColumn.BAO_CAO_DANH_SACH_NHAN_SU_DU_AN.GetValue());  
             ViewBag.SearchModel = model;
             return PartialView(data);
         }

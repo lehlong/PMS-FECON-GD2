@@ -22,6 +22,12 @@ namespace SMO
             public string Text { get; set; }
         }
 
+        public class DataVersion
+        {
+            public int Value { get; set; }
+            public string Text { get; set; }
+        }
+
         /// <summary>
         /// Lấy ra danh sách Domain để chọn dropdownlist 
         /// </summary>
@@ -41,6 +47,26 @@ namespace SMO
                 lstData.Add(new Data { Value = obj.CODE, Text = obj.CODE + " - " + obj.NAME });
             }
             return new SelectList(lstData, "Value", "Text", new Data { Value = selected });
+        }
+
+        public static SelectList GetVersionStructCost(Guid projectId)
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<DataVersion>();
+            var lstVersion = UnitOfWork.Repository<ProjectStructVersionRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).ToList();            
+            if (lstVersion.Count() != 0)
+            {
+                lstData.Add(new DataVersion { Value = 0, Text = $"Version {lstVersion.Max(x => x.VERSION) + 1}" });
+                foreach (var ver in lstVersion.OrderByDescending(x => x.VERSION).Select(x => x.VERSION).Distinct().ToList())
+                {
+                    lstData.Add(new DataVersion { Value = ver, Text = $"Version {ver}" });
+                }
+            }
+            else
+            {
+                lstData.Add(new DataVersion { Value = 0, Text = $"Version 1" });
+            }
+            return new SelectList(lstData, "Value", "Text", new DataVersion {});
         }
         public static SelectList GetTypeResource ()
         {

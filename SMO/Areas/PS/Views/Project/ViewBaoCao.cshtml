@@ -57,7 +57,7 @@
         function onClickDashboardBeta() {
             $('#@Model.ViewId #div-dashboard').empty();
             setTimeout(() => {
-                Forms.LoadAjax({ url: '@Url.Action("ViewDashboardCode",
+                Forms.LoadAjax({ url: '@Url.Action("ViewDashboard",
                                    new { projectId = Model.ObjDetail.ID })', htmlTarget: '#@Model.ViewId #div-dashboard' });
             }, 150)
         }

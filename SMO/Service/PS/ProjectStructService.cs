@@ -1345,5 +1345,188 @@ namespace SMO.Service.PS
                 this.Exception = ex;
             }
         }
+        internal void UpdateDate(Guid projectId, DateTime? fromDate, DateTime? toDate, IList<Guid> structuresId)
+        {
+            try
+            {
+                UnitOfWork.Clear();
+                UnitOfWork.BeginTransaction();
+                var project = SMOUtilities.GetProject(projectId);
+                if (fromDate == null && toDate == null)
+                {
+                    ErrorMessage = $"Vui lòng nhập một trong 2 trường thông tin Từ ngày hoặc Đến ngày!";
+                    State = false;
+                    return;
+                }
+                if (fromDate != null && fromDate < project.START_DATE)
+                {
+                    ErrorMessage = $"Từ ngày không được nhỏ hơn ngày bắt đầu dự án!";
+                    State = false;
+                    return;
+                }
+                if (toDate != null && toDate > project.FINISH_DATE)
+                {
+                    ErrorMessage = $"Đến ngày không được lớn hơn ngày kết thúc dự án!";
+                    State = false;
+                    return;
+                }
+
+                var checkError = "";
+                foreach (var item in structuresId)
+                {
+                    var structItem = UnitOfWork.Repository<ProjectStructRepo>().Get(item);
+                    if (fromDate != null)
+                    {
+                        var checkPlanCost = UnitOfWork.Repository<PlanCostRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && x.PROJECT_STRUCT_ID == item && x.TimePeriod.FINISH_DATE < toDate).ToList();
+                        var sumValue = checkPlanCost.Count() == 0 ? 0 : checkPlanCost.Sum(x => x.VALUE);
+                        if (sumValue > 0)
+                        {
+                            checkError += structItem.GEN_CODE + " ";
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(checkError))
+                {
+                    ErrorMessage = $"Không thể giảm ngày kết thúc của các hạng mục vì đã phát sinh số kế hoạch: " + checkError;
+                    State = false;
+                    return;
+                }
+
+                foreach (var item in structuresId)
+                {
+                    var structItem = UnitOfWork.Repository<ProjectStructRepo>().Get(item);
+
+                    switch (structItem.TYPE)
+                    {
+                        case "BOQ":
+                            if (fromDate != null)
+                            {
+                                structItem.START_DATE = (DateTime)fromDate;
+                                structItem.Boq.START_DATE = (DateTime)fromDate;
+                                structItem.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.UPDATE_DATE = DateTime.Now;
+                                structItem.Boq.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.Boq.UPDATE_DATE = DateTime.Now;
+                            }
+                            if (toDate != null)
+                            {
+                                structItem.FINISH_DATE = (DateTime)toDate;
+                                structItem.Boq.FINISH_DATE = (DateTime)toDate;
+                                structItem.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.UPDATE_DATE = DateTime.Now;
+                                structItem.Boq.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.Boq.UPDATE_DATE = DateTime.Now;
+                            }
+                            UnitOfWork.Repository<ProjectStructRepo>().Update(structItem);
+                            UnitOfWork.Repository<BoqRepo>().Update(structItem.Boq);
+                            break;
+                        case "WBS":
+                            if (fromDate != null)
+                            {
+                                structItem.START_DATE = (DateTime)fromDate;
+                                structItem.Wbs.START_DATE = (DateTime)fromDate;
+                                structItem.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.UPDATE_DATE = DateTime.Now;
+                                structItem.Wbs.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.Wbs.UPDATE_DATE = DateTime.Now;
+                            }
+                            if (toDate != null)
+                            {
+                                structItem.FINISH_DATE = (DateTime)toDate;
+                                structItem.Wbs.FINISH_DATE = (DateTime)toDate;
+                                structItem.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.UPDATE_DATE = DateTime.Now;
+                                structItem.Wbs.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.Wbs.UPDATE_DATE = DateTime.Now;
+                            }
+                            UnitOfWork.Repository<ProjectStructRepo>().Update(structItem);
+                            UnitOfWork.Repository<WbsRepo>().Update(structItem.Wbs);
+                            break;
+                        case "ACTIVITY":
+                            if (fromDate != null)
+                            {
+                                structItem.START_DATE = (DateTime)fromDate;
+                                structItem.Activity.START_DATE = (DateTime)fromDate;
+                                structItem.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.UPDATE_DATE = DateTime.Now;
+                                structItem.Activity.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.Activity.UPDATE_DATE = DateTime.Now;
+                            }
+                            if (toDate != null)
+                            {
+                                structItem.FINISH_DATE = (DateTime)toDate;
+                                structItem.Activity.FINISH_DATE = (DateTime)toDate;
+                                structItem.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.UPDATE_DATE = DateTime.Now;
+                                structItem.Activity.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                                structItem.Activity.UPDATE_DATE = DateTime.Now;
+                            }
+                            UnitOfWork.Repository<ProjectStructRepo>().Update(structItem);
+                            UnitOfWork.Repository<ActivityRepo>().Update(structItem.Activity);
+                            break;
+                    }
+
+                }
+
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+        internal void SaveVersionStructCost(Guid projectId)
+        {
+            try
+            {
+                var allCostStruct = UnitOfWork.Repository<ProjectStructRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && x.TYPE != ProjectEnum.BOQ.ToString());
+                var checkVersion = UnitOfWork.Repository<ProjectStructVersionRepo>().Queryable().Where(x => x.PROJECT_ID == projectId);
+                var version = 1;
+                if (checkVersion.Count() != 0)
+                {
+                    version = checkVersion.Max(x => x.VERSION) + 1;
+                }
+                UnitOfWork.BeginTransaction();
+                foreach (var item in allCostStruct)
+                {
+                    UnitOfWork.Repository<ProjectStructVersionRepo>().Create(new T_PS_PROJECT_STRUCT_VERSION
+                    {
+                        PKID = Guid.NewGuid(),
+                        ID= item.ID,
+                        PROJECT_ID = item.PROJECT_ID,
+                        PARENT_ID = item.PARENT_ID,
+                        BOQ_ID = item.BOQ_ID,
+                        WBS_ID = item.WBS_ID,
+                        ACTIVITY_ID = item.ACTIVITY_ID,
+                        TASK_ID = item.TASK_ID,
+                        UNIT_CODE  = item.UNIT_CODE,
+                        GEN_CODE = item.GEN_CODE,
+                        TEXT = item.TEXT,
+                        STATUS = item.STATUS,
+                        C_ORDER = item.C_ORDER,
+                        TYPE = item.TYPE,
+                        QUANTITY = item.QUANTITY,
+                        PRICE = item.PRICE,
+                        TOTAL = item.TOTAL,
+                        PLAN_VOLUME = item.PLAN_VOLUME,
+                        START_DATE = item.START_DATE,
+                        FINISH_DATE = item.FINISH_DATE,
+                        IS_CREATE_ON_SAP = item.IS_CREATE_ON_SAP,
+                        VERSION = version
+                    });
+                }
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+    
     }
 }

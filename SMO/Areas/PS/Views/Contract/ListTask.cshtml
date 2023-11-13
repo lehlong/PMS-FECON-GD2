@@ -171,11 +171,11 @@
         leftSplit: 2,
         resizable: true,
         selection: "cell",
+        dragItem: "column",
         keyNavigation: true,
         data: gridData
     });
 
-        console.log(gridData)
         if ("@Model.ObjDetail.IS_SIGN_WITH_CUSTOMER" == "True") {
             grid.hideColumn("startDate")
             grid.hideColumn("finishDate")
