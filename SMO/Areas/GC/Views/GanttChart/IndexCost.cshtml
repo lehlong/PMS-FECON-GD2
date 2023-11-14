@@ -34,6 +34,7 @@
         from {
             opacity: 0;
         }
+
         to {
             opacity: 1
         }
@@ -96,9 +97,10 @@
             background-color: #3e8e41;
         }
 
-        .dropdown .dropdown-toggle{
+        .dropdown .dropdown-toggle {
             background: none !important;
         }
+
         .gantt-menu-item .bootstrap-select {
             width: 100px !important;
         }
@@ -264,7 +266,7 @@
         Html.RenderPartial("~/Areas/GC/Views/Shared/CustomForm.cshtml");
     }
 
-<script>
+    <script>
     var structType = "COST";
     function refreshData(taskId) {
         gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=true", function () { //specifying the callback function
@@ -431,11 +433,7 @@
     gantt.projectId = "@projectId";
     gantt.projectCode = "@project.CODE";
     gantt.user = '@(ProfileUtilities.User?.USER_NAME)';
-
     gantt.structType = structType
-
-
-    console.log(gantt.config.columns);
 
     const router = function (entity, action, data, id) {
         debugger;
@@ -815,6 +813,6 @@
         }
     }
 
-</script>
+    </script>
     <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
 </div>

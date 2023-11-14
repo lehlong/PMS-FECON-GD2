@@ -1342,6 +1342,7 @@
     <Content Include="Areas\PS\Views\Report\ProjectResourceReport.cshtml" />
     <Content Include="Areas\PS\Views\Project\ViewDashboardByTime.cshtml" />
     <Content Include="Areas\PS\Views\Project\ViewDashboardComment.cshtml" />
+    <Content Include="Areas\GC\Views\GanttChart\IndexCost.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

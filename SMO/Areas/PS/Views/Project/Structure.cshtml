@@ -25,6 +25,7 @@
             <ul class="nav nav-tabs tab-nav-right" role="tablist">
                 <li role="presentation" id="li-tree-boq"><a href="#structure-tree-boq" data-toggle="tab" onclick="onClickTreeBoq();">CÂY CẤU TRÚC BOQ</a></li>
                 <li role="presentation" id="li-tree-cost"><a href="#structure-tree" onclick="onClickTree();" data-toggle="tab">CÂY CẤU TRÚC CHI PHÍ</a></li>
+                <li role="presentation" id="li-tree-cost-2"><a href="#structure-tree-2" onclick="onClickTree2();" data-toggle="tab">CÂY CẤU TRÚC CHI PHÍ 2</a></li>
                 <li id="li-structure-status" style="float: right"><strong>TRẠNG THÁI: @statusProject</strong> </li>
             </ul>
             <div class="tab-content p-t-10">
@@ -32,9 +33,11 @@
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="structure-tree">
                 </div>
+                <div role="tabpanel" class="tab-pane fade" id="structure-tree-2">
+
+                </div>
             </div>
-        </div>
-        <script type="text/javascript">
+            <script type="text/javascript">
             $(function () {
                 Forms.CompleteUI();
                 var moduleName = "@ViewBag.ModulName";
@@ -66,13 +69,22 @@
                 }, 50)
 
             }
+           function onClickTree2() {
+                emptyTab();
+                setTimeout(() => {
+                    Forms.LoadAjax({
+                        url: '@Url.Action("IndexCost", "../GC/GanttChart",new { projectId = Model.ObjDetail.ID })',
+                        htmlTarget: '#@Model.ViewId #structure-tree-2',
+                    });
+                }, 50)
 
+            }
             function emptyTab() {
                 $('#@Model.ViewId #structure-tree').html("");
                 $('#@Model.ViewId #structure-tree-boq').html("");
-
+                 $('#@Model.ViewId #structure-tree-2').html("");
             }
-        </script>
+            </script>
     </div>
 </div>
 

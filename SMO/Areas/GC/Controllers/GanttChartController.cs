@@ -26,6 +26,13 @@ namespace SMO.Areas.GC.Controllers
             return PartialView();
         }
 
+        public ActionResult IndexCost(Guid projectId)
+        {
+            ViewBag.ProjectId = projectId;
+            ViewBag.CurrentUser = ProfileUtilities.User.USER_NAME;
+            return PartialView();
+        }
+
         public ActionResult IndexView(Guid projectId)
         {
             ViewBag.ProjectId = projectId;
