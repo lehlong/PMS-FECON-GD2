@@ -155,12 +155,6 @@
                     </a>
                     @if (editable)
                     {
-                        <a style="float:left;" title="Thay đổi ngày bắt đầu, kết thúc hạng mục" onclick="changeDate();">
-                            <span class="material-icons">event</span>Đổi ngày
-                        </a>
-                        <a style="float:left" data-action="changeStatus" title="Thay đổi trạng thái">
-                            <span class="material-icons">check_circle</span>Đổi trạng thái
-                        </a>
                         <a style="float:left" title="Upload cây cấu trúc từ file excel" data-action="importFile" data-project-id="@projectId" data-structure-type="@((int)ProjectStructureType.COST)" data-disabled="@(project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue())">
                             <span class="material-icons">publish</span>Upload dữ liệu
                         </a>
@@ -436,7 +430,6 @@
     gantt.structType = structType
 
     const router = function (entity, action, data, id) {
-        debugger;
         // entity: task / link
         // action: create, update, delete,
         // id: task id
@@ -815,7 +808,6 @@
     </script>
     <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
     <script>
-        console.log(gantt.config.columns)
         gantt.config.columns = gantt.config.columns.filter(x => x.name != "selected" && x.name != "button" && x.name != "start_date" && x.name != "end_date" && x.name != "unitCode" && x.name != "status")
     </script>
 </div>
