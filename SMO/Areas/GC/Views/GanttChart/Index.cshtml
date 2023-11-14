@@ -434,9 +434,6 @@
 
     gantt.structType = structType
 
-
-    console.log(gantt.config.columns);
-
     const router = function (entity, action, data, id) {
         debugger;
         // entity: task / link
@@ -814,7 +811,9 @@
             console.log(ex)
         }
     }
-
 </script>
     <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
+    <script>
+        gantt.config.columns = gantt.config.columns.filter(x => x.name != "quantity" && x.name != "price" && x.name != "total")
+    </script>
 </div>

@@ -812,7 +812,10 @@
             console.log(ex)
         }
     }
-
     </script>
     <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
+    <script>
+        console.log(gantt.config.columns)
+        gantt.config.columns = gantt.config.columns.filter(x => x.name != "selected" && x.name != "button" && x.name != "start_date" && x.name != "end_date" && x.name != "unitCode" && x.name != "status")
+    </script>
 </div>
