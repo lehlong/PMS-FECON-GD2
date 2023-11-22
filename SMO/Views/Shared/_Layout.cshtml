@@ -1,7 +1,7 @@
 ﻿@using Newtonsoft.Json
 @using SMO.Core.Entities
 @using SMO.Service.CM
-@{ 
+@{
     var isChangePass = "0";
     if (ProfileUtilities.User.LAST_CHANGE_PASS_DATE.HasValue)
     {
@@ -139,6 +139,7 @@
                 opacity: 1;
             }
         }
+        
     </style>
 </head>
 <body class="theme-indigo ls-closed">
@@ -341,7 +342,7 @@
         });
         $.fn.modal.prototype.constructor.Constructor.DEFAULTS.backdrop = 'static';
         $.fn.modal.prototype.constructor.Constructor.DEFAULTS.keyboard = false;
-        
+
     </script>
 </body>
 </html>

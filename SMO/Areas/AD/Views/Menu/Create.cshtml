@@ -28,47 +28,84 @@
 
                     <div class="row m-t-20">
                         <div class="col-xs-12">
-                            <label>Mã menu</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Mã menu</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <label>Mô tả</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.DESCRIPTION)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Mô tả</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.DESCRIPTION)
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.DESCRIPTION)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.DESCRIPTION)
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <label>Đường dẫn</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.LINK)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Đường dẫn</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.LINK)
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.LINK)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.LINK)
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <label>Icon</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.ICON)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.ICON)
-                            </div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Icon</label>
 
-                            <label>FK_RIGHT</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.FK_RIGHT)
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.FK_RIGHT)
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.ICON)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.ICON)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>FK_RIGHT</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.FK_RIGHT)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.FK_RIGHT)
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>

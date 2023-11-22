@@ -3,7 +3,7 @@
     Model.ViewId = Guid.NewGuid().ToString();
     Model.FormId = Guid.NewGuid().ToString();
 }
-<div id='@Model.ViewId'  class="container-fluid child-content">
+<div id='@Model.ViewId' class="container-fluid child-content">
     @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
     {
         @Html.AntiForgeryToken()
@@ -24,26 +24,48 @@
                     <div class="row m-t-20">
                         <div class="col-xs-1"></div>
                         <div class="col-lg-7 col-xs-10">
-                            <label>Mã</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Chọn ngôn ngữ</label>
-                            <div class="form-group">
-                                @Html.MyDropDownListFor(m => m.ObjDetail.LANGUAGE, SelectListUtilities.GetDictionary(Domain.LANG.ToString(), true, false), new { @class = "selectpicker show-tick" })
-                                @Html.ValidationMessageFor(m => m.ObjDetail.LANGUAGE)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Chọn ngôn ngữ</label>
+
+                                </div>
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.LANGUAGE, SelectListUtilities.GetDictionary(Domain.LANG.ToString(), true, false), new { @class = "selectpicker show-tick" })
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.LANGUAGE)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Nội dung</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.MESSAGE)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Nội dung</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.MESSAGE)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.MESSAGE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.MESSAGE)
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

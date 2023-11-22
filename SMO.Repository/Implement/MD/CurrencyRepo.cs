@@ -20,7 +20,7 @@ namespace SMO.Repository.Implement.MD
 
             if (!string.IsNullOrWhiteSpace(objFilter.NAME))
             {
-                query = query.Where(x => x.NAME.ToLower().Contains(objFilter.NAME.ToLower()) || x.CODE.ToLower().Contains(objFilter.NAME.ToLower()));
+                query = query.Where(x => x.NAME.Contains(objFilter.NAME) || x.CODE.Contains(objFilter.NAME));
             }
             return base.Paging(query, pageSize, pageIndex, out total).ToList();
         }

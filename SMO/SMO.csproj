@@ -448,6 +448,7 @@
     <Compile Include="Areas\MD\Controllers\ConditionController.cs" />
     <Compile Include="Areas\MD\Controllers\ContractController.cs" />
     <Compile Include="Areas\MD\Controllers\ContractTypeController.cs" />
+    <Compile Include="Areas\MD\Controllers\CurrencyController.cs" />
     <Compile Include="Areas\MD\Controllers\CustomerController.cs" />
     <Compile Include="Areas\MD\Controllers\DCController.cs" />
     <Compile Include="Areas\MD\Controllers\DictionaryController.cs" />
@@ -568,6 +569,7 @@
     <Compile Include="Service\MD\ConditionService.cs" />
     <Compile Include="Service\MD\ContractService.cs" />
     <Compile Include="Service\MD\ContractTypeService.cs" />
+    <Compile Include="Service\MD\CurrencyService.cs" />
     <Compile Include="Service\MD\CustomerService.cs" />
     <Compile Include="Service\MD\DCService.cs" />
     <Compile Include="Service\MD\DictionaryService.cs" />
@@ -1343,6 +1345,10 @@
     <Content Include="Areas\PS\Views\Project\ViewDashboardByTime.cshtml" />
     <Content Include="Areas\PS\Views\Project\ViewDashboardComment.cshtml" />
     <Content Include="Areas\GC\Views\GanttChart\IndexCost.cshtml" />
+    <Content Include="Areas\MD\Views\Currency\Index.cshtml" />
+    <Content Include="Areas\MD\Views\Currency\List.cshtml" />
+    <Content Include="Areas\MD\Views\Currency\Create.cshtml" />
+    <Content Include="Areas\MD\Views\Currency\Edit.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

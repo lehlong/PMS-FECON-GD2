@@ -34,134 +34,204 @@
                     </div>
 
                     <div class="row" style="padding: 20px;">
-                        <div class="col-lg-6 col-xs-12">
-                            <label>Tên đăng nhập</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.USER_NAME)
-                            </div>
+                        <div class="col-xs-12">
 
-                            <label>Tài khoản AD Fecon</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.ACCOUNT_AD)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Tên đăng nhập</label>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.ACCOUNT_AD)
-                            </div>
-
-                            <label>Họ và tên</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.FULL_NAME)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.FULL_NAME)
-                            </div>
-
-                            <label>Email</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.EMAIL)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.EMAIL)
-                            </div>
-
-                            <label>Số điện thoại</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.PHONE)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.PHONE)
-                            </div>
-
-                            @*<label>Địa chỉ</label>
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.ADDRESS)
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.USER_NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.USER_NAME)
                                     </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.ADDRESS)
-                                </div>*@
-
-
-                            <label>Ghi chú</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.NOTES)
-                            </div>
-                        </div>
-
-                        <div class="col-lg-6 col-xs-12">
-                            <label>Kiểu người dùng</label>
-                            <div class="form-group">
-                                @Html.MyDropDownListFor(m => m.ObjDetail.USER_TYPE, SelectListUtilities.GetUserType(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
-                                @Html.ValidationMessageFor(m => m.ObjDetail.USER_TYPE)
                             </div>
 
-                            <label>Chức vụ</label>
-                            <div class="form-group">
-                                @Html.MyDropDownListFor(m => m.ObjDetail.TITLE_CODE, SelectListUtilities.GetTitles(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
-                                @Html.ValidationMessageFor(m => m.ObjDetail.TITLE_CODE)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Tài khoản AD Fecon</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.ACCOUNT_AD)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.ACCOUNT_AD)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Nhà thầu</label>
-                            <div class="form-group">
-                                <select name="@Html.NameFor(m => m.ObjDetail.VENDOR_CODE)"
-                                        data-live-search="true" data-show-subtext="true"
-                                        class="selectpicker show-tick dropdown form-control">
-                                    <option value="">-</option>
-                                    @foreach (var vendor in lstVendor)
-                                    {
-                                        <option value="@vendor.CODE">
-                                            @vendor.NAME - @vendor.SHORT_NAME
-                                        </option>
-                                    }
-                                </select>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Họ và tên</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.FULL_NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.FULL_NAME)
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <div class="form-line">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Email</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.EMAIL)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.EMAIL)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Số điện thoại</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.PHONE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.PHONE)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Ghi chú</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NOTES)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Kiểu người dùng</label>
+
+                                </div>
+                                <div class=" col-md-10">
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.USER_TYPE, SelectListUtilities.GetUserType(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.USER_TYPE)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Chức vụ</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.TITLE_CODE, SelectListUtilities.GetTitles(), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.TITLE_CODE)
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Nhà thầu</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <select name="@Html.NameFor(m => m.ObjDetail.VENDOR_CODE)"
+                                                data-live-search="true" data-show-subtext="true"
+                                                class="selectpicker show-tick dropdown form-control">
+                                            <option value="">-</option>
+                                            @foreach (var vendor in lstVendor)
+                                            {
+                                                <option value="@vendor.CODE">
+                                                    @vendor.NAME - @vendor.SHORT_NAME
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-2">
                                     <label>Công ty</label>
-                                    <select name="@Html.NameFor(m => m.COMPANY_ID)" id="dllCompany" data-val="true" data-val-required="Công ty bắt buộc nhập"
-                                            data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany();"
-                                            class="selectpicker show-tick dropdown form-control">
-                                        <option value="">-</option>
-                                        @foreach (var company in lstOrganize.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
-                                        {
-                                            var selected = "";
-                                            if (company.PKID == Model.COMPANY_ID)
-                                            {
-                                                selected = "selected";
-                                            }
-                                            <option value="@company.PKID" data-company="@company.COMPANY_CODE" @selected>
-                                                @company.NAME
-                                            </option>
-                                        }
-                                    </select>
+
                                 </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select name="@Html.NameFor(m => m.COMPANY_ID)" id="dllCompany" data-val="true" data-val-required="Công ty bắt buộc nhập"
+                                                    data-live-search="true" data-show-subtext="true" onchange="OnChangeCompany();"
+                                                    class="selectpicker show-tick dropdown form-control">
+                                                <option value="">-</option>
+                                                @foreach (var company in lstOrganize.Where(x => x.TYPE == "CP").OrderBy(x => x.C_ORDER))
+                                                {
+                                                    var selected = "";
+                                                    if (company.PKID == Model.COMPANY_ID)
+                                                    {
+                                                        selected = "selected";
+                                                    }
+                                                    <option value="@company.PKID" data-company="@company.COMPANY_CODE" @selected>
+                                                        @company.NAME
+                                                    </option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <div class="form-group">
-                                <div class="form-line">
+
+                            <div class="row">
+                                <div class="col-md-2">
                                     <label>Phòng ban</label>
-                                    <select name="@Html.NameFor(m => m.ObjDetail.COMPANY_ID)" id="dllPhongBan" data-live-search="true" data-show-subtext="true" 
-                                            data-hide-disabled="true"
-                                            class="selectpicker show-tick dropdown form-control">
-                                        <option value="">-</option>
-                                        @foreach (var phongBan in lstOrganize.Where(x => x.TYPE == "BP").OrderBy(x => x.C_ORDER))
-                                        {
-                                            var selected = "";
-                                            if (phongBan.PKID == Model.ObjDetail.COMPANY_ID)
-                                            {
-                                                selected = "selected";
-                                            }
-                                            <option value="@phongBan.PKID" data-company="@phongBan.COMPANY_CODE" @selected>
-                                                @phongBan.NAME
-                                            </option>
-                                        }
-                                    </select>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select name="@Html.NameFor(m => m.ObjDetail.COMPANY_ID)" id="dllPhongBan" data-live-search="true" data-show-subtext="true"
+                                                    data-hide-disabled="true"
+                                                    class="selectpicker show-tick dropdown form-control">
+                                                <option value="">-</option>
+                                                @foreach (var phongBan in lstOrganize.Where(x => x.TYPE == "BP").OrderBy(x => x.C_ORDER))
+                                                {
+                                                    var selected = "";
+                                                    if (phongBan.PKID == Model.ObjDetail.COMPANY_ID)
+                                                    {
+                                                        selected = "selected";
+                                                    }
+                                                    <option value="@phongBan.PKID" data-company="@phongBan.COMPANY_CODE" @selected>
+                                                        @phongBan.NAME
+                                                    </option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

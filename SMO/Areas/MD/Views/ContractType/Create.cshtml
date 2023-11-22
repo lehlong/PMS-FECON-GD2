@@ -3,6 +3,17 @@
     Model.ViewId = Guid.NewGuid().ToString();
     Model.FormId = Guid.NewGuid().ToString();
 }
+
+<style>
+    label {
+        margin-bottom: 14px;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+    }
+</style>
 <div id='@Model.ViewId' class="container-fluid child-content">
     @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
     {
@@ -15,7 +26,6 @@
                         <a style="padding-left:0px"><i class="material-icons">clear_all</i> TẠO MỚI LOẠI HỢP ĐỒNG</a>
                     </li>
                 </ul>
-
                 <div class="tab-content">
                     <div class="page-function p-t-10">
                         <div class="page-function-button m-r-20">
@@ -23,49 +33,61 @@
                             @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
                         </div>
                     </div>
-
                     <div class="row m-t-20">
                         <div class="col-xs-1"></div>
                         <div class="col-lg-7 col-xs-10">
-                            <label>Mã</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
-                            </div>
 
-                            <label>Tên</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Tên</label>
+
+                                </div>
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-group">
-                            <input id="cbx-customer" name="cbx-customer" 
-                                   onchange="onCheckContractType(this)" 
-                                   type="checkbox" 
-                                   class="filled-in chk-col-light-blue" />
-                            <label for="cbx-customer"></label>
-                            <span class="p-l-10" style="font-weight: bold">Hợp đồng kinh doanh</span>
-                                </div>
+                                <input id="cbx-customer" name="cbx-customer"
+                                       onchange="onCheckContractType(this)"
+                                       type="checkbox"
+                                       class="filled-in chk-col-light-blue" />
+                                <label for="cbx-customer"></label>
+                                <span class="p-l-10" style="font-weight: bold">Hợp đồng kinh doanh</span>
+                            </div>
                             <div class="form-group">
-                            <input id="cbx-vendor" name="cbx-vendor" 
-                                   onchange="onCheckContractType(this)" 
-                                   type="checkbox" 
-                                   class="filled-in chk-col-light-blue" />
-                            <label for="cbx-vendor"></label>
-                            <span class="p-l-10" style="font-weight: bold">Hợp đồng thầu phụ</span>
-                                </div>
-
+                                <input id="cbx-vendor" name="cbx-vendor"
+                                       onchange="onCheckContractType(this)"
+                                       type="checkbox"
+                                       class="filled-in chk-col-light-blue" />
+                                <label for="cbx-vendor"></label>
+                                <span class="p-l-10" style="font-weight: bold">Hợp đồng thầu phụ</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div> 
+        </div>
     }
-<script type="text/javascript">
+    <script type="text/javascript">
     $(function () {
         Forms.CompleteUI();
     });
@@ -76,5 +98,5 @@
         const otherType = isCustomer ? 'vendor' : 'customer'
         $(`#@Model.ViewId #cbx-${otherType}`)[0].checked = false
     }
-</script>
+    </script>
 </div>

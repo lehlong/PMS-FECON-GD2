@@ -3,6 +3,18 @@
     Model.ViewId = Guid.NewGuid().ToString();
     Model.FormId = Guid.NewGuid().ToString();
 }
+
+<style>
+    label {
+        margin-bottom: 14px;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+    }
+</style>
+
 <div id='@Model.ViewId' class="container-fluid child-content">
     @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
     {
@@ -26,66 +38,116 @@
                     <div class="row m-t-20">
                         <div class="col-xs-1"></div>
                         <div class="col-lg-7 col-xs-10">
-                            <label>Mã</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Tên</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Tên</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Tên ngắn gọn</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.SHORT_NAME)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Tên ngắn gọn</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.SHORT_NAME)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.SHORT_NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.SHORT_NAME)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Mã số thuế</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.MST)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Mã số thuế</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.MST)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.MST)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.MST)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Email</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.EMAIL)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Email</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.EMAIL)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.EMAIL)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.EMAIL)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Số điện thoại</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.PHONE)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Số điện thoại</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.PHONE)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.PHONE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.PHONE)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Địa chỉ</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.ADDRESS)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Địa chỉ</label>
+
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.ADDRESS)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.ADDRESS)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.ADDRESS)
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div> 
+        </div>
     }
     <script type="text/javascript">
         $(function () {

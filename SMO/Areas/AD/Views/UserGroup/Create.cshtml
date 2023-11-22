@@ -26,25 +26,46 @@
                     <div class="row m-t-20">
                         <div class="col-lg-1"></div>
                         <div class="col-lg-7 col-xs-10">
-                            <label>Mã nhóm</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Mã nhóm</label>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
                             </div>
 
-                            <label>Tên nhóm</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Tên nhóm</label>
+
+                                </div>
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>Ghi chú</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Ghi chú</label>
+
+                                </div>
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NOTES)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

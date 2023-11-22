@@ -21,7 +21,9 @@
         </div>
 
         <div class="row m-t-20">
-            <div class="col-sm-4 col-xs-12 p-b-10">
+
+
+            <div class="col-sm-6 col-xs-12 p-b-10">
                 <div class="card">
                     <div class="body" style="padding-top: 0px;">
                         <ul class="nav nav-tabs" role="tablist">
@@ -31,38 +33,74 @@
                         </ul>
 
                         <div class="tab-content">
-                            <label>Host</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_HOST)
+                            <div class="row" style="margin-top: 15px">
+                                <div class="col-md-2">
+                                    <label>Host</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.SAP_HOST)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>Client</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_CLIENT)
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Client</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.SAP_CLIENT)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>System number</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_NUMBER)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>System number</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.SAP_NUMBER)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>User SAP</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_USER_NAME)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>User SAP</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.SAP_USER_NAME)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>Password SAP</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.SAP_PASSWORD, new { @type = "password" })
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Password SAP</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.SAP_PASSWORD, new { @type = "password" })
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -70,7 +108,14 @@
                 </div>
             </div>
 
-            <div class="col-sm-4 col-xs-12 p-b-10">
+
+
+
+
+
+
+
+            <div class="col-sm-6 col-xs-12 p-b-10">
                 <div class="card border-grey">
                     <div class="body" style="padding-top: 0px;">
                         <ul class="nav nav-tabs" role="tablist">
@@ -80,33 +125,70 @@
                         </ul>
 
                         <div class="tab-content">
-                            <label>SMTP Host</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_HOST)
+
+                            <div class="row" style="margin-top: 15px">
+                                <div class="col-md-2">
+                                    <label>SMTP Host</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_HOST)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>Port</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PORT)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Port</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PORT)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>User name</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_USER)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>User name</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_USER)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <label>Password</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PASSWORD, new { @type = "password" })
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Password</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.MAIL_PASSWORD, new { @type = "password" })
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
+
+
+
+
+
+
+
 
                             <div class="form-group m-t-20">
                                 @if (Model.ObjDetail.MAIL_IS_SSL)

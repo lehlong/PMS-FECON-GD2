@@ -1,4 +1,5 @@
-﻿using SMO.Core.Entities.MD;
+﻿using NHibernate.Type;
+using SMO.Core.Entities.MD;
 
 namespace SMO.Repository.Mapping.MD
 {
@@ -8,6 +9,8 @@ namespace SMO.Repository.Mapping.MD
         {
             Id(x => x.CODE);
             Map(x => x.NAME);
+            Map(x => x.ACTIVE).Not.Nullable().CustomType<YesNoType>(); ;
+            Map(x => x.VALUE);
         }
     }
 }

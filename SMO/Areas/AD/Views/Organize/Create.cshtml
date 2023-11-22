@@ -28,39 +28,68 @@
 
                     <div class="row m-t-20">
                         <div class="col-xs-12">
-                            <label>Tên đơn vị</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Tên đơn vị</label>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
-                            </div>
-                        </div>
-
-                        <div class="col-xs-12">
-                            <label>Loại đơn vị</label>
-                            <div class="form-group">
-                                @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetDictionary(Domain.ORGANIZE_TYPE.ToString()), new { @data_live_search = "true", @class = "selectpicker show-tick" })
-                                @Html.ValidationMessageFor(m => m.ObjDetail.TYPE)
-                            </div>
-                        </div>
-
-                        <div class="col-xs-12">
-                            <label>Company code</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.COMPANY_CODE)
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-xs-12">
-                            <label>Cost center code</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.COST_CENTER_CODE)
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Loại đơn vị</label>
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.TYPE, SelectListUtilities.GetDictionary(Domain.ORGANIZE_TYPE.ToString()), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.TYPE)
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="col-xs-12">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Company code</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.COMPANY_CODE)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12">
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Cost center code</label>
+
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.COST_CENTER_CODE)
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
                         </div>
                     </div>
                 </div>

@@ -4,6 +4,17 @@
     Model.FormId = Guid.NewGuid().ToString();
 }
 
+<style>
+    label {
+        margin-bottom: 14px;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+    }
+</style>
+
 <div id='@Model.ViewId' class="container-fluid child-content">
     @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
     {
@@ -28,17 +39,28 @@
                     <div class="row m-t-20">
                         <div class="col-xs-1"></div>
                         <div class="col-lg-7 col-xs-10">
-                            <label>Mã</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { @disabled = "" })
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+                                </div>
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { @disabled = "" })
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <label>Tên</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Tên</label>
+                                </div>
+                                <div class="col-md-11">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
