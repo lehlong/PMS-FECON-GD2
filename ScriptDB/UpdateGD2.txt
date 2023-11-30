@@ -43,3 +43,31 @@ CREATE TABLE T_MD_WORKFLOW (
 	UPDATE_BY varchar(20),
 	UPDATE_DATE datetime
 );
+
+
+CREATE TABLE T_MD_WORKFLOW_STEP (
+ID uniqueidentifier,
+    WORKFLOW_CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	PROJECT_ROLE_CODE varchar(20),
+	USER_ACTION varchar(20),
+	NUMBER_DAYS int,
+	ACTION varchar(20),
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+
+CREATE TABLE T_MD_WORKFLOW_FILE (
+    ID uniqueidentifier,
+    WORKFLOW_CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);

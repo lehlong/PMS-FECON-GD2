@@ -150,6 +150,9 @@
     <Compile Include="Entities\MD\T_MD_VENDOR.cs" />
     <Compile Include="Entities\MD\T_MD_VENDOR_OLD.cs" />
     <Compile Include="Entities\MD\T_MD_VENDOR_VEHICLE.cs" />
+    <Compile Include="Entities\MD\T_MD_WORKFLOW.cs" />
+    <Compile Include="Entities\MD\T_MD_WORKFLOW_FILE.cs" />
+    <Compile Include="Entities\MD\T_MD_WORKFLOW_STEP.cs" />
     <Compile Include="Entities\PS\Enum.cs" />
     <Compile Include="Entities\PS\T_PS_COMMENT.cs" />
     <Compile Include="Entities\PS\T_PS_ACTIVITY.cs" />

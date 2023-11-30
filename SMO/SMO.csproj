@@ -482,6 +482,7 @@
     <Compile Include="Areas\MD\Controllers\VehicleController.cs" />
     <Compile Include="Areas\MD\Controllers\VendorController.cs" />
     <Compile Include="Areas\MD\Controllers\VendorVehicleController.cs" />
+    <Compile Include="Areas\MD\Controllers\WorkflowController.cs" />
     <Compile Include="Areas\MD\MDAreaRegistration.cs" />
     <Compile Include="Areas\PS\Controllers\ContractController.cs" />
     <Compile Include="Areas\PS\Controllers\ContractPaymentController.cs" />
@@ -607,6 +608,7 @@
     <Compile Include="Service\MD\VendorOldService.cs" />
     <Compile Include="Service\MD\VendorService.cs" />
     <Compile Include="Service\MD\VendorVehicleService.cs" />
+    <Compile Include="Service\MD\WorkflowService.cs" />
     <Compile Include="Service\PS\ContractPaymentService.cs" />
     <Compile Include="Service\PS\ContractService.cs" />
     <Compile Include="Service\PS\Models\AcceptTimesModel.cs" />
@@ -1367,6 +1369,10 @@
     <Content Include="Areas\MD\Views\ActionWorkflow\List.cshtml" />
     <Content Include="Areas\MD\Views\ActionWorkflow\Create.cshtml" />
     <Content Include="Areas\MD\Views\ActionWorkflow\Edit.cshtml" />
+    <Content Include="Areas\MD\Views\Workflow\Index.cshtml" />
+    <Content Include="Areas\MD\Views\Workflow\List.cshtml" />
+    <Content Include="Areas\MD\Views\Workflow\Create.cshtml" />
+    <Content Include="Areas\MD\Views\Workflow\Edit.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

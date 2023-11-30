@@ -168,6 +168,9 @@
     <Compile Include="Implement\MD\VendorOldRepo.cs" />
     <Compile Include="Implement\MD\VendorRepo.cs" />
     <Compile Include="Implement\MD\VendorVehicleRepo.cs" />
+    <Compile Include="Implement\MD\WorkflowFileRepo.cs" />
+    <Compile Include="Implement\MD\WorkflowRepo.cs" />
+    <Compile Include="Implement\MD\WorkflowStepRepo.cs" />
     <Compile Include="Implement\PS\ActivityRepo.cs" />
     <Compile Include="Implement\PS\BoqRepo.cs" />
     <Compile Include="Implement\PS\CommentRepo.cs" />
@@ -289,6 +292,9 @@
     <Compile Include="Interface\MD\IVendorOldRepo.cs" />
     <Compile Include="Interface\MD\IVendorRepo.cs" />
     <Compile Include="Interface\MD\IVendorVehicleRepo.cs" />
+    <Compile Include="Interface\MD\IWorkflowFileRepo.cs" />
+    <Compile Include="Interface\MD\IWorkflowRepo.cs" />
+    <Compile Include="Interface\MD\IWorkflowStepRepo.cs" />
     <Compile Include="Interface\PS\IActivityRepo.cs" />
     <Compile Include="Interface\PS\IBoqRepo.cs" />
     <Compile Include="Interface\PS\ICommentRepo.cs" />
@@ -417,6 +423,9 @@
     <Compile Include="Mapping\MD\T_MD_VENDOR_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_VENDOR_OLD_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_VENDOR_VEHICLE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_WORKFLOW_FILE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_WORKFLOW_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_WORKFLOW_STEP_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_ACTIVITY_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_BOQ_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_COMMENT_Map.cs" />
