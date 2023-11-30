@@ -413,19 +413,6 @@
 
     gantt.config.readonly = true;
 
-    function enableEdit() {
-        $("#disable-edit").show();
-        $("#enable-edit").hide();
-        gantt.config.readonly = false;
-        timeInterval = setInterval(function () { Alert(); }, 300000);
-    }
-    function disableEdit() {
-        $("#disable-edit").hide();
-        $("#enable-edit").show();
-        gantt.config.readonly = true;
-        clearInterval(timeInterval);
-    }
-
     gantt.init("gantt-chart");
 
     gantt.projectId = "@projectId";
@@ -813,6 +800,19 @@
 </script>
     <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
     <script>
-        gantt.config.columns = gantt.config.columns.filter(x => x.name != "quantity" && x.name != "price" && x.name != "total")
+        function enableEdit() {
+            $("#disable-edit").show();
+            $("#enable-edit").hide();
+            gantt.config.readonly = false;
+            var item = gantt.config.columns.find(x => x.name == "quantity")
+            item.hideReadonly = true
+            console.log(gantt.config.columns)
+        }
+        function disableEdit() {
+            $("#disable-edit").hide();
+            $("#enable-edit").show();
+            gantt.config.readonly = true;
+        }
+        //gantt.config.columns = gantt.config.columns.filter(x => x.name != "quantity" && x.name != "price" && x.name != "total")
     </script>
 </div>

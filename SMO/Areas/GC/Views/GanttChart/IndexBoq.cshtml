@@ -436,6 +436,7 @@
 
                 break;
             case "delete":
+                Forms.ShowLoading();
                 if (!id.toString().includes("-")) {
                     return;
                 }
@@ -448,14 +449,17 @@
                             // response is ok
                             showMessage('infor', `Delete ${entity} successfully!`);
                             if (res.executeMethod) {
+                                Forms.HideLoading();
                                 Message.func.ExecuteFunctionByName(res.executeMethod, window);
                             }
                             updateTasksTotalSilent(id);
                         } else if (res && res.status === 'error') {
                             alert(res.message);
+                            Forms.HideLoading();
                             refreshData()
                         } else if (!ress || res.status !== 'ok') {
                             showMessage('error', 'Something went wrong!');
+                            Forms.HideLoading();
                         }
                     });
                 } else {

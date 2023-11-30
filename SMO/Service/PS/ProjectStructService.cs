@@ -695,113 +695,123 @@ namespace SMO.Service.PS
                     }
                 }
 
-
-                var checkSAP = false;
-                var systemConfig = new SystemConfigService();
-                systemConfig.GetConfig();
-
-                using (SapRfcConnection conn = new PlainSapRfcConnection(SAPDestitination.SapDestinationName,
-                            systemConfig.ObjDetail.SAP_USER_NAME, systemConfig.ObjDetail.SAP_PASSWORD))
+                try
                 {
-                    var functionSAP = new Update_Project_Function();
-                    var structIdOfProject = taskDelete.PROJECT_ID;
+                    var checkSAP = false;
+                    var systemConfig = new SystemConfigService();
+                    systemConfig.GetConfig();
 
-                    var project = new ZST_BAPIPROJ()
+                    using (SapRfcConnection conn = new PlainSapRfcConnection(SAPDestitination.SapDestinationName,
+                                systemConfig.ObjDetail.SAP_USER_NAME, systemConfig.ObjDetail.SAP_PASSWORD))
                     {
-                        PROJECT_CODE = taskDelete.Project.CODE,
-                        COMPANY_CODE = taskDelete.Project.DonVi.COMPANY_CODE,
-                        COST_CENTER_CODE = taskDelete.Project.DonVi.COST_CENTER_CODE,
-                        PROJECT_NAME = taskDelete.Project.NAME,
-                        FINISH_DATE = taskDelete.Project.FINISH_DATE,
-                        START_DATE = taskDelete.Project.START_DATE,
-                    };
+                        var functionSAP = new Update_Project_Function();
+                        var structIdOfProject = taskDelete.PROJECT_ID;
 
-                    var lstWbs = new List<ZST_BAPIWBS>();
-                    foreach (var item in allChild.Where(x => x.TYPE == "WBS" && x.IS_CREATE_ON_SAP == true).ToList())
-                    {
-                        lstWbs.Add(new ZST_BAPIWBS()
+                        var project = new ZST_BAPIPROJ()
                         {
-                            ACTUAL_FINISH_DATE = item.Wbs.ACTUAL_FINISH_DATE,
-                            ACTUAL_START_DATE = item.Wbs.ACTUAL_START_DATE,
-                            FINISH_DATE = item.FINISH_DATE,
-                            START_DATE = item.START_DATE,
-                            PARENT_CODE = (item.Parent?.GEN_CODE == item.GEN_CODE ? "" : item.Parent?.GEN_CODE),
-                            WBS_CODE = item.GEN_CODE,
-                            WBS_NAME = item.TEXT
-                        });
+                            PROJECT_CODE = taskDelete.Project.CODE,
+                            COMPANY_CODE = taskDelete.Project.DonVi.COMPANY_CODE,
+                            COST_CENTER_CODE = taskDelete.Project.DonVi.COST_CENTER_CODE,
+                            PROJECT_NAME = taskDelete.Project.NAME,
+                            FINISH_DATE = taskDelete.Project.FINISH_DATE,
+                            START_DATE = taskDelete.Project.START_DATE,
+                        };
+
+                        var lstWbs = new List<ZST_BAPIWBS>();
+                        foreach (var item in allChild.Where(x => x.TYPE == "WBS" && x.IS_CREATE_ON_SAP == true).ToList())
+                        {
+                            lstWbs.Add(new ZST_BAPIWBS()
+                            {
+                                ACTUAL_FINISH_DATE = item.Wbs.ACTUAL_FINISH_DATE,
+                                ACTUAL_START_DATE = item.Wbs.ACTUAL_START_DATE,
+                                FINISH_DATE = item.FINISH_DATE,
+                                START_DATE = item.START_DATE,
+                                PARENT_CODE = (item.Parent?.GEN_CODE == item.GEN_CODE ? "" : item.Parent?.GEN_CODE),
+                                WBS_CODE = item.GEN_CODE,
+                                WBS_NAME = item.TEXT
+                            });
+                        }
+
+                        var lstActivity = new List<ZST_BAPIACTI>();
+                        foreach (var item in allChild.Where(x => x.TYPE == "ACTIVITY" && x.IS_CREATE_ON_SAP == true).ToList())
+                        {
+                            lstActivity.Add(new ZST_BAPIACTI()
+                            {
+                                ACTUAL_FINISH_DATE = item.Activity.ACTUAL_FINISH_DATE,
+                                ACTUAL_START_DATE = item.Activity.ACTUAL_START_DATE,
+                                FINISH_DATE = item.FINISH_DATE,
+                                START_DATE = item.START_DATE,
+                                PARENT_CODE = item.Parent?.GEN_CODE,
+                                ACTIVITY_CODE = item.GEN_CODE,
+                                ACTIVITY_NAME = item.TEXT,
+                                UNIT_CODE = item.UNIT_CODE,
+                                QUANTITY = item.UNIT_CODE == "%" ? item.QUANTITY * 100 : item.QUANTITY,
+                                CONTROL_KEY = "PS02",
+                                PUR_GROUP = item.Project.PUR_GROUP
+                            });
+                        }
+
+                        functionSAP.Parameters = new
+                        {
+                            PROJECT = project,
+                            ADD = "",
+                            CHANGE = "",
+                            DELETE = "X",
+                            WBS = lstWbs,
+                            ACTIVITY = lstActivity
+                        };
+
+                        conn.ExecuteFunction(functionSAP);
+                        var output = functionSAP.Result.GetTable<BAPIRET2>("EX_RETURN");
+                        this.State = true;
+                        if (output.Where(x => x.TYPE == "E").Count() > 0)
+                        {
+                            checkSAP = true;
+                        }
                     }
 
-                    var lstActivity = new List<ZST_BAPIACTI>();
-                    foreach (var item in allChild.Where(x => x.TYPE == "ACTIVITY" && x.IS_CREATE_ON_SAP == true).ToList())
+                    if (check > 0 || checkSAP)
                     {
-                        lstActivity.Add(new ZST_BAPIACTI()
-                        {
-                            ACTUAL_FINISH_DATE = item.Activity.ACTUAL_FINISH_DATE,
-                            ACTUAL_START_DATE = item.Activity.ACTUAL_START_DATE,
-                            FINISH_DATE = item.FINISH_DATE,
-                            START_DATE = item.START_DATE,
-                            PARENT_CODE = item.Parent?.GEN_CODE,
-                            ACTIVITY_CODE = item.GEN_CODE,
-                            ACTIVITY_NAME = item.TEXT,
-                            UNIT_CODE = item.UNIT_CODE,
-                            QUANTITY = item.UNIT_CODE == "%" ? item.QUANTITY * 100 : item.QUANTITY,
-                            CONTROL_KEY = "PS02",
-                            PUR_GROUP = item.Project.PUR_GROUP
-                        });
+                        ErrorMessage = "Một số hạng mục đã phát sinh dữ liệu thực tế trên PMS |SAP nên không thể xoá!";
+                        State = false;
+                        return;
                     }
-
-                    functionSAP.Parameters = new
+                    else
                     {
-                        PROJECT = project,
-                        ADD = "",
-                        CHANGE = "",
-                        DELETE = "X",
-                        WBS = lstWbs,
-                        ACTIVITY = lstActivity
-                    };
+                        CurrentRepository.Detach(currentObj);
+                        UnitOfWork.BeginTransaction();
 
-                    conn.ExecuteFunction(functionSAP);
-                    var output = functionSAP.Result.GetTable<BAPIRET2>("EX_RETURN");
-                    this.State = true;
-                    if (output.Where(x => x.TYPE == "E").Count() > 0)
-                    {
-                        checkSAP = true;
+                        foreach (var item in allChild)
+                        {
+                            if (item.IS_CREATE_ON_SAP)
+                            {
+                                UnitOfWork.GetSession().Query<T_PS_PROJECT_STRUCT_SAP>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
+                            }
+                            UnitOfWork.GetSession().Query<T_PS_PROJECT_STRUCT>().Where(x => x.ID == item.ID).Delete();
+                            UnitOfWork.GetSession().Query<T_PS_CONTRACT_DETAIL>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
+                            // delete plan cost
+                            UnitOfWork.GetSession().Query<T_PS_PLAN_COST>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
+                            // delete plan progress
+                            UnitOfWork.GetSession().Query<T_PS_PLAN_PROGRESS>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
+                            // delete plan quantity
+                            UnitOfWork.GetSession().Query<T_PS_PLAN_QUANTITY>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
+                            //delete volume work
+                            UnitOfWork.GetSession().Query<T_PS_VOLUME_WORK_DETAIL>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
+                            //delete volume accept
+                            UnitOfWork.GetSession().Query<T_PS_VOLUME_ACCEPT_DETAIL>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
+                        }
+                        UnitOfWork.Repository<ProjectRepo>().ResetStatus(ObjDetail.PROJECT_ID, currentUsername, "Cây cấu trúc dự án");
+                        UnitOfWork.Commit();
                     }
                 }
-
-                if (check > 0 || checkSAP)
+                catch (Exception ex)
                 {
-                    ErrorMessage = "Một số hạng mục đã phát sinh dữ liệu thực tế trên PMS |SAP nên không thể xoá!";
+                    UnitOfWork.Rollback();
+                    ErrorMessage = "Không thể kết nối đến hệ thống SAP hoặc có lỗi khác phát sinh!";
                     State = false;
                     return;
                 }
-                else
-                {
-                    CurrentRepository.Detach(currentObj);
-                    UnitOfWork.BeginTransaction();
 
-                    foreach (var item in allChild)
-                    {
-                        if (item.IS_CREATE_ON_SAP)
-                        {
-                            UnitOfWork.GetSession().Query<T_PS_PROJECT_STRUCT_SAP>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
-                        }
-                        UnitOfWork.GetSession().Query<T_PS_PROJECT_STRUCT>().Where(x => x.ID == item.ID).Delete();
-                        UnitOfWork.GetSession().Query<T_PS_CONTRACT_DETAIL>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
-                        // delete plan cost
-                        UnitOfWork.GetSession().Query<T_PS_PLAN_COST>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
-                        // delete plan progress
-                        UnitOfWork.GetSession().Query<T_PS_PLAN_PROGRESS>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
-                        // delete plan quantity
-                        UnitOfWork.GetSession().Query<T_PS_PLAN_QUANTITY>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
-                        //delete volume work
-                        UnitOfWork.GetSession().Query<T_PS_VOLUME_WORK_DETAIL>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
-                        //delete volume accept
-                        UnitOfWork.GetSession().Query<T_PS_VOLUME_ACCEPT_DETAIL>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
-                    }
-                    UnitOfWork.Repository<ProjectRepo>().ResetStatus(ObjDetail.PROJECT_ID, currentUsername, "Cây cấu trúc dự án");
-                    UnitOfWork.Commit();
-                }
             }
             catch (Exception ex)
             {
@@ -1495,14 +1505,14 @@ namespace SMO.Service.PS
                     UnitOfWork.Repository<ProjectStructVersionRepo>().Create(new T_PS_PROJECT_STRUCT_VERSION
                     {
                         PKID = Guid.NewGuid(),
-                        ID= item.ID,
+                        ID = item.ID,
                         PROJECT_ID = item.PROJECT_ID,
                         PARENT_ID = item.PARENT_ID,
                         BOQ_ID = item.BOQ_ID,
                         WBS_ID = item.WBS_ID,
                         ACTIVITY_ID = item.ACTIVITY_ID,
                         TASK_ID = item.TASK_ID,
-                        UNIT_CODE  = item.UNIT_CODE,
+                        UNIT_CODE = item.UNIT_CODE,
                         GEN_CODE = item.GEN_CODE,
                         TEXT = item.TEXT,
                         STATUS = item.STATUS,
@@ -1527,6 +1537,6 @@ namespace SMO.Service.PS
                 this.Exception = ex;
             }
         }
-    
+
     }
 }
