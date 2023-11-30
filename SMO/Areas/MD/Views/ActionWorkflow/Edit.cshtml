@@ -1,19 +1,21 @@
-﻿@model SMO.Service.MD.AreaService
+﻿
+@model SMO.Service.MD.ActionWorkflowService
 @{
     Model.ViewId = Guid.NewGuid().ToString();
     Model.FormId = Guid.NewGuid().ToString();
 }
+
 <div id='@Model.ViewId' class="container-fluid child-content">
-    @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
     {
-        @Html.AntiForgeryToken()
+        @Html.AntiForgeryToken();
+        @Html.HiddenFor(m => m.ObjDetail.CODE)
         <div class="card">
             <div class="body" style="padding-top: 0px;">
                 <ul class="nav nav-tabs" role="tablist">
                     <li role="presentation" class="active">
-                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> TẠO MỚI KHU VỰC</a>
+                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> THÔNG TIN CHI TIẾT</a>
                     </li>
-
                 </ul>
 
                 <div class="tab-content">
@@ -30,9 +32,8 @@
                             <label>Mã</label>
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE, new { @disabled = "" })
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
 
                             <label>Tên</label>
@@ -40,9 +41,7 @@
                                 <div class="form-line">
                                     @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
                             </div>
-
                         </div>
                     </div>
                 </div>

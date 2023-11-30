@@ -118,6 +118,7 @@
     <Compile Include="Implement\CM\SmsHistoryRepo.cs" />
     <Compile Include="Implement\CM\SmsOTPRepo.cs" />
     <Compile Include="Implement\CM\SmsRepo.cs" />
+    <Compile Include="Implement\MD\ActionWorkflowRepo.cs" />
     <Compile Include="Implement\MD\AreaRepo.cs" />
     <Compile Include="Implement\MD\BatchRepo.cs" />
     <Compile Include="Implement\MD\ConditionRepo.cs" />
@@ -147,7 +148,9 @@
     <Compile Include="Implement\MD\ProjectTimePeriodRepo.cs" />
     <Compile Include="Implement\MD\ProjectTypeRepo.cs" />
     <Compile Include="Implement\MD\ProjectUserTypeRepo.cs" />
+    <Compile Include="Implement\MD\PurchaseTypeRepo.cs" />
     <Compile Include="Implement\MD\PurGroupRepo.cs" />
+    <Compile Include="Implement\MD\RequestTypeRepo.cs" />
     <Compile Include="Implement\MD\RouteRepo.cs" />
     <Compile Include="Implement\MD\SaleOfficeRepo.cs" />
     <Compile Include="Implement\MD\ShTypeRepo.cs" />
@@ -236,6 +239,7 @@
     <Compile Include="Interface\CM\ISmsHistoryRepo.cs" />
     <Compile Include="Interface\CM\ISmsOTPRepo.cs" />
     <Compile Include="Interface\CM\ISmsRepo.cs" />
+    <Compile Include="Interface\MD\IActionWorkflowRepo.cs" />
     <Compile Include="Interface\MD\IAreaRepo.cs" />
     <Compile Include="Interface\MD\IBatchRepo.cs" />
     <Compile Include="Interface\MD\IConditionRepo.cs" />
@@ -265,7 +269,9 @@
     <Compile Include="Interface\MD\IProjectTimePeriodRepo.cs" />
     <Compile Include="Interface\MD\IProjectTypeRepo.cs" />
     <Compile Include="Interface\MD\IProjectUserTypeRepo.cs" />
+    <Compile Include="Interface\MD\IPurchaseTypeRepo.cs" />
     <Compile Include="Interface\MD\IPurGroupRepo.cs" />
+    <Compile Include="Interface\MD\IRequestTypeRepo.cs" />
     <Compile Include="Interface\MD\IRouteRepo.cs" />
     <Compile Include="Interface\MD\ISaleOfficeRepo.cs" />
     <Compile Include="Interface\MD\IShTypeRepo.cs" />
@@ -359,6 +365,7 @@
     <Compile Include="Mapping\CM\T_CM_SMS_HISTORY_Map.cs" />
     <Compile Include="Mapping\CM\T_CM_SMS_Map.cs" />
     <Compile Include="Mapping\CM\T_CM_SMS_OTP_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_ACTION_WORKFLOW_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_AREA_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_BATCH_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_CONDITION_Map.cs" />
@@ -389,7 +396,9 @@
     <Compile Include="Mapping\MD\T_MD_PROJECT_TIME_PERIOD_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_PROJECT_TYPE_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_PROJECT_USER_TYPE_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_PURCHASE_TYPE_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_PUR_GROUP_Map.cs" />
+    <Compile Include="Mapping\MD\T_MD_REQUEST_TYPE_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_ROUTE_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_SALEOFFICE_Map.cs" />
     <Compile Include="Mapping\MD\T_MD_SHPOINT_Map.cs" />

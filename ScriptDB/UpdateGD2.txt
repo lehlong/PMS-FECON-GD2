@@ -1,0 +1,45 @@
+CREATE TABLE T_MD_REQUEST_TYPE (
+    CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+CREATE TABLE T_MD_PURCHASE_TYPE (
+    CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+CREATE TABLE T_MD_ACTION_WORKFLOW (
+    CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+CREATE TABLE T_MD_WORKFLOW (
+    CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	REQUEST_TYPE_CODE varchar(20),
+	PROJECT_LEVEL_CODE varchar(20),
+	CONTRACT_VALUE_MIN decimal(18,0),
+	CONTRACT_VALUE_MAX decimal(18,0),
+	PURCHASE_TYPE_CODE varchar(20),
+	AUTHORITY bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);

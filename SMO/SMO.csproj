@@ -443,6 +443,7 @@
     <Compile Include="Areas\GC\API\TaskController.cs" />
     <Compile Include="Areas\GC\Controllers\GanttChartController.cs" />
     <Compile Include="Areas\GC\GCAreaRegistration.cs" />
+    <Compile Include="Areas\MD\Controllers\ActionWorkflowController.cs" />
     <Compile Include="Areas\MD\Controllers\AreaController.cs" />
     <Compile Include="Areas\MD\Controllers\BatchController.cs" />
     <Compile Include="Areas\MD\Controllers\ConditionController.cs" />
@@ -466,6 +467,8 @@
     <Compile Include="Areas\MD\Controllers\ProjectRoleController.cs" />
     <Compile Include="Areas\MD\Controllers\ProjectTypeController.cs" />
     <Compile Include="Areas\MD\Controllers\ProjectUserTypeController.cs" />
+    <Compile Include="Areas\MD\Controllers\PurchaseTypeController.cs" />
+    <Compile Include="Areas\MD\Controllers\RequestTypeController.cs" />
     <Compile Include="Areas\MD\Controllers\RouteController.cs" />
     <Compile Include="Areas\MD\Controllers\SaleOfficeController.cs" />
     <Compile Include="Areas\MD\Controllers\ShTypeController.cs" />
@@ -564,6 +567,7 @@
     <Compile Include="Service\Common\IGenericService.cs" />
     <Compile Include="Service\Common\IPSService.cs" />
     <Compile Include="Service\Common\PSService.cs" />
+    <Compile Include="Service\MD\ActionWorkflowService.cs" />
     <Compile Include="Service\MD\AreaService.cs" />
     <Compile Include="Service\MD\BatchService.cs" />
     <Compile Include="Service\MD\ConditionService.cs" />
@@ -586,6 +590,8 @@
     <Compile Include="Service\MD\ProjectRoleService.cs" />
     <Compile Include="Service\MD\ProjectTypeService.cs" />
     <Compile Include="Service\MD\ProjectUserTypeService.cs" />
+    <Compile Include="Service\MD\PurchaseTypeRepoService.cs" />
+    <Compile Include="Service\MD\RequestTypeService.cs" />
     <Compile Include="Service\MD\RouteService.cs" />
     <Compile Include="Service\MD\SaleOfficeService.cs" />
     <Compile Include="Service\MD\ShTypeService.cs" />
@@ -1349,6 +1355,18 @@
     <Content Include="Areas\MD\Views\Currency\List.cshtml" />
     <Content Include="Areas\MD\Views\Currency\Create.cshtml" />
     <Content Include="Areas\MD\Views\Currency\Edit.cshtml" />
+    <Content Include="Areas\MD\Views\RequestType\Edit.cshtml" />
+    <Content Include="Areas\MD\Views\RequestType\Create.cshtml" />
+    <Content Include="Areas\MD\Views\RequestType\List.cshtml" />
+    <Content Include="Areas\MD\Views\RequestType\Index.cshtml" />
+    <Content Include="Areas\MD\Views\PurchaseType\Index.cshtml" />
+    <Content Include="Areas\MD\Views\PurchaseType\List.cshtml" />
+    <Content Include="Areas\MD\Views\PurchaseType\Create.cshtml" />
+    <Content Include="Areas\MD\Views\PurchaseType\Edit.cshtml" />
+    <Content Include="Areas\MD\Views\ActionWorkflow\Index.cshtml" />
+    <Content Include="Areas\MD\Views\ActionWorkflow\List.cshtml" />
+    <Content Include="Areas\MD\Views\ActionWorkflow\Create.cshtml" />
+    <Content Include="Areas\MD\Views\ActionWorkflow\Edit.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

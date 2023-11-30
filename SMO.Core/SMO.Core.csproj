@@ -98,6 +98,7 @@
     <Compile Include="Entities\CM\T_CM_SMS.cs" />
     <Compile Include="Entities\CM\T_CM_SMS_HISTORY.cs" />
     <Compile Include="Entities\CM\T_CM_SMS_OTP.cs" />
+    <Compile Include="Entities\MD\T_MD_ACTION_WORKFLOW.cs" />
     <Compile Include="Entities\MD\T_MD_AREA.cs" />
     <Compile Include="Entities\MD\T_MD_BATCH.cs" />
     <Compile Include="Entities\MD\T_MD_CONDITION.cs" />
@@ -128,7 +129,9 @@
     <Compile Include="Entities\MD\T_MD_PROJECT_TIME_PERIOD.cs" />
     <Compile Include="Entities\MD\T_MD_PROJECT_TYPE.cs" />
     <Compile Include="Entities\MD\T_MD_PROJECT_USER_TYPE.cs" />
+    <Compile Include="Entities\MD\T_MD_PURCHASE_TYPE.cs" />
     <Compile Include="Entities\MD\T_MD_PUR_GROUP.cs" />
+    <Compile Include="Entities\MD\T_MD_REQUEST_TYPE.cs" />
     <Compile Include="Entities\MD\T_MD_ROUTE.cs" />
     <Compile Include="Entities\MD\T_MD_SALEOFFICE.cs" />
     <Compile Include="Entities\MD\T_MD_SHPOINT.cs" />
