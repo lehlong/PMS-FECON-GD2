@@ -164,6 +164,9 @@
         var number = 0;
 
         function addStep() {
+            if ($(".single-step-workflow tr").length == 0) {
+                number = 0;
+            }
             number += 1;
             $(".single-step-workflow").append(
                 `<tr>` +
