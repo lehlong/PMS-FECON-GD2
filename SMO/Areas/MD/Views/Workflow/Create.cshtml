@@ -4,28 +4,225 @@
     Model.ViewId = Guid.NewGuid().ToString();
     Model.FormId = Guid.NewGuid().ToString();
 }
+<style>
+    .card-shadow {
+        padding-top: 22px;
+        box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    }
+
+    .col-md-1, .col-md-2, .col-md-5 {
+        margin-bottom: 4px !important;
+    }
+</style>
 <div id='@Model.ViewId' class="container-fluid child-content">
-    @using (Ajax.BeginForm("Create", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
-    {
-        @Html.AntiForgeryToken()
-        <div class="card">
-            <div class="body" style="padding-top: 0px;">
-                <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" class="active">
-                        <a style="padding-left:0px"><i class="material-icons">clear_all</i> TẠO MỚI TEMPLATE WORKFLOW</a>
-                    </li>
 
-                </ul>
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons">clear_all</i> TẠO MỚI TEMPLATE WORKFLOW</a>
+                </li>
 
-                <div class="tab-content">
-                    <div class="page-function p-t-10">
-                        <div class="page-function-button m-r-20">
-                            @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
-                            @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function p-t-10">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                        @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                    </div>
+                </div>
+
+                <div class="col-md-12  card-shadow">
+                    <div class="row">
+                        <div class="col-md-1">
+                            <label>Trạng thái</label>
                         </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Loại đề nghị</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Mã quy trình</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Tên quy trình</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Cấp dự án</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Giá trị HĐ(min)</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Giá trị HĐ(max)</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Loại mua hàng</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Ủy quyền</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                </div>
+                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                            </div>
+                        </div>
+
+
                     </div>
 
-                    <div class="row m-t-20">
+
+
+
+                </div>
+
+                <div class="col-md-12">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <label>Mã</label>
+
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label>Mã</label>
+
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+                @*<div class="row m-t-20">
                         <div class="col-xs-1"></div>
                         <div class="col-lg-7 col-xs-10">
                             <label>Mã</label>
@@ -45,11 +242,10 @@
                             </div>
 
                         </div>
-                    </div>
-                </div>
+                    </div>*@
             </div>
         </div>
-    }
+    </div>
     <script type="text/javascript">
         $(function () {
             Forms.CompleteUI();
