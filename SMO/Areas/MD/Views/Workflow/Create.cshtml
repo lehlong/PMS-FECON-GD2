@@ -6,12 +6,15 @@
 }
 <style>
     .card-shadow {
-        padding-top: 22px;
         box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
     }
 
     .col-md-1, .col-md-2, .col-md-5 {
-        margin-bottom: 4px !important;
+        margin-bottom: 12px !important;
+    }
+
+    td {
+        border: none !important;
     }
 </style>
 <div id='@Model.ViewId' class="container-fluid child-content">
@@ -33,7 +36,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-12  card-shadow">
+                <div class="col-md-12 card-shadow" style="padding-top: 22px;">
                     <div class="row">
                         <div class="col-md-1">
                             <label>Trạng thái</label>
@@ -137,112 +140,20 @@
                                 @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
-
-
-                    </div>
-
-
-
-
-                </div>
-
-                <div class="col-md-12">
-                    <div class="row">
-                        <div class="col-md-10">
-                            <div class="row">
-                                <div class="col-md-1">
-                                    <label>Mã</label>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
-                                        </div>
-                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
-                                    </div>
-                                </div>
-                                <div class="col-md-1">
-                                    <label>Mã</label>
-
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
-                                        </div>
-                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
-                                    </div>
-                                </div>
-                                <div class="col-md-1">
-                                    <label>Mã</label>
-
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
-                                        </div>
-                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
-                                    </div>
-                                </div>
-                                <div class="col-md-1">
-                                    <label>Mã</label>
-
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
-                                        </div>
-                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <label>Mã</label>
-
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="form-group">
-                                        <div class="form-line">
-                                            @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
-                                        </div>
-                                        @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
+                <div class="col-md-12 card-shadow" style="padding-top:12px">
+                    <table class="table table-workflow-step">
+                        <tbody class="single-step-workflow">
+                            
+                        </tbody>
+                    </table>
+                    <div style="display:flex; justify-content:center;padding-bottom:12px">
+                        <button type="button" class="btn btn-default" onclick="addStep()"><i class="material-icons">add</i> Thêm bước</button>
+                    </div>
 
-
-
-
-                @*<div class="row m-t-20">
-                        <div class="col-xs-1"></div>
-                        <div class="col-lg-7 col-xs-10">
-                            <label>Mã</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
-                            </div>
-
-                            <label>Tên</label>
-                            <div class="form-group">
-                                <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.NAME)
-                                </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.NAME)
-                            </div>
-
-                        </div>
-                    </div>*@
+                </div>
             </div>
         </div>
     </div>
@@ -250,6 +161,55 @@
         $(function () {
             Forms.CompleteUI();
         });
+        var number = 0;
+
+        function addStep() {
+            number += 1;
+            $(".single-step-workflow").append(
+                `<tr>` +
+                `<td><label>Bước ${number}</label></td>` +
+                `<td>` +
+                `<div class="form-group">` +
+                `<div class="form-line">` +
+                `<input class="form-control" />` +
+                `</div>` +
+                `</div>` +
+                `</td>` +
+                `<td><label>Vai trò xử lý</label></td>` +
+                `<td>` +
+                `<div class="form-group">` +
+                `<div class="form-line">` +
+                `<input class="form-control" />` +
+                `</div>` +
+                `</div>` +
+                `</td>` +
+                `<td><label>Người xử lý (user)</label></td>` +
+                `<td>` +
+                `<div class="form-group">` +
+                `<div class="form-line">` +
+                `<input class="form-control" />` +
+                `</div>` +
+                `</div>` +
+                `</td >` +
+                `<td><label>Hạn xử lý (ngày)</label></td>` +
+                `<td>` +
+                `<div class="form-group">` +
+                `<div class="form-line">` +
+                `<input class="form-control" />` +
+                `</div>` +
+                `</div>` +
+                `</td>` +
+                `<td><label>Hành động</label></td>` +
+                `<td>` +
+                `<div class="form-group">` +
+                `<div class="form-line">` +
+                `<input class="form-control" />` +
+                `</div>` +
+                `</div>` +
+                `</td>` +
+                `<td style="width:22px; cursor:pointer" onclick="$(this).parent().remove();"><i class="material-icons">delete</i></td>` +
+                `</tr>`)
+        };
     </script>
 </div>
 
