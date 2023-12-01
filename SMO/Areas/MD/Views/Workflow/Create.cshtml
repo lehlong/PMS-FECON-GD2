@@ -143,16 +143,30 @@
                     </div>
                 </div>
 
+
+
                 <div class="col-md-12 card-shadow" style="padding-top:12px">
                     <table class="table table-workflow-step">
                         <tbody class="single-step-workflow">
-                            
+
                         </tbody>
                     </table>
                     <div style="display:flex; justify-content:center;padding-bottom:12px">
                         <button type="button" class="btn btn-default" onclick="addStep()"><i class="material-icons">add</i> Thêm bước</button>
                     </div>
 
+                </div>
+
+                <div class="col-md-12 card-shadow" style="padding-top:12px">
+                    <label>DANH SÁCH FILE ĐÍNH KÈM</label>
+                    <table class="table table-workflow-file">
+                        <tbody class="single-file-workflow">
+                         
+                        </tbody>
+                    </table>
+                    <div style="display:flex; justify-content:center;padding-bottom:12px">
+                        <button type="button" class="btn btn-default" onclick="addFile()"><i class="material-icons">add</i> Thêm File</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -213,6 +227,26 @@
                 `<td style="width:22px; cursor:pointer" onclick="$(this).parent().remove();"><i class="material-icons">delete</i></td>` +
                 `</tr>`)
         };
+
+        var numberFile = 0;
+
+        function addFile() {
+            if ($(".single-file-workflow tr").length == 0) {
+                numberFile = 0
+            }
+            numberFile += 1;
+            $(".single-file-workflow").append(`<tr>
+    <td>${numberFile}. </td>
+    <td>
+        <div class="form-group">
+            <div class="form-line">
+               <input class="form-control" />
+            </div>
+        </div>
+    </td>
+    <td style="width:22px; cursor:pointer" onclick="$(this).parent().remove();"><i class="material-icons">delete</i></td>
+</tr>`);
+        }
     </script>
-</div>
+</div >
 
