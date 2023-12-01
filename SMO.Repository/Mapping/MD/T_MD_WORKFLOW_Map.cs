@@ -15,6 +15,9 @@ namespace SMO.Repository.Mapping.MD
             Map(x => x.CONTRACT_VALUE_MAX);
             Map(x => x.PURCHASE_TYPE_CODE);
             Map(x => x.AUTHORITY);
+            References(x => x.ProjectLevel).Columns("PROJECT_LEVEL_CODE").Not.Insert().Not.Update().LazyLoad();
+            References(x => x.RequestType).Columns("REQUEST_TYPE_CODE").Not.Insert().Not.Update().LazyLoad();
+            References(x => x.PurchaseType).Columns("PURCHASE_TYPE_CODE").Not.Insert().Not.Update().LazyLoad();
         }
     }
 }

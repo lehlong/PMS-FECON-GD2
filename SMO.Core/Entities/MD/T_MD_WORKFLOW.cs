@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace SMO.Core.Entities.MD
 {
@@ -16,5 +17,77 @@ namespace SMO.Core.Entities.MD
         public virtual decimal CONTRACT_VALUE_MAX  { get; set; }
         public virtual string PURCHASE_TYPE_CODE { get; set; }
         public virtual bool AUTHORITY { get; set; }
+
+        private T_MD_REQUEST_TYPE _RequestType;
+        public virtual T_MD_REQUEST_TYPE RequestType
+        {
+            get
+            {
+                try
+                {
+                    if (this._RequestType != null)
+                    {
+                        var text = this._RequestType.NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._RequestType;
+            }
+            set
+            {
+                this._RequestType = value;
+            }
+        }
+
+        private T_MD_PROJECT_LEVEL _ProjectLevel;
+        public virtual T_MD_PROJECT_LEVEL ProjectLevel
+        {
+            get
+            {
+                try
+                {
+                    if (this._ProjectLevel != null)
+                    {
+                        var text = this._ProjectLevel.NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._ProjectLevel;
+            }
+            set
+            {
+                this._ProjectLevel = value;
+            }
+        }
+
+        private T_MD_PURCHASE_TYPE _PurchaseType;
+        public virtual T_MD_PURCHASE_TYPE PurchaseType
+        {
+            get
+            {
+                try
+                {
+                    if (this._PurchaseType != null)
+                    {
+                        var text = this._PurchaseType.NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._PurchaseType;
+            }
+            set
+            {
+                this._PurchaseType = value;
+            }
+        }
     }
 }

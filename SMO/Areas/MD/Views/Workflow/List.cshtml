@@ -15,8 +15,14 @@
                     <input type="checkbox" id="chkAll" onclick="Forms.CheckAll();" style="margin:0;" class="filled-in" />
                     <label for="chkAll"></label>
                 </th>
-                <th>Mã</th>
-                <th>Tên</th>
+                <th>STT</th>
+                <th>Mã quy trình</th>
+                <th>Tên quy trình</th>
+                <th>Cấp dự án</th>
+                <th>GTHD NCC/TP</th>
+                <th>Loại mua hàng</th>
+                <th>Uỷ quyền</th>
+                <th>Trạng thái</th>
             </tr>
         </thead>
         <tbody>
@@ -35,10 +41,16 @@
                         <input type="checkbox" class="filled-in chkItem" name="chkItem" id="@("chkItem" + item.CODE)" modelId="@item.CODE" style="margin:0;" />
                         <label for="@("chkItem" + item.CODE)"></label>
                     </td>
+                    <td ondblclick="@vdbclickAction">@number</td>
                     <td ondblclick="@vdbclickAction">
                         <a href="#" onclick="@vdbclickAction">@item.CODE</a>
                     </td>
                     <td ondblclick="@vdbclickAction">@item.NAME</td>
+                    <td ondblclick="@vdbclickAction">@(item.PROJECT_LEVEL_CODE)</td>
+                    <td ondblclick="@vdbclickAction">@item.CONTRACT_VALUE_MIN.ToStringVN() - @item.CONTRACT_VALUE_MAX.ToStringVN()</td>
+                    <td ondblclick="@vdbclickAction">@item.PURCHASE_TYPE_CODE</td>
+                    <td ondblclick="@vdbclickAction">@(item.AUTHORITY ? "Có" : "Không")</td>
+                    <td ondblclick="@vdbclickAction">@(item.ACTIVE ? "Active" : "Inactive")</td>
                 </tr>
             }
         </tbody>
