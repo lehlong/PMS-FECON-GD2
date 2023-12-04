@@ -75,3 +75,40 @@ CREATE TABLE T_MD_WORKFLOW_FILE (
  INSERT INTO T_MD_REQUEST_TYPE (CODE, NAME)   VALUES ('01', 'Đề nghị tạm ứng NCC/TP')
  INSERT INTO T_MD_REQUEST_TYPE (CODE, NAME)   VALUES ('02', 'Đề nghị thanh toán NCC/TP')
  INSERT INTO T_MD_REQUEST_TYPE (CODE, NAME)   VALUES ('03', 'Hồ sơ nghiệm thu NCC/TP')
+
+insert into T_MD_PURCHASE_TYPE (CODE, NAME) values ('01', 'Mua hàng tập trung')
+insert into T_MD_PURCHASE_TYPE (CODE, NAME) values ('02', 'Thuê mua thông thường')
+
+insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('01','Tạo mới')
+insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('02','Chỉnh sửa')
+insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('03','Trình duyệt')
+insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('04','Yêu cầu chỉnh sửa')
+insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('05','Phê duyệt')
+insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('06','Từ chối')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
