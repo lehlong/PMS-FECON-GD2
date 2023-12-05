@@ -1,4 +1,8 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Web.Mvc;
+using iTextSharp.text;
+using SMO.Core.Entities.MD;
 using SMO.Service.MD;
 
 namespace SMO.Areas.MD.Controllers
@@ -34,21 +38,39 @@ namespace SMO.Areas.MD.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(WorkflowService service)
+        public ActionResult Create(T_MD_WORKFLOW workflow, IList<T_MD_WORKFLOW_STEP> workflowStep, IList<T_MD_WORKFLOW_FILE> workflowFile)
         {
             var result = new TransferObject();
             result.Type = TransferType.AlertSuccessAndJsCommand;
-            service.Create();
-            if (service.State)
+            _service.CreateData(workflow, workflowStep, workflowFile);
+            if (_service.State)
             {
-                SMOUtilities.GetMessage("1001", service, result);
+                SMOUtilities.GetMessage("1001", _service, result);
                 result.ExtData = "SubmitIndex();";
             }
             else
             {
                 result.Type = TransferType.AlertDanger;
-                SMOUtilities.GetMessage("1004", service, result);
+                SMOUtilities.GetMessage("1004", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        [HttpPost]
+        public ActionResult Update(T_MD_WORKFLOW workflow, IList<T_MD_WORKFLOW_STEP> workflowStep, IList<T_MD_WORKFLOW_FILE> workflowFile)
+        {
+            var result = new TransferObject();
+            result.Type = TransferType.AlertSuccessAndJsCommand;
+            _service.UpdateData(workflow, workflowStep, workflowFile);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1001", _service, result);
+                result.ExtData = "SubmitIndex();";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1004", _service, result);
             }
             return result.ToJsonResult();
         }
@@ -63,33 +85,34 @@ namespace SMO.Areas.MD.Controllers
             return PartialView(_service);
         }
 
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Update(WorkflowService service)
+        [MyValidateAntiForgeryToken]
+        public ActionResult DeleteStep(Guid id)
         {
             var result = new TransferObject();
             result.Type = TransferType.AlertSuccessAndJsCommand;
-            service.Update();
-            if (service.State)
+            _service.DeleteStep(id);
+            if (_service.State)
             {
-                SMOUtilities.GetMessage("1002", service, result);
+                SMOUtilities.GetMessage("1003", _service, result);
                 result.ExtData = "SubmitIndex();";
             }
             else
             {
                 result.Type = TransferType.AlertDanger;
-                SMOUtilities.GetMessage("1005", service, result);
+                SMOUtilities.GetMessage("1006", _service, result);
             }
             return result.ToJsonResult();
         }
 
         [HttpPost]
         [MyValidateAntiForgeryToken]
-        public ActionResult Delete(string pStrListSelected)
+        public ActionResult DeleteFile(Guid id)
         {
             var result = new TransferObject();
             result.Type = TransferType.AlertSuccessAndJsCommand;
-            _service.Delete(pStrListSelected);
+            _service.DeleteFile(id);
             if (_service.State)
             {
                 SMOUtilities.GetMessage("1003", _service, result);
@@ -113,6 +136,7 @@ namespace SMO.Areas.MD.Controllers
             if (_service.State)
             {
                 SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "SubmitIndex();";
             }
             else
             {

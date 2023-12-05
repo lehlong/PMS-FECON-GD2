@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace SMO.Core.Entities.MD
@@ -17,6 +18,8 @@ namespace SMO.Core.Entities.MD
         public virtual decimal CONTRACT_VALUE_MAX  { get; set; }
         public virtual string PURCHASE_TYPE_CODE { get; set; }
         public virtual bool AUTHORITY { get; set; }
+        public virtual ISet<T_MD_WORKFLOW_FILE> ListFiles { get; set; }
+        public virtual ISet<T_MD_WORKFLOW_STEP> ListSteps { get; set; }
 
         private T_MD_REQUEST_TYPE _RequestType;
         public virtual T_MD_REQUEST_TYPE RequestType
@@ -88,6 +91,11 @@ namespace SMO.Core.Entities.MD
             {
                 this._PurchaseType = value;
             }
+        }
+        public T_MD_WORKFLOW()
+        {
+            ListFiles = new HashSet<T_MD_WORKFLOW_FILE>(new List<T_MD_WORKFLOW_FILE>());
+            ListSteps = new HashSet<T_MD_WORKFLOW_STEP>(new List<T_MD_WORKFLOW_STEP>());
         }
     }
 }

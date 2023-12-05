@@ -18,6 +18,8 @@ namespace SMO.Repository.Mapping.MD
             References(x => x.ProjectLevel).Columns("PROJECT_LEVEL_CODE").Not.Insert().Not.Update().LazyLoad();
             References(x => x.RequestType).Columns("REQUEST_TYPE_CODE").Not.Insert().Not.Update().LazyLoad();
             References(x => x.PurchaseType).Columns("PURCHASE_TYPE_CODE").Not.Insert().Not.Update().LazyLoad();
+            HasMany(x => x.ListFiles).KeyColumn("WORKFLOW_CODE").LazyLoad().Inverse().Cascade.Delete();
+            HasMany(x => x.ListSteps).KeyColumn("WORKFLOW_CODE").LazyLoad().Inverse().Cascade.Delete();
         }
     }
 }

@@ -14,6 +14,7 @@ namespace SMO.Repository.Mapping.MD
             Map(x => x.USER_ACTION);
             Map(x => x.NUMBER_DAYS);
             Map(x => x.ACTION);
+            Map(x => x.C_ORDER);
         }
     }
 }

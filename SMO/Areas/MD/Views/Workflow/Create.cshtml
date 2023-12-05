@@ -1,8 +1,18 @@
 ﻿
 @model SMO.Service.MD.WorkflowService
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
 @{
     Model.ViewId = Guid.NewGuid().ToString();
     Model.FormId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var lstRequestType = SelectListUtilities.GetRequestType(false);
+    var lstProjectLevel = SelectListUtilities.GetProjectLevel(false);
+    var lstPurchaseType = SelectListUtilities.GetPurchaseType(false);
+    var lstAuthority = SelectListUtilities.GetAuthority(false);
+    var lstProjectRole = SelectListUtilities.GetProjectRole();
+    var lstUserFecon = SelectListUtilities.GetListUserFecon();
+    var lstActionWorkflow = SelectListUtilities.GetActionWorkflow();
 }
 <style>
     .card-shadow {
@@ -32,7 +42,7 @@
                 <div class="page-function p-t-10">
                     <div class="page-function-button m-r-20">
                         @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
-                        @Html.MyButton("cmdSave", "Lưu lại", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+                        @Html.MyButton("cmdSave", "Tạo mới", "Create();", "Alt+N", "done_all")
                     </div>
                 </div>
 
@@ -44,9 +54,8 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <input type="text" class="form-control" value="ACTIVE" readonly disabled/>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
                         <div class="col-md-1">
@@ -55,9 +64,13 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <select id="request-type" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                                        @foreach (var item in lstRequestType)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
 
@@ -67,9 +80,8 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <input id="workflow-code" type="text" class="form-control"/>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
                         <div class="col-md-1">
@@ -78,9 +90,8 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <input id="workflow-name" type="text" class="form-control" />
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
 
@@ -90,31 +101,33 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <select id="project-level" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                                        @foreach (var item in lstProjectLevel)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
                         <div class="col-md-1">
-                            <label>Giá trị HĐ(min)</label>
+                            <label>GTHĐ (min)</label>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <input id="contract-value-min" class="form-control mask-number valid" data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" data-val="true" type="text" style="text-align: right;">
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
                         <div class="col-md-1">
-                            <label>Giá trị HĐ(max)</label>
+                            <label>GTHĐ (max)</label>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <input id="contract-value-max" class="form-control mask-number valid" data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" data-val="true" type="text" style="text-align: right;">
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
 
@@ -124,9 +137,13 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <select id="purchase-type" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                                        @foreach (var item in lstPurchaseType)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
                         <div class="col-md-1">
@@ -135,20 +152,21 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="form-line">
-                                    @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
+                                    <select id="authority" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                                        @foreach (var item in lstAuthority)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
                                 </div>
-                                @Html.ValidationMessageFor(m => m.ObjDetail.CODE)
                             </div>
                         </div>
                     </div>
                 </div>
 
-
-
                 <div class="col-md-12 card-shadow" style="padding-top:12px">
                     <table class="table table-workflow-step">
                         <tbody class="single-step-workflow">
-
                         </tbody>
                     </table>
                     <div style="display:flex; justify-content:center;padding-bottom:12px">
@@ -161,7 +179,6 @@
                     <label>DANH SÁCH FILE ĐÍNH KÈM</label>
                     <table class="table table-workflow-file">
                         <tbody class="single-file-workflow">
-                         
                         </tbody>
                     </table>
                     <div style="display:flex; justify-content:center;padding-bottom:12px">
@@ -173,9 +190,32 @@
     </div>
     <script type="text/javascript">
         $(function () {
+            $(".mask-number").inputmask({ "removeMaskOnSubmit": true });
+            $(".mask-number").focus(function () {
+                $(this).select();
+            });
             Forms.CompleteUI();
         });
         var number = 0;
+
+        const lstProjectRole = @Html.Raw(JsonConvert.SerializeObject(lstProjectRole, jsonSerializeSettings));
+        const lstUserFecon = @Html.Raw(JsonConvert.SerializeObject(lstUserFecon, jsonSerializeSettings));
+        const lstActionWorkflow = @Html.Raw(JsonConvert.SerializeObject(lstActionWorkflow, jsonSerializeSettings));
+
+        var htmlProjectRole = "";
+        for (i = 0; i < lstProjectRole.length; i++) {
+            htmlProjectRole += `<option value="${lstProjectRole[i].value}">${lstProjectRole[i].text}</option>`
+        }
+
+        var htmlUserFecon = "";
+        for (i = 0; i < lstUserFecon.length; i++) {
+            htmlUserFecon += `<option value="${lstUserFecon[i].value}">${lstUserFecon[i].text}</option>`
+        }
+
+        var htmlActionWorkflow = "";
+        for (i = 0; i < lstActionWorkflow.length; i++) {
+            htmlActionWorkflow += `<option value="${lstActionWorkflow[i].value}">${lstActionWorkflow[i].text}</option>`
+        }
 
         function addStep() {
             if ($(".single-step-workflow tr").length == 0) {
@@ -183,49 +223,56 @@
             }
             number += 1;
             $(".single-step-workflow").append(
-                `<tr>` +
-                `<td><label>Bước ${number}</label></td>` +
-                `<td>` +
-                `<div class="form-group">` +
-                `<div class="form-line">` +
-                `<input class="form-control" />` +
-                `</div>` +
-                `</div>` +
-                `</td>` +
-                `<td><label>Vai trò xử lý</label></td>` +
-                `<td>` +
-                `<div class="form-group">` +
-                `<div class="form-line">` +
-                `<input class="form-control" />` +
-                `</div>` +
-                `</div>` +
-                `</td>` +
-                `<td><label>Người xử lý (user)</label></td>` +
-                `<td>` +
-                `<div class="form-group">` +
-                `<div class="form-line">` +
-                `<input class="form-control" />` +
-                `</div>` +
-                `</div>` +
-                `</td >` +
-                `<td><label>Hạn xử lý (ngày)</label></td>` +
-                `<td>` +
-                `<div class="form-group">` +
-                `<div class="form-line">` +
-                `<input class="form-control" />` +
-                `</div>` +
-                `</div>` +
-                `</td>` +
-                `<td><label>Hành động</label></td>` +
-                `<td>` +
-                `<div class="form-group">` +
-                `<div class="form-line">` +
-                `<input class="form-control" />` +
-                `</div>` +
-                `</div>` +
-                `</td>` +
-                `<td style="width:22px; cursor:pointer" onclick="$(this).parent().remove();"><i class="material-icons">delete</i></td>` +
-                `</tr>`)
+                `<tr>
+                    <td><label>Bước ${number}</label></td>
+                    <td>
+                    <div class="form-group">
+                    <div class="form-line">
+                    <input class="form-control step-workflow-name" />
+                    </div>
+                    </div>
+                    </td>
+                    <td><label>Vai trò xử lý</label></td>
+                    <td style="width:180px;">
+                    <div class="form-group">
+                    <div class="form-line">
+                    <select id="step-workflow-project-role" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                    ${htmlProjectRole}
+                    </select>
+                    </div>
+                    </div>
+                    </td>
+                    <td><label>Người xử lý (user)</label></td>
+                    <td style="width:180px;">
+                    <div class="form-group">
+                    <div class="form-line">
+                    <select id="step-workflow-username" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                        ${htmlUserFecon}
+                    </select>
+                    </div>
+                    </div>
+                    </td >
+                    <td><label>Hạn xử lý (ngày)</label></td>
+                    <td>
+                    <div class="form-group">
+                    <div class="form-line">
+                    <input type="number" class="form-control step-workflow-day" />
+                    </div>
+                    </div>
+                    </td>
+                    <td><label>Hành động</label></td>
+                    <td style="width:220px;">
+                    <div class="form-group">
+                    <div class="form-line">
+                    <select id="step-workflow-action" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control" multiple>
+                    ${htmlActionWorkflow}
+                    </select>
+                    </div>
+                    </div>
+                    </td>
+                    <td style="width:22px; cursor:pointer" onclick="$(this).parent().remove();"><i class="material-icons">delete</i></td>
+                    </tr>`);
+            Forms.CompleteUI();
         };
 
         var numberFile = 0;
@@ -236,17 +283,66 @@
             }
             numberFile += 1;
             $(".single-file-workflow").append(`<tr>
-    <td>${numberFile}. </td>
-    <td>
-        <div class="form-group">
-            <div class="form-line">
-               <input class="form-control" />
-            </div>
-        </div>
-    </td>
-    <td style="width:22px; cursor:pointer" onclick="$(this).parent().remove();"><i class="material-icons">delete</i></td>
+                <td style="width:32px">${numberFile}. </td>
+                <td>
+                    <div class="form-group">
+                        <div class="form-line">
+                           <input class="form-control file-workflow-name" />
+                        </div>
+                    </div>
+                </td>
+                <td style="width:22px; cursor:pointer" onclick="$(this).parent().remove();"><i class="material-icons">delete</i></td>
 </tr>`);
+        };
+
+        function Create() {
+            var workflow = {
+                CODE: $("#workflow-code").val(),
+                NAME: $("#workflow-name").val(),
+                REQUEST_TYPE_CODE: $("#request-type").val(),
+                PROJECT_LEVEL_CODE: $("#project-level").val(),
+                CONTRACT_VALUE_MIN: String($("#contract-value-min").val()).replaceAll(",", ""),
+                CONTRACT_VALUE_MAX: String($("#contract-value-max").val()).replaceAll(",", ""),
+                PURCHASE_TYPE_CODE: $("#purchase-type").val(),
+                AUTHORITY: $("#authority").val(),
+            };
+            var workflowStep = [];
+            $('.single-step-workflow > tr').each(function (index, tr) {
+                row = $(this);
+                workflowStep.push({
+                    NAME: row.find(".step-workflow-name").val(),
+                    PROJECT_ROLE_CODE: row.find("#step-workflow-project-role").val(),
+                    USER_ACTION: row.find("#step-workflow-username").val(),
+                    NUMBER_DAYS: row.find(".step-workflow-day").val(),
+                    ACTION: row.find("#step-workflow-action").val(),
+                    C_ORDER: index
+                })
+            });
+
+            var workflowFile = [];
+            $('.single-file-workflow > tr').each(function (index, tr) {
+                row = $(this);
+                workflowFile.push({
+                    NAME: row.find(".file-workflow-name").val(),
+                    C_ORDER: index
+                })
+            });
+
+            var ajaxParams = {
+                url: '@Url.Action("Create")',
+                type: "POST",
+                data: {
+                    workflow: workflow,
+                    workflowStep: workflowStep,
+                    workflowFile: workflowFile
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams)
         }
     </script>
-</div >
+</div>
 

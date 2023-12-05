@@ -549,6 +549,74 @@ namespace SMO
             return new SelectList(lstData, "Value", "Text", selected);
         }
 
+        public static SelectList GetPurchaseType(bool isAddBlank = true, string selected = "")
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+            var lstAll = UnitOfWork.Repository<PurchaseTypeRepo>().GetAll();
+            foreach (var obj in lstAll)
+            {
+                lstData.Add(new Data { Value = obj.CODE, Text = obj.NAME });
+            }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
+
+        public static SelectList GetRequestType(bool isAddBlank = true, string selected = "")
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+            var lstAll = UnitOfWork.Repository<RequestTypeRepo>().GetAll();
+            foreach (var obj in lstAll)
+            {
+                lstData.Add(new Data { Value = obj.CODE, Text = obj.NAME });
+            }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
+
+        public static SelectList GetActionWorkflow(bool isAddBlank = true, string selected = "")
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+            var lstAll = UnitOfWork.Repository<ActionWorkflowRepo>().GetAll();
+            foreach (var obj in lstAll)
+            {
+                lstData.Add(new Data { Value = obj.CODE, Text = obj.NAME });
+            }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
+
+        public static SelectList GetProjectRole(bool isAddBlank = true, string selected = "")
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+            var lstAll = UnitOfWork.Repository<ProjectRoleRepo>().GetAll();
+            foreach (var obj in lstAll)
+            {
+                lstData.Add(new Data { Value = obj.ID, Text = obj.NAME });
+            }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
+
         public static SelectList GetProjectType(bool isAddBlank = true, string selected = "")
         {
             IUnitOfWork UnitOfWork = new NHUnitOfWork();
@@ -563,6 +631,21 @@ namespace SMO
             {
                 lstData.Add(new Data { Value = obj.CODE, Text = obj.NAME });
             }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
+
+        public static SelectList GetAuthority(bool isAddBlank = true, string selected = "")
+        {
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+
+            lstData.Add(new Data { Value = "true", Text = "Có" });
+            lstData.Add(new Data { Value = "false", Text = "Không" });
+            
             return new SelectList(lstData, "Value", "Text", selected);
         }
 

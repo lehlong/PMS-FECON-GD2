@@ -14,5 +14,6 @@ namespace SMO.Core.Entities.MD
 
         public virtual int NUMBER_DAYS { get; set; }
         public virtual string ACTION { get; set; }
+        public virtual int C_ORDER { get; set; }
     }
 }

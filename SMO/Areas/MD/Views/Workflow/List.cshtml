@@ -1,7 +1,7 @@
 ﻿
 @model SMO.Service.MD.WorkflowService
 @{
-    var number = 1;
+    var number = 0;
 }
 @if (Model.ObjList.Count > 50)
 {
@@ -46,9 +46,9 @@
                         <a href="#" onclick="@vdbclickAction">@item.CODE</a>
                     </td>
                     <td ondblclick="@vdbclickAction">@item.NAME</td>
-                    <td ondblclick="@vdbclickAction">@(item.PROJECT_LEVEL_CODE)</td>
+                    <td ondblclick="@vdbclickAction">@(item.ProjectLevel?.NAME)</td>
                     <td ondblclick="@vdbclickAction">@item.CONTRACT_VALUE_MIN.ToStringVN() - @item.CONTRACT_VALUE_MAX.ToStringVN()</td>
-                    <td ondblclick="@vdbclickAction">@item.PURCHASE_TYPE_CODE</td>
+                    <td ondblclick="@vdbclickAction">@(item.PurchaseType?.NAME)</td>
                     <td ondblclick="@vdbclickAction">@(item.AUTHORITY ? "Có" : "Không")</td>
                     <td ondblclick="@vdbclickAction">@(item.ACTIVE ? "Active" : "Inactive")</td>
                 </tr>
