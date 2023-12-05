@@ -20,10 +20,7 @@
                 <div class="tab-content">
                     <div class="page-function p-t-10 p-b-10">
                         <div class="page-function-button m-r-20" style="float:left">
-                            @if (AuthorizeUtilities.CheckUserRight("R2.8.2"))
-                            {
-                                @Html.MyButton("cmdAdd", "Thêm mới", string.Format("Forms.LoadAjax('{0}');", @Url.Action("Create")), "Alt+N", "add")
-                            }
+                           
                         </div>
                         <div class="input-group page-function-search">
                             <div class="form-line">
