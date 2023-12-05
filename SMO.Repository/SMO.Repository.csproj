@@ -180,6 +180,9 @@
     <Compile Include="Implement\PS\ContractFileRepo.cs" />
     <Compile Include="Implement\PS\ContractPaymentRepo.cs" />
     <Compile Include="Implement\PS\ContractRepo.cs" />
+    <Compile Include="Implement\PS\DocumentWorkflowFileRepo.cs" />
+    <Compile Include="Implement\PS\DocumentWorkflowRepo.cs" />
+    <Compile Include="Implement\PS\DocumentWorkflowStepRepo.cs" />
     <Compile Include="Implement\PS\GenCodeHistoryRepo.cs" />
     <Compile Include="Implement\PS\PlanCostRepo.cs" />
     <Compile Include="Implement\PS\PlanProgressHistoryRepo.cs" />
@@ -194,6 +197,9 @@
     <Compile Include="Implement\PS\ProjectStructRepo.cs" />
     <Compile Include="Implement\PS\ProjectStructVersionRepo.cs" />
     <Compile Include="Implement\PS\ProjectTimeRepo.cs" />
+    <Compile Include="Implement\PS\ProjectWorkflowFileRepo.cs" />
+    <Compile Include="Implement\PS\ProjectWorkflowRepo.cs" />
+    <Compile Include="Implement\PS\ProjectWorkflowStepRepo.cs" />
     <Compile Include="Implement\PS\ReferenceRepo.cs" />
     <Compile Include="Implement\PS\TaskRepo.cs" />
     <Compile Include="Implement\PS\VolumeAcceptDetailRepo.cs" />
@@ -304,6 +310,9 @@
     <Compile Include="Interface\PS\IContractFileRepo.cs" />
     <Compile Include="Interface\PS\IContractPaymentRepo.cs" />
     <Compile Include="Interface\PS\IContractRepo.cs" />
+    <Compile Include="Interface\PS\IDocumentWorkflowFileRepo.cs" />
+    <Compile Include="Interface\PS\IDocumentWorkflowRepo.cs" />
+    <Compile Include="Interface\PS\IDocumentWorkflowStepRepo.cs" />
     <Compile Include="Interface\PS\IGenCodeHistoryRepo.cs" />
     <Compile Include="Interface\PS\IPlanCostRepo.cs" />
     <Compile Include="Interface\PS\IPlanProgressHistoryRepo.cs" />
@@ -318,6 +327,9 @@
     <Compile Include="Interface\PS\IProjectStructRepo.cs" />
     <Compile Include="Interface\PS\IProjectStructVersionRepo.cs" />
     <Compile Include="Interface\PS\IProjectTimeRepo.cs" />
+    <Compile Include="Interface\PS\IProjectWorkflowFileRepo.cs" />
+    <Compile Include="Interface\PS\IProjectWorkflowRepo.cs" />
+    <Compile Include="Interface\PS\IProjectWorkflowStepRepo.cs" />
     <Compile Include="Interface\PS\IReferenceRepo.cs" />
     <Compile Include="Interface\PS\ITaskRepo.cs" />
     <Compile Include="Interface\PS\IVolumeAcceptDetailRepo.cs" />
@@ -435,6 +447,9 @@
     <Compile Include="Mapping\PS\T_PS_CONTRACT_FILE_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_CONTRACT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_CONTRACT_PAYMENT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_DOCUMENT_WORKFLOW_FILE_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_DOCUMENT_WORKFLOW_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_DOCUMENT_WORKFLOW_STEP_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_GEN_CODE_HISTORY_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PLAN_COST_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PLAN_PROGRESS_HISTORY_Map.cs" />
@@ -447,6 +462,9 @@
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_SAP_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_VERSION_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_USER_RIGHT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_WORKFLOW_FILE_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_WORKFLOW_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_WORKFLOW_STEP_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_REFERENCE_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_RESOURCE_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_RESOURCE_OTHER_Map.cs" />

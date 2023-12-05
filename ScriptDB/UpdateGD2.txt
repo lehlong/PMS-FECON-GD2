@@ -86,6 +86,104 @@ insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('04','Yêu cầu chỉnh s
 insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('05','Phê duyệt')
 insert into T_MD_ACTION_WORKFLOW (CODE, NAME) values ('06','Từ chối')
 
+CREATE TABLE T_PS_PROJECT_WORKFLOW (
+    CODE nvarchar(20),
+    NAME nvarchar(50),
+	PROJECT_ID uniqueidentifier,
+    ACTIVE bit,
+	REQUEST_TYPE_CODE varchar(20),
+	PROJECT_LEVEL_CODE varchar(20),
+	CONTRACT_VALUE_MIN decimal(18,0),
+	CONTRACT_VALUE_MAX decimal(18,0),
+	PURCHASE_TYPE_CODE varchar(20),
+	AUTHORITY bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+
+
+CREATE TABLE T_PS_PROJECT_WORKFLOW_STEP (
+    ID uniqueidentifier,
+    WORKFLOW_CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	PROJECT_ROLE_CODE varchar(20),
+	USER_ACTION varchar(20),
+	NUMBER_DAYS int,
+	ACTION varchar(20),
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+
+
+CREATE TABLE T_PS_PROJECT_WORKFLOW_FILE (
+    ID uniqueidentifier,
+    WORKFLOW_CODE nvarchar(20),
+    NAME nvarchar(50),
+    ACTIVE bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+CREATE TABLE T_PS_DOCUMENT_WORKFLOW (
+    CODE nvarchar(20),
+    NAME nvarchar(50),
+	PROJECT_ID uniqueidentifier,
+	DOCUMENT_ID uniqueidentifier,
+    ACTIVE bit,
+	REQUEST_TYPE_CODE varchar(20),
+	PROJECT_LEVEL_CODE varchar(20),
+	CONTRACT_VALUE_MIN decimal(18,0),
+	CONTRACT_VALUE_MAX decimal(18,0),
+	PURCHASE_TYPE_CODE varchar(20),
+	AUTHORITY bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+
+
+CREATE TABLE T_PS_DOCUMENT_WORKFLOW_STEP (
+    ID uniqueidentifier,
+    WORKFLOW_CODE nvarchar(20),
+    NAME nvarchar(50),
+		PROJECT_ID uniqueidentifier,
+	DOCUMENT_ID uniqueidentifier,
+    ACTIVE bit,
+	PROJECT_ROLE_CODE varchar(20),
+	USER_ACTION varchar(20),
+	NUMBER_DAYS int,
+	ACTION varchar(20),
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
+
+
+
+CREATE TABLE T_PS_DOCUMENT_WORKFLOW_FILE (
+    ID uniqueidentifier,
+    WORKFLOW_CODE nvarchar(20),
+		PROJECT_ID uniqueidentifier,
+	DOCUMENT_ID uniqueidentifier,
+    NAME nvarchar(50),
+    ACTIVE bit,
+	CREATE_BY varchar(20),
+	CREATE_DATE datetime,
+	UPDATE_BY varchar(20),
+	UPDATE_DATE datetime
+);
 
 
 

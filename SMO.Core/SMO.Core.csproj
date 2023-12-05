@@ -163,6 +163,9 @@
     <Compile Include="Entities\PS\T_PS_CONTRACT_DETAIL.cs" />
     <Compile Include="Entities\PS\T_PS_CONTRACT_FILE.cs" />
     <Compile Include="Entities\PS\T_PS_CONTRACT_PAYMENT.cs" />
+    <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW.cs" />
+    <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW_FILE.cs" />
+    <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW_STEP.cs" />
     <Compile Include="Entities\PS\T_PS_GEN_CODE_HISTORY.cs" />
     <Compile Include="Entities\PS\T_PS_PLAN_COST.cs" />
     <Compile Include="Entities\PS\T_PS_PLAN_PROGRESS.cs" />
@@ -175,6 +178,9 @@
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_SAP.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_VERSION.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_USER_RIGHT.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_WORKFLOW.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_WORKFLOW_FILE.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_WORKFLOW_STEP.cs" />
     <Compile Include="Entities\PS\T_PS_REFERENCE.cs" />
     <Compile Include="Entities\PS\T_PS_RESOURCE.cs" />
     <Compile Include="Entities\PS\T_PS_RESOURCE_OTHER.cs" />
