@@ -19,16 +19,16 @@ namespace SMO.Service.MD
         {
             try
             {
+                if (workflow.CODE.Contains("."))
+                {
+                    this.State = false;
+                    this.ErrorMessage = $"Mã WORKFLOW {workflow.CODE} lỗi! Chỉ được sử dụng dấu - hoặc _ trong mã! Vui lòng kiểm tra lại!";
+                    return;
+                }
                 if (UnitOfWork.Repository<WorkflowRepo>().CheckExist(x => x.CODE == this.ObjDetail.CODE))
                 {
                     this.State = false;
                     this.ErrorMessage = $"Mã WORKFLOW {workflow.CODE} bị trùng! Vui lòng kiểm tra lại!";
-                    return;
-                }
-                if (workflow.CONTRACT_VALUE_MIN > workflow.CONTRACT_VALUE_MAX)
-                {
-                    this.State = false;
-                    this.ErrorMessage = $"Giá trị hợp đồng MIN > Giá trị hợp đồng MAX! Vui lòng kiểm tra lại!";
                     return;
                 }
 
@@ -70,14 +70,9 @@ namespace SMO.Service.MD
         {
             try
             {
-                if (workflow.CONTRACT_VALUE_MIN > workflow.CONTRACT_VALUE_MAX)
-                {
-                    this.State = false;
-                    this.ErrorMessage = $"Giá trị hợp đồng MIN > Giá trị hợp đồng MAX! Vui lòng kiểm tra lại!";
-                    return;
-                }
-
+                
                 UnitOfWork.BeginTransaction();
+                workflow.ACTIVE = false;
                 UnitOfWork.Repository<WorkflowRepo>().Update(workflow);
 
                 foreach (var item in workflowStep)
@@ -140,7 +135,12 @@ namespace SMO.Service.MD
             try
             {
                 UnitOfWork.BeginTransaction();
-                UnitOfWork.Repository<WorkflowStepRepo>().Queryable().Where(x => x.ID == id).Delete();
+                var item = UnitOfWork.Repository<WorkflowStepRepo>().Queryable().FirstOrDefault(x => x.ID == id);
+                var wfHeader = UnitOfWork.Repository<WorkflowRepo>().Queryable().FirstOrDefault(x => x.CODE == item.WORKFLOW_CODE);
+                UnitOfWork.Repository<WorkflowStepRepo>().Delete(item);
+                wfHeader.ACTIVE = false;
+                UnitOfWork.Repository<WorkflowRepo>().Update(wfHeader);
+
                 UnitOfWork.Commit();
             }
             catch(Exception ex)
@@ -156,7 +156,12 @@ namespace SMO.Service.MD
             try
             {
                 UnitOfWork.BeginTransaction();
-                UnitOfWork.Repository<WorkflowFileRepo>().Queryable().Where(x => x.ID == id).Delete();
+                var item = UnitOfWork.Repository<WorkflowFileRepo>().Queryable().FirstOrDefault(x => x.ID == id);
+                var wfHeader = UnitOfWork.Repository<WorkflowRepo>().Queryable().FirstOrDefault(x => x.CODE == item.WORKFLOW_CODE);
+                UnitOfWork.Repository<WorkflowFileRepo>().Delete(item);
+                wfHeader.ACTIVE = false;
+                UnitOfWork.Repository<WorkflowRepo>().Update(wfHeader);
+
                 UnitOfWork.Commit();
             }
             catch (Exception ex)

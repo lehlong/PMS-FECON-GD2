@@ -198,7 +198,7 @@
                             @foreach (var item in Model.ObjDetail.ListSteps.OrderBy(x => x.C_ORDER))
                             {
                                 <tr>
-                                    <td><label>Bước @item.C_ORDER</label></td>
+                                    <td><label>Bước @(item.C_ORDER + 1)</label></td>
                                     <td hidden><input class="form-control step-workflow-id" value="@item.ID" /></td>
                                     <td>
                                         <div class="form-group">
@@ -317,7 +317,7 @@
             });
             Forms.CompleteUI();
         });
-        var number = @Model.ObjDetail.ListSteps.Max(x => x.C_ORDER);
+        var number = @Model.ObjDetail.ListSteps.Count();
 
         const lstProjectRole = @Html.Raw(JsonConvert.SerializeObject(lstProjectRole, jsonSerializeSettings));
         const lstUserFecon = @Html.Raw(JsonConvert.SerializeObject(lstUserFecon, jsonSerializeSettings));
@@ -396,7 +396,7 @@
             Forms.CompleteUI();
         };
 
-        var numberFile = @Model.ObjDetail.ListFiles.Max(x => x.C_ORDER);
+        var numberFile = @Model.ObjDetail.ListFiles.Count();
 
         function addFile() {
             if ($(".single-file-workflow tr").length == 0) {

@@ -12,7 +12,7 @@
     var lstAuthority = SelectListUtilities.GetAuthority(false);
     var lstProjectRole = SelectListUtilities.GetProjectRole();
     var lstUserFecon = SelectListUtilities.GetListUserFecon();
-    var lstActionWorkflow = SelectListUtilities.GetActionWorkflow();
+    var lstActionWorkflow = SelectListUtilities.GetActionWorkflow(false);
 }
 <style>
     .card-shadow {
@@ -314,7 +314,7 @@
                     PROJECT_ROLE_CODE: row.find("#step-workflow-project-role").val(),
                     USER_ACTION: row.find("#step-workflow-username").val(),
                     NUMBER_DAYS: row.find(".step-workflow-day").val(),
-                    ACTION: row.find("#step-workflow-action").val(),
+                    ACTION: String(row.find("#step-workflow-action").val()),
                     C_ORDER: index
                 })
             });

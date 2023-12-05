@@ -30,6 +30,10 @@
                 {
                     <li role="presentation" id="li-resource-edit"><a href="#resource-edit" data-toggle="tab" onclick="onClickResource_Edit();">NHÂN SỰ</a></li>
                 }
+                @if (AuthorizeUtilities.CheckUserRightProject("RP1.5", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
+                {
+                    <li role="presentation" id="li-workflow-edit"><a href="#workflow-edit" data-toggle="tab" onclick="onClickWorkflow_Edit();">QUY TRÌNH</a></li>
+                }
                 @if (AuthorizeUtilities.CheckUserRightProject("RP1.3", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
                 {
                     <li role="presentation" id="li-contract-cus-edit"><a href="#contract-cus-edit" onclick="onClickContractCus_Edit();" data-toggle="tab">HỢP ĐỒNG KINH DOANH</a></li>
@@ -57,7 +61,8 @@
                 }
             </ul>
             <div class="tab-content">
-                <div role="tabpanel" class="tab-pane fade in" id="dashboard-edit"></div>
+                <div role="tabpanel" class="tab-pane fade in" id="dashboard-edit">
+                </div>
                 <div role="tabpanel" class="tab-pane fade in active" id="general-infomation-edit">
                 </div>
                 <div role="tabpanel" class="tab-pane fade in" id="contract-cus-edit">
@@ -67,6 +72,8 @@
                 <div role="tabpanel" class="tab-pane fade" id="tree-edit">
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="resource-edit">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="workflow-edit">
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="plan-edit">
                 </div>
@@ -84,6 +91,9 @@
 
                 if (moduleName == "NhanSuFecon" || moduleName == "NhanSuVendor") {
                     $("#@Model.ViewId #ulNavTabs #li-resource-edit a").click();
+                }
+                else if (moduleName == "Workflow") {
+                    $("#@Model.ViewId #ulNavTabs #li-workflow-edit a").click();
                 }
                 else if (moduleName == "ThongTinHopDongKhachHang" || moduleName == "PhamViCongViecHopDongKhachHang" || moduleName == "ThanhToanHopDongKhachHang") {
                     $("#@Model.ViewId #ulNavTabs #li-contract-cus-edit a").click();
