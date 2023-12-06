@@ -495,6 +495,7 @@
     <Compile Include="Areas\PS\Controllers\ProjectSlDtController.cs" />
     <Compile Include="Areas\PS\Controllers\ProjectStructController.cs" />
     <Compile Include="Areas\PS\Controllers\ProjectTimeController.cs" />
+    <Compile Include="Areas\PS\Controllers\ProjectWorkflowController.cs" />
     <Compile Include="Areas\PS\Controllers\ReportController.cs" />
     <Compile Include="Areas\PS\Controllers\ResourceController.cs" />
     <Compile Include="Areas\PS\Controllers\TaskController.cs" />
@@ -672,6 +673,7 @@
     <Compile Include="Service\PS\ProjectStructService.cs" />
     <Compile Include="Service\PS\ProjectStructVersionService.cs" />
     <Compile Include="Service\PS\ProjectTimeService.cs" />
+    <Compile Include="Service\PS\ProjectWorkflowService.cs" />
     <Compile Include="Service\PS\ReferenceService.cs" />
     <Compile Include="Service\PS\TaskService.cs" />
     <Compile Include="Service\PS\ValidateImport\IValidateImportProject.cs" />
@@ -1373,6 +1375,9 @@
     <Content Include="Areas\MD\Views\Workflow\List.cshtml" />
     <Content Include="Areas\MD\Views\Workflow\Create.cshtml" />
     <Content Include="Areas\MD\Views\Workflow\Edit.cshtml" />
+    <Content Include="Areas\PS\Views\ProjectWorkflow\Index.cshtml" />
+    <Content Include="Areas\PS\Views\ProjectWorkflow\List.cshtml" />
+    <Content Include="Areas\PS\Views\ProjectWorkflow\Edit.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

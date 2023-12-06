@@ -1,0 +1,383 @@
+﻿
+@model SMO.Service.PS.ProjectWorkflowService
+@using Newtonsoft.Json.Serialization;
+@using Newtonsoft.Json;
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var jsonSerializeSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+    var lstRequestType = SelectListUtilities.GetRequestType(false);
+    var lstProjectLevel = SelectListUtilities.GetProjectLevel(false);
+    var lstPurchaseType = SelectListUtilities.GetPurchaseType(false);
+    var lstAuthority = SelectListUtilities.GetAuthority(false);
+    var lstProjectRole = SelectListUtilities.GetProjectRole();
+    var lstUserFecon = SelectListUtilities.GetUserInProject(Model.ObjDetail.PROJECT_ID);
+    var lstActionWorkflow = SelectListUtilities.GetActionWorkflow(false);
+}
+<style>
+    .card-shadow {
+        box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    }
+
+    .col-md-1, .col-md-2, .col-md-5 {
+        margin-bottom: 12px !important;
+    }
+
+    td {
+        border: none !important;
+    }
+    .open{
+        max-height:320px !important;
+    }
+</style>
+<div id='@Model.ViewId' class="container-fluid child-content">
+
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons">clear_all</i> CHỈNH SỬA THÔNG TIN WORKFLOW: @Model.ObjDetail.CODE.ToUpper()</a>
+                </li>
+
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function p-t-10">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+                        @Html.MyButton("cmdSave", "Lưu lại", "Update();", "Alt+N", "done_all")
+                        @if (Model.ObjDetail.ACTIVE)
+                        {
+                            @Html.MyButton("cmdSave", "Inactive", $"ToggleActive('{Model.ObjDetail.CODE}');", "Alt+N", "lock")
+                        }
+                        else
+                        {
+                            @Html.MyButton("cmdSave", "Active", $"ToggleActive('{Model.ObjDetail.CODE}');", "Alt+N", "lock_open")
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-12 card-shadow" style="padding-top: 22px;">
+                    <div class="row">
+                        <div class="col-md-1">
+                            <label>Trạng thái</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="@(Model.ObjDetail.ACTIVE ? "ACTIVE" : "INACTIVE")" readonly disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Loại đề nghị</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <select id="request-type" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control" disabled>
+                                        @foreach (var item in lstRequestType)
+                                        {
+                                            var selected = "";
+                                            if (item.Value == Model.ObjDetail.REQUEST_TYPE_CODE)
+                                            {
+                                                selected = "selected";
+                                            }
+                                            <option value="@item.Value" @selected>@item.Text</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Mã quy trình</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input id="workflow-code" type="text" class="form-control" value="@Model.ObjDetail.CODE" readonly disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Tên quy trình</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input id="workflow-name" type="text" class="form-control" value="@Model.ObjDetail.NAME" disabled/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Cấp dự án</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <select id="project-level" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control" disabled>
+                                        @foreach (var item in lstProjectLevel)
+                                        {
+                                            var selected = "";
+                                            if (item.Value == Model.ObjDetail.PROJECT_LEVEL_CODE)
+                                            {
+                                                selected = "selected";
+                                            }
+                                            <option value="@item.Value" @selected>@item.Text</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>GTHĐ (min)</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input id="contract-value-min" value="@Model.ObjDetail.CONTRACT_VALUE_MIN" class="form-control mask-number valid" data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" data-val="true" type="text" style="text-align: right;" disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>GTHĐ (max)</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input id="contract-value-max" value="@Model.ObjDetail.CONTRACT_VALUE_MAX" class="form-control mask-number valid" data-inputmask="'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true" data-val="true" type="text" style="text-align: right;" disabled>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Loại mua hàng</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <select id="purchase-type" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control" disabled>
+                                        @foreach (var item in lstPurchaseType)
+                                        {
+                                            var selected = "";
+                                            if (item.Value == Model.ObjDetail.PURCHASE_TYPE_CODE)
+                                            {
+                                                selected = "selected";
+                                            }
+                                            <option value="@item.Value" @selected>@item.Text</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Ủy quyền</label>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <select id="authority" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control" disabled>
+                                        @foreach (var item in lstAuthority)
+                                        {
+                                            var selected = "";
+                                            if (item.Value.ToLower() == Model.ObjDetail.AUTHORITY.ToString().ToLower())
+                                            {
+                                                selected = "selected";
+                                            }
+                                            <option value="@item.Value" @selected>@item.Text</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 card-shadow" style="padding-top:12px">
+                    <table class="table table-workflow-step">
+                        <tbody class="single-step-workflow">
+                            @foreach (var item in Model.ObjDetail.ListSteps.OrderBy(x => x.C_ORDER))
+                            {
+                                <tr>
+                                    <td><label>Bước @(item.C_ORDER + 1)</label></td>
+                                    <td hidden><input class="form-control step-workflow-id" value="@item.ID" /></td>
+                                    <td>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input class="form-control step-workflow-name" value="@item.NAME" disabled />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><label>Vai trò xử lý</label></td>
+                                    <td style="width:180px;">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <select id="step-workflow-project-role" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control" disabled>
+                                                    @foreach (var prjrole in lstProjectRole)
+                                                    {
+                                                        var selected = "";
+                                                        if (prjrole.Value == item.PROJECT_ROLE_CODE)
+                                                        {
+                                                            selected = "selected";
+                                                        }
+                                                        <option value="@prjrole.Value" @selected>@prjrole.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><label>Người xử lý (user)</label></td>
+                                    <td style="width:180px;">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <select id="step-workflow-username" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control">
+                                                    @foreach (var user in lstUserFecon)
+                                                    {
+                                                        var selected = "";
+                                                        if (user.Value == item.USER_ACTION)
+                                                        {
+                                                            selected = "selected";
+                                                        }
+                                                        <option value="@user.Value" @selected>@user.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><label>Hạn xử lý (ngày)</label></td>
+                                    <td>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input type="number" class="form-control step-workflow-day" value="@item.NUMBER_DAYS" disabled/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><label>Hành động</label></td>
+                                    <td style="width:220px;">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <select id="step-workflow-action" data-val="true" data-live-search="true" class="selectpicker show-tick dropdown form-control" multiple disabled>
+                                                    @foreach (var action in lstActionWorkflow)
+                                                    {
+                                                        var selected = "";
+                                                        if (item.ACTION.Contains(action.Value))
+                                                        {
+                                                            selected = "selected";
+                                                        }
+                                                        <option value="@action.Value" @selected>@action.Text</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-12 card-shadow" style="padding-top:12px">
+                    <label>DANH SÁCH FILE ĐÍNH KÈM</label>
+                    <table class="table table-workflow-file">
+                        <tbody class="single-file-workflow">
+                            @foreach (var item in Model.ObjDetail.ListFiles.OrderBy(x => x.C_ORDER))
+                            {
+                                <tr>
+                                    <td style="width:32px">@(item.C_ORDER + 1). </td>
+                                    <td hidden><input class="form-control file-workflow-id" value="@item.ID" /></td>
+                                    <td>
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input class="form-control file-workflow-name" value="@item.NAME" disabled/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $(".mask-number").inputmask({ "removeMaskOnSubmit": true });
+            $(".mask-number").focus(function () {
+                $(this).select();
+            });
+            Forms.CompleteUI();
+        });
+
+        function Update() {
+            var workflow = {
+                CODE: $("#workflow-code").val(),
+                NAME: $("#workflow-name").val(),
+                REQUEST_TYPE_CODE: $("#request-type").val(),
+                PROJECT_LEVEL_CODE: $("#project-level").val(),
+                CONTRACT_VALUE_MIN: String($("#contract-value-min").val()).replaceAll(",", ""),
+                CONTRACT_VALUE_MAX: String($("#contract-value-max").val()).replaceAll(",", ""),
+                PURCHASE_TYPE_CODE: $("#purchase-type").val(),
+                AUTHORITY: $("#authority").val(),
+            };
+            var workflowStep = [];
+            $('.single-step-workflow > tr').each(function (index, tr) {
+                row = $(this);
+                workflowStep.push({
+                    ID: row.find(".step-workflow-id").val(),
+                    NAME: row.find(".step-workflow-name").val(),
+                    PROJECT_ROLE_CODE: row.find("#step-workflow-project-role").val(),
+                    USER_ACTION: row.find("#step-workflow-username").val(),
+                    NUMBER_DAYS: row.find(".step-workflow-day").val(),
+                    ACTION: String(row.find("#step-workflow-action").val()),
+                    C_ORDER: index
+                })
+            });
+
+            var workflowFile = [];
+            $('.single-file-workflow > tr').each(function (index, tr) {
+                row = $(this);
+                workflowFile.push({
+                    ID: row.find(".file-workflow-id").val(),
+                    NAME: row.find(".file-workflow-name").val(),
+                    C_ORDER: index
+                })
+            });
+
+            var ajaxParams = {
+                url: '@Url.Action("Update")',
+                type: "POST",
+                data: {
+                    workflow: workflow,
+                    workflowStep: workflowStep,
+                    workflowFile: workflowFile
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams)
+        }
+
+        function ToggleActive(id) {
+            var ajaxParams = {
+                url: '@Url.Action("ToggleActive")',
+                type: "POST",
+                data: {
+                    id: id,
+                },
+                dataType: 'json',
+                success: function (response) {
+                    Message.execute(response);
+                }
+            };
+            Forms.Ajax(ajaxParams)
+        }
+    </script>
+</div>
+
+

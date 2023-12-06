@@ -31,7 +31,18 @@ namespace SMO.Service.MD
                     this.ErrorMessage = $"Mã WORKFLOW {workflow.CODE} bị trùng! Vui lòng kiểm tra lại!";
                     return;
                 }
-
+                if(workflowStep == null)
+                {
+                    this.State = false;
+                    this.ErrorMessage = $"Các bước trong WORKFLOW đang bị trống! Vui lòng kiểm tra lại!";
+                    return;
+                }
+                if (workflowFile == null)
+                {
+                    this.State = false;
+                    this.ErrorMessage = $"Các đầu mục file trong WORKFLOW đang bị trống! Vui lòng kiểm tra lại!";
+                    return;
+                }
                 workflow.ACTIVE = true;
                 UnitOfWork.BeginTransaction();
                 UnitOfWork.Repository<WorkflowRepo>().Create(workflow);

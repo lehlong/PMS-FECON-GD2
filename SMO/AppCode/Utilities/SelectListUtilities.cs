@@ -980,6 +980,26 @@ namespace SMO
             return new SelectList(lstData, "Value", "Text", selected);
         }
 
+        public static SelectList GetUserInProject(Guid projectId, bool isAddBlank = true, string selected = "")
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+            var lstAll = UnitOfWork.Repository<ProjectResourceRepo>().Queryable()
+                .Where(x => x.PROJECT_ID == projectId)
+                .OrderBy(x => x.USER_NAME)
+                .ToList();
+            foreach (var obj in lstAll)
+            {
+                lstData.Add(new Data { Value = obj.USER_NAME, Text = $"{obj?.User?.FULL_NAME} ({obj?.USER_NAME})" });
+            }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
+
         public static SelectList GetListTaskStatuses()
         {
             var lstData = new List<Data>()

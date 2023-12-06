@@ -1,0 +1,70 @@
+﻿@model SMO.Service.PS.ProjectWorkflowService
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+}
+<div id='@Model.ViewId'>
+    @using (Ajax.BeginForm("List", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.FormId)
+        @Html.HiddenFor(m => m.ObjDetail.PROJECT_ID)
+        <input type="hidden" name="modulName" value="@ViewBag.ModulName" />
+        <div class="card">
+            <div class="body" style="padding-top: 0px;">
+                <div class="tab-content">
+                    <div class="page-function p-b-10  p-t-10">
+                        <div class="page-function-button m-r-20" style="float:left">
+                            @Html.MyButton("cmdHome", "Thông tin dự án", string.Format("$(\"#li-general-infomation-edit a\").click();"), "Alt+N", "arrow_back")                            
+                            @Html.MyButton("cmdAdd", "Quy trình", "GenerateProjectWorkflow();", "Alt+N", "add")
+                               
+                        </div>
+                        <div class="input-group page-function-search">
+                            <div class="form-line">
+                                @Html.MyTextBoxFor(m => m.ObjDetail.NAME, new { placeholder = "Tìm kiếm", @class = "align-center", @data_val = false })
+                            </div>
+                            <span class="input-group-addon" title="Tìm kiếm" onclick="Forms.SubmitForm('@Model.FormId')">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <span class="input-group-addon" title="Làm mới ô tìm kiếm" onclick="Forms.ResetForm('@Model.FormId')">
+                                <i class="material-icons">refresh</i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="divResult">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+<script type="text/javascript">
+        function SubmitIndex() {
+            Forms.SubmitForm('@Model.FormId');
+        }
+
+        $(function () {
+            Forms.SubmitForm('@Model.FormId');
+            Forms.CompleteUI();
+            Forms.SubmitByEnter("@Model.FormId");
+        });
+
+    function GenerateProjectWorkflow() {
+        var ajaxParams = {
+            url: '@Url.Action("GenerateProjectWorkflow")',
+            type: "POST",
+            dataType: 'json',
+            data: {
+                projectId : '@Model.ObjDetail.PROJECT_ID'
+            },
+            success: function (response) {
+                Message.execute(response);
+                Forms.SubmitForm('@Model.FormId');
+            }
+        };
+        Forms.Ajax(ajaxParams)
+    }
+</script>
+</div>

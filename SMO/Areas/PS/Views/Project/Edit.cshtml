@@ -32,7 +32,7 @@
                 }
                 @if (AuthorizeUtilities.CheckUserRightProject("RP1.5", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
                 {
-                    <li role="presentation" id="li-workflow-edit"><a href="#workflow-edit" data-toggle="tab" onclick="onClickWorkflow_Edit();">QUY TRÌNH</a></li>
+                    <li role="presentation" id="li-workflow-edit"><a href="#workflow-edit" data-toggle="tab" onclick="onClickProjectWorkflow_Edit();">QUY TRÌNH</a></li>
                 }
                 @if (AuthorizeUtilities.CheckUserRightProject("RP1.3", Model.ObjDetail.ID) || AuthorizeUtilities.CheckUserRight("R00"))
                 {
@@ -124,6 +124,11 @@
             function onClickResource_Edit() {
                 Forms.LoadAjax('@Html.Raw(Url.Action("Index", "Resource",
                                new { projectId = Model.ObjDetail.ID, modulName = ViewBag.ModulName}))');
+            }
+
+            function onClickProjectWorkflow_Edit() {
+                Forms.LoadAjax({ url: '@Html.Raw(Url.Action("Index", "ProjectWorkflow",
+                       new { projectId = Model.ObjDetail.ID, modulName = ViewBag.ModulName }))', htmlTarget: '#@Model.ViewId #workflow-edit' });
             }
 
             function onClickProjectStruct_Edit() {
