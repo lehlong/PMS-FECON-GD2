@@ -602,7 +602,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                         <div style=" flex: 2">
                             <div class="form-line">
-                                <input class="form-control valid align-center" type="text" value="@(hopDong?.START_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
+                                <input class="form-control valid align-center" type="text" value="@(hopDong?.START_DATE.Value.ToString(Global.DateToStringFormat))" readonly style="text-align:left !important">
                             </div>
                         </div>
                         <div style="flex: 1">
@@ -612,7 +612,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                         <div style=" flex: 2">
                             <div class="form-line">
-                                <input class="form-control valid align-center" type="text" value="@(hopDong?.FINISH_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
+                                <input class="form-control valid align-center" type="text" value="@(hopDong?.FINISH_DATE.Value.ToString(Global.DateToStringFormat))" readonly style="text-align:left !important">
                             </div>
                         </div>
                     </div>
@@ -625,7 +625,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                         <div style="flex:2">
                             <div class="form-line">
-                                <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_VALUE.ToStringVN())" readonly>
+                                <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_VALUE.ToStringVN())" readonly >
 
                             </div>
                         </div>
@@ -650,7 +650,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                         <div style="flex:5">
                             <div class="form-line">
-                                <input class="form-control valid" type="text" readonly value="@((hopDong?.CONTRACT_VALUE + hopDong?.CONTRACT_VALUE * hopDong?.VAT / 100)?.ToString("0,0"))">
+                                <input class="form-control valid" type="text" readonly value="@((hopDong?.CONTRACT_VALUE + hopDong?.CONTRACT_VALUE * hopDong?.VAT / 100)?.ToStringVN())">
                             </div>
                         </div>
                     </div>
