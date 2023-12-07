@@ -26,11 +26,10 @@
                         <div class="col-lg-7 col-xs-10">
 
                             <div class="row">
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <label>Mã</label>
-
                                 </div>
-                                <div class="col-md-11">
+                                <div class="col-md-10">
                                     <div class="form-group">
                                         <div class="form-line">
                                             @Html.MyTextBoxFor(m => m.ObjDetail.CODE)
@@ -41,11 +40,10 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <label>Chọn ngôn ngữ</label>
-
                                 </div>
-                                <div class="col-md-11">
+                                <div class="col-md-10">
                                     <div class="form-group">
                                         @Html.MyDropDownListFor(m => m.ObjDetail.LANGUAGE, SelectListUtilities.GetDictionary(Domain.LANG.ToString(), true, false), new { @class = "selectpicker show-tick" })
                                         @Html.ValidationMessageFor(m => m.ObjDetail.LANGUAGE)
@@ -54,11 +52,10 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-1">
+                                <div class="col-md-2">
                                     <label>Nội dung</label>
-
                                 </div>
-                                <div class="col-md-11">
+                                <div class="col-md-10">
                                     <div class="form-group">
                                         <div class="form-line">
                                             @Html.MyTextBoxFor(m => m.ObjDetail.MESSAGE)
