@@ -12,7 +12,7 @@
     {
         editable = true;
     }
-    var totalPaymentList = Model.ObjList.Sum(x => x.AMOUNT_ADVANCE + x.AMOUNT);
+    var totalPaymentList = Model.ObjList.Sum(x => x.AMOUNT_ADVANCE);
 }
 <div class="table-responsive">
     <table class="table">
@@ -54,14 +54,14 @@
                     <td ondblclick="@vdbclickAction" class="align-center">
                         <a href="#" onclick="@vdbclickAction">@number</a>
                     </td>
-                    <td ondblclick="@vdbclickAction" class="align-center">@(item.REQUEST_TYPE_CODE)</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.RequestType?.NAME)</td>
                     <td ondblclick="@vdbclickAction" class="align-center">@item.EXPLAIN</td>
                     <td ondblclick="@vdbclickAction" class="align-center">@item.BILL_NUMBER</td>
                     <td ondblclick="@vdbclickAction" class="align-center">@(item.PAYMENT_DATE.ToString(Global.DateToStringFormat))</td>
                     <td ondblclick="@vdbclickAction" class="align-right">@item.CURRENCY_CODE</td>
                     <td ondblclick="@vdbclickAction" class="align-right">@item.EXCHANGE_RATE</td>
-                    <td ondblclick="@vdbclickAction" class="align-right">@item.AMOUNT</td>
-                    <td ondblclick="@vdbclickAction" class="align-right">@item.AMOUNT_ADVANCE</td>
+                    <td ondblclick="@vdbclickAction" class="align-right">@item.AMOUNT.ToStringVN()</td>
+                    <td ondblclick="@vdbclickAction" class="align-right">@item.AMOUNT_ADVANCE.ToStringVN()</td>
                     <td ondblclick="@vdbclickAction" class="align-center">@(item.STATUS)</td>
                     <td ondblclick="@vdbclickAction" class="align-center">@(item.UPDATE_BY)</td>
                     <td ondblclick="@vdbclickAction" class="align-center">@(item.UPDATE_DATE == null ? null : item.UPDATE_DATE.Value.ToString("dd/MM/yyyy HH:mm"))</td>

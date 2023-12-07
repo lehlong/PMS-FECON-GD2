@@ -1,1 +1,319 @@
-﻿
+﻿@model SMO.Service.PS.ContractRequestPaymentService
+@using SMO.Core.Entities.PS
+@{
+    Model.ViewId = Guid.NewGuid().ToString();
+    Model.FormId = Guid.NewGuid().ToString();
+    var contract = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_CONTRACT>().FirstOrDefault(x => x.ID == Model.ObjDetail.CONTRACT_ID);
+    var project = SMOUtilities.GetProject(contract.PROJECT_ID);
+    var statusProjectEditable = (contract.IS_SIGN_WITH_CUSTOMER || project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue()) && (project.STATUS != "04");
+
+}
+<style>
+    .card-shadow {
+        box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
+    }
+
+    .col-md-2, .col-md-1, .col-md-5, .col-md-4 {
+        margin-bottom: 4px !important;
+    }
+</style>
+<div id='@Model.ViewId' class="container-fluid child-content">
+    <div class="card">
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a style="padding-left:0px"><i class="material-icons">payment</i> CHỈNH SỬA THÔNG TIN </a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function p-t-10">
+                    <div class="page-function-button m-r-20">
+                        @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
+
+                        @Html.MyButton("cmdSave", "Lưu thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
+
+                    </div>
+                </div>
+                <div class="col-md-12 card-shadow" style="padding-top: 22px; cursor: no-drop;">
+                    <div class="row">
+                        <div class="col-md-1">
+                            <label>Số hợp đồng</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="@(contract.CONTRACT_NUMBER)" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Nhà thầu</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="@(contract.Vendor?.NAME)" disabled />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Số tài khoản</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="Số tài khoản" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Tên ngân hàng</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="Tên ngân hàng" disabled />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Giá trị HĐ</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="@contract.CONTRACT_VALUE_VAT.ToStringVN()" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Giá trị HĐ (VND)</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="@contract.CONTRACT_VALUE_VAT.ToStringVN()" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Điều kiện tạm ứng</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="" disabled />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Tỷ lệ tạm ứng (%)</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label>Số tiền tạm ứng</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="" disabled />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-1">
+                            <label>Tiền tạm ứng (VND)</label>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" class="form-control" value="" disabled />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.ObjDetail.CONTRACT_ID)
+                    @Html.HiddenFor(m => m.ViewId)
+                    @Html.HiddenFor(m => m.ObjDetail.REFERENCE_FILE_ID)
+                    <div class="col-md-9 card-shadow" style="padding-top: 22px; width: 74%; margin-right: 12px;">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <label>Loại đề nghị</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.REQUEST_TYPE_CODE, SelectListUtilities.GetRequestType(false), new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.REQUEST_TYPE_CODE)
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Trạng thái</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input type="text" class="form-control" value="Khởi tạo" disabled />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Diễn giải</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.EXPLAIN, new { @maxlength = 50, @placeholder = "Không quá 50 ký tự" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.EXPLAIN)
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Số hoá đơn</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.BILL_NUMBER)
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.BILL_NUMBER)
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Loại tiền</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyDropDownListFor(m => m.ObjDetail.CURRENCY_CODE, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Tỷ giá</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.EXCHANGE_RATE, new
+                                        {
+                                            onkeyup = "CalValueEdit();",
+                                            @class = "mask-number",
+                                            @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                        })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.EXCHANGE_RATE)
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Số tiền đề nghị</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT, new
+                                        {
+                                            onkeyup = "CalValueEdit();",
+                                            @class = "mask-number",
+                                            @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                        })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT)
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Số tiền đề nghị (VND)</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT_ADVANCE, new
+                                        {
+                                            @disabled = "disabled",
+                                            @class = "mask-number",
+                                            @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                        })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT_ADVANCE)
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Ngày</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.PAYMENT_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.PAYMENT_DATE)
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label>Nội dung</label>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.CONTENTS)
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.CONTENTS)
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label>Quy trình</label>
+                            </div>
+                            <div class="col-md-10">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyDropDownListFor(m => m.WORKFLOW_CODE, SelectListUtilities.GetWorkflowInProject(contract.PROJECT_ID, false), new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div class="col-md-3 card-shadow" style="padding-top: 22px;">
+
+                </div>
+
+            </div>
+        </div>
+        <script type="text/javascript">
+    $(function () {
+                $(".mask-number").inputmask({ "removeMaskOnSubmit": true });
+                Forms.CompleteUI();
+            });
+            function CalValueEdit() {
+                var amount = Inputmask.unmask($("#ObjDetail_AMOUNT").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+                var amountExchangeRate = Inputmask.unmask($("#ObjDetail_EXCHANGE_RATE").val(), { alias: 'decimal', groupSeparator: ',', autoGroup: true });
+                var totalPayment = Number(amount) * Number(amountExchangeRate);
+                if (!isNaN(totalPayment)) {
+                    $("#ObjDetail_AMOUNT_ADVANCE").val(totalPayment);
+                }
+            }
+        </script>
+    </div>
+</div>
+

@@ -6,9 +6,10 @@ namespace SMO.Repository.Mapping.PS_DOCUMENT
     {
         public T_PS_DOCUMENT_WORKFLOW_FILE_Map()
         {
-            Id(x => x.ID);
+            Id(x => x.ID).GeneratedBy.Assigned();
             Map(x => x.NAME);
             Map(x => x.WORKFLOW_CODE);
+            Map(x => x.WORKFLOW_ID);
             Map(x => x.C_ORDER);
             Map(x => x.DOCUMENT_ID);
             Map(x => x.PROJECT_ID);
