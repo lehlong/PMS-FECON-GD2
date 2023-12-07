@@ -398,13 +398,19 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <div class="form-line">
-                            <label>Khách hàng</label>
-                            @Html.MyDropDownListFor(m => m.ObjDetail.CUSTOMER_CODE, SelectListUtilities.GetCustomers(),
-                           new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 8px;align-items:center">
+                        <div style="flex:1">
+                            <div class="form-line">
+                                <label>Khách hàng</label>
+                            </div>
                         </div>
-                        @Html.ValidationMessageFor(m => m.ObjDetail.CUSTOMER_CODE)
+                        <div style="flex: 7">
+                            <div class="form-line">
+                                @Html.MyDropDownListFor(m => m.ObjDetail.CUSTOMER_CODE, SelectListUtilities.GetCustomers(),
+                               new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                            </div>
+                            @Html.ValidationMessageFor(m => m.ObjDetail.CUSTOMER_CODE)
+                        </div>
                     </div>
 
                     <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;align-items: center">
@@ -440,13 +446,13 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                 <input class="form-control col-red" value="@(Model.ObjDetail.STATUS.GetEnum<ProjectStatus>().GetName())" readonly style="text-align: left;">
                             </div>
                             @Html.ValidationMessageFor(m => m.ObjDetail.PROJECT_LEVEL_CODE)
-                        </div>                        
+                        </div>
                     </div>
 
                     <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;align-items: center">
                         <div style="flex: 1">
                             <div class="form-line">
-                                <label>Ngày bắt đầu</label>                               
+                                <label>Ngày bắt đầu</label>
                             </div>
                         </div>
                         <div style="flex: 3">
@@ -457,7 +463,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                         <div style="flex: 1">
                             <div class="form-line">
-                                <label>Ngày kết thúc</label>                             
+                                <label>Ngày kết thúc</label>
                             </div>
                         </div>
                         <div style="flex: 3">
@@ -482,8 +488,8 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                         <div style="flex: 1">
                             <div class="form-line">
-                                <label>Ngày hết hạn <br> bảo hành</label>                               
-                            </div>                          
+                                <label>Ngày hết hạn <br> bảo hành</label>
+                            </div>
                         </div>
                         <div style="flex:3">
                             <div class="form-line">
@@ -492,12 +498,12 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                             @Html.ValidationMessageFor(m => m.ObjDetail.HAN_BAO_HANH)
                         </div>
                     </div>
-                
+
                     <div class="form-group" style="display: flex; flex-flow: row; gap: 10px; align-items: center">
                         <div style="flex: 1">
                             <div class="form-line">
-                                <label>Khu vực</label>                             
-                            </div>                           
+                                <label>Khu vực</label>
+                            </div>
                         </div>
                         <div style=" flex: 3">
                             <div class="form-line">
@@ -518,7 +524,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                 </select>
                                 @Html.ValidationMessageFor(m => m.ObjDetail.KHU_VUC)
                             </div>
-                    
+
                         </div>
                         <div style="flex: 1">
                             <div class="form-line">
@@ -535,7 +541,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
 
                     <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;">
                         <div style="flex: 1">
-                            <label>Địa điểm</label>                            
+                            <label>Địa điểm</label>
                         </div>
                         <div style="flex: 3">
                             <div class="form-line">
@@ -547,7 +553,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                         </div>
                         <div style="flex: 1">
                             <div class="form-group">
-                                <label>Ghi chú</label>                              
+                                <label>Ghi chú</label>
                             </div>
                         </div>
                         <div style="flex: 3">
@@ -569,7 +575,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                 <label>Tên hợp đồng</label>                                
                             </div>
                         </div>
-                        <div style=" flex: 7">
+                        <div style=" flex: 5">
                             <div class="form-line">
                                 <input class="form-control valid" type="text" value="@(hopDong?.NAME)" readonly>
                             </div>
@@ -581,19 +587,19 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                 <label>Số hợp đồng</label>                             
                             </div>
                         </div>
-                        <div style="flex:7">
+                        <div style="flex:5">
                             <div class="form-line">
                                 <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_NUMBER)" readonly>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group" style="display: flex; flex-flow: row; gap: 10px; align-items: center">
+                    <div class="form-group" style="display: flex; flex-flow: row; gap: 17px; align-items: center">
                         <div style="flex: 1">
                             <div class="form-line">
                                 <label>Ngày bắt đầu</label>
                             </div>
                         </div>
-                        <div style=" flex: 3">
+                        <div style=" flex: 2">
                             <div class="form-line">
                                 <input class="form-control valid align-center" type="text" value="@(hopDong?.START_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
                             </div>
@@ -603,7 +609,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                 <label>Ngày kết thúc</label>
                             </div>
                         </div>
-                        <div style=" flex: 3">
+                        <div style=" flex: 2">
                             <div class="form-line">
                                 <input class="form-control valid align-center" type="text" value="@(hopDong?.FINISH_DATE.Value.ToString(Global.DateToStringFormat))" readonly>
                             </div>
@@ -615,13 +621,13 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
 
 
 
-                    <div class="form-group" style="display:flex; flex-flow: row; gap: 10px;align-items:center">
+                    <div class="form-group" style="display:flex; flex-flow: row; gap: 17px;align-items:center">
                         <div style="flex: 1">
                             <div class="form-line">
                                 <label>Giá trị<br>(trước thuế)</label>
                             </div>
                         </div>
-                        <div style="flex:3">
+                        <div style="flex:2">
                             <div class="form-line">
                                 <input class="form-control valid" type="text" value="@(hopDong?.CONTRACT_VALUE.ToStringVN())" readonly>
 
@@ -632,7 +638,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                 <label>VAT %</label>
                             </div>
                         </div>
-                        <div style="flex:3">
+                        <div style="flex:2">
                             <div class="form-line">
                                 <input class="form-control valid" type="text" value="@(hopDong?.VAT)" readonly>
 
@@ -646,7 +652,7 @@ new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                 <label>Giá trị<br>(sau thuế)</label>
                             </div>
                         </div>
-                        <div style="flex:7">
+                        <div style="flex:5">
                             <div class="form-line">
                                 <input class="form-control valid" type="text" readonly value="@((hopDong?.CONTRACT_VALUE + hopDong?.CONTRACT_VALUE * hopDong?.VAT / 100)?.ToString("0,0"))">
                             </div>
