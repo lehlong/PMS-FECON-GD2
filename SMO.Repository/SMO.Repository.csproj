@@ -180,6 +180,7 @@
     <Compile Include="Implement\PS\ContractFileRepo.cs" />
     <Compile Include="Implement\PS\ContractPaymentRepo.cs" />
     <Compile Include="Implement\PS\ContractRepo.cs" />
+    <Compile Include="Implement\PS\ContractRequestPaymentRepo.cs" />
     <Compile Include="Implement\PS\DocumentWorkflowFileRepo.cs" />
     <Compile Include="Implement\PS\DocumentWorkflowRepo.cs" />
     <Compile Include="Implement\PS\DocumentWorkflowStepRepo.cs" />
@@ -310,6 +311,7 @@
     <Compile Include="Interface\PS\IContractFileRepo.cs" />
     <Compile Include="Interface\PS\IContractPaymentRepo.cs" />
     <Compile Include="Interface\PS\IContractRepo.cs" />
+    <Compile Include="Interface\PS\IContractRequestPaymentRepo.cs" />
     <Compile Include="Interface\PS\IDocumentWorkflowFileRepo.cs" />
     <Compile Include="Interface\PS\IDocumentWorkflowRepo.cs" />
     <Compile Include="Interface\PS\IDocumentWorkflowStepRepo.cs" />
@@ -447,6 +449,7 @@
     <Compile Include="Mapping\PS\T_PS_CONTRACT_FILE_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_CONTRACT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_CONTRACT_PAYMENT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_CONTRACT_REQUEST_PAYMENT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_DOCUMENT_WORKFLOW_FILE_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_DOCUMENT_WORKFLOW_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_DOCUMENT_WORKFLOW_STEP_Map.cs" />

@@ -1,0 +1,83 @@
+﻿@model SMO.Service.PS.ContractRequestPaymentService
+@{
+    var number = Model.ObjList.Count + 1;
+    var contract = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_CONTRACT>().FirstOrDefault(x => x.ID == Model.ObjDetail.CONTRACT_ID);
+    var editable = false;
+    if (contract.IS_SIGN_WITH_CUSTOMER && AuthorizeUtilities.CheckUserRightProject("RP3.2", contract.PROJECT_ID))
+    {
+        editable = true;
+    }
+
+    if (!contract.IS_SIGN_WITH_CUSTOMER && AuthorizeUtilities.CheckUserRightProject("RP4.2", contract.PROJECT_ID))
+    {
+        editable = true;
+    }
+    var totalPaymentList = Model.ObjList.Sum(x => x.AMOUNT_ADVANCE + x.AMOUNT);
+}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="align-center">STT</th>
+                <th class="align-center">Loại đề nghị</th>
+                <th class="align-center">Diễn giải</th>
+                <th class="align-center">Số hóa đơn</th>
+                <th class="align-center">Ngày</th>
+                <th class="align-center">Loại tiền</th>
+                <th class="align-center">Tỷ giá</th>
+                <th class="align-center">Số tiền đề nghị</th>
+                <th class="align-center">Số tiền đề nghị (VND)</th>
+                <th class="align-center">Trạng thái</th>
+                <th class="align-center">Người cập nhật</th>
+                <th class="align-center">Thời gian cập nhật</th>
+                <th class="align-center" width="50px">FILE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="font-weight:bold">
+                <td class="align-center"></td>
+                <td class="align-center">Tổng</td>
+                <td colspan="6"></td>
+                <td class="align-right">@totalPaymentList.ToStringVN() VNĐ</td>
+                <td colspan="4"></td>
+            </tr>
+            @foreach (var item in Model.ObjList.OrderByDescending(x => x.CREATE_DATE))
+            {
+                number--;
+                var vdbclickAction = "";
+                var totalPayment = item.AMOUNT_ADVANCE + item.AMOUNT;
+                if (editable)
+                {
+                    vdbclickAction = string.Format("Forms.LoadAjax('{0}');", Url.Action("Edit", new { id = item.ID }));
+                }
+                <tr>
+                    <td ondblclick="@vdbclickAction" class="align-center">
+                        <a href="#" onclick="@vdbclickAction">@number</a>
+                    </td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.REQUEST_TYPE_CODE)</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@item.EXPLAIN</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@item.BILL_NUMBER</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.PAYMENT_DATE.ToString(Global.DateToStringFormat))</td>
+                    <td ondblclick="@vdbclickAction" class="align-right">@item.CURRENCY_CODE</td>
+                    <td ondblclick="@vdbclickAction" class="align-right">@item.EXCHANGE_RATE</td>
+                    <td ondblclick="@vdbclickAction" class="align-right">@item.AMOUNT</td>
+                    <td ondblclick="@vdbclickAction" class="align-right">@item.AMOUNT_ADVANCE</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.STATUS)</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.UPDATE_BY)</td>
+                    <td ondblclick="@vdbclickAction" class="align-center">@(item.UPDATE_DATE == null ? null : item.UPDATE_DATE.Value.ToString("dd/MM/yyyy HH:mm"))</td>
+                    <td class="align-center">
+                        <a href="#" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new {@area = "CM", referenceId = item.REFERENCE_FILE_ID }))">
+                            <i class="material-icons col-blue" style="cursor:pointer;">attachment</i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if (Model.ObjList.Count > 50)
+{
+    Html.RenderPartial("Paging", Model);
+}
+
+

@@ -13,16 +13,19 @@
             <!-- Nav tabs -->
             <ul class="nav nav-tabs tab-nav-right" role="tablist">
                 <li role="presentation" id="li-thong-tin"><a href="#general-infomation-contract" onclick="onClickInformation()" data-toggle="tab">THÔNG TIN HỢP ĐỒNG</a></li>
-                <li role="presentation" id="li-hang-muc"><a href="#lstTask" data-toggle="tab"  onclick="onClickListTask()">HẠNG MỤC CÔNG VIỆC</a></li>
+                <li role="presentation" id="li-hang-muc"><a href="#lstTask" data-toggle="tab" onclick="onClickListTask()">HẠNG MỤC CÔNG VIỆC</a></li>
+                <li role="presentation" id="li-de-nghi-thanh-toan"><a href="#denghithanhtoan" data-toggle="tab" onclick="onClickDeNghiThanhToan()">ĐỀ NGHỊ THANH TOÁN</a></li>
                 <li role="presentation" id="li-dot-thanh-toan"><a href="#dotthanhtoan" data-toggle="tab" onclick="onClickDotThanhToan()">ĐỢT THANH TOÁN</a></li>
             </ul>
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane fade in active" id="general-infomation-contract">
                     @*@{
-                        Html.RenderPartial("EditGeneralInformation", Model);
-                    }*@
+                Html.RenderPartial("EditGeneralInformation", Model);
+            }*@
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="lstTask">
+                </div>
+                <div role="tabpanel" class="tab-pane fade" id="denghithanhtoan">
                 </div>
                 <div role="tabpanel" class="tab-pane fade" id="dotthanhtoan">
                 </div>
@@ -37,6 +40,8 @@
                     $("#@viewId #li-hang-muc a").click();
                 } else if (moduleName == "ThanhToanHopDongThauPhu" || moduleName == "ThanhToanHopDongKhachHang") {
                     $("#@viewId #li-dot-thanh-toan a").click();
+                }else if (moduleName == "DeNghiThanhToanHopDongThauPhu") {
+                    $("#@viewId #li-de-nghi-thanh-toan a").click();
                 } else {
                     $("#@viewId #li-thong-tin a").click();
                 }
@@ -54,6 +59,14 @@
                     Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"ListTask",
                                    new { id = Model.ObjDetail.ID }))', htmlTarget: '#@viewId #lstTask' });
                 }, 150)
+            }
+
+            function onClickDeNghiThanhToan() {
+                $('#@viewId #denghithanhtoan').html("");
+                setTimeout(() => {
+                    Forms.LoadAjax({ url: '@Html.Raw(Url.Action($"Index", "ContractRequestPayment",
+                        new { contractId = Model.ObjDetail.ID }))', htmlTarget: '#@viewId #denghithanhtoan' });
+                }, 50)
             }
 
             function onClickDotThanhToan() {

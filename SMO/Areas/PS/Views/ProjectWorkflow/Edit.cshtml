@@ -23,7 +23,7 @@
         margin-bottom: 12px !important;
     }
 
-    td {
+    .single-step-workflow td, .single-file-workflow td {
         border: none !important;
     }
     .open{
@@ -48,11 +48,11 @@
                         @Html.MyButton("cmdSave", "Lưu lại", "Update();", "Alt+N", "done_all")
                         @if (Model.ObjDetail.ACTIVE)
                         {
-                            @Html.MyButton("cmdSave", "Inactive", $"ToggleActive('{Model.ObjDetail.CODE}');", "Alt+N", "lock")
+                            @Html.MyButton("cmdSave", "Inactive", $"ToggleActive('{Model.ObjDetail.CODE}', '01');", "Alt+N", "lock")
                         }
                         else
                         {
-                            @Html.MyButton("cmdSave", "Active", $"ToggleActive('{Model.ObjDetail.CODE}');", "Alt+N", "lock_open")
+                            @Html.MyButton("cmdSave", "Active", $"ToggleActive('{Model.ObjDetail.CODE}', '02');", "Alt+N", "lock_open")
                         }
                     </div>
                 </div>
@@ -313,37 +313,12 @@
         });
 
         function Update() {
-            var workflow = {
-                CODE: $("#workflow-code").val(),
-                NAME: $("#workflow-name").val(),
-                REQUEST_TYPE_CODE: $("#request-type").val(),
-                PROJECT_LEVEL_CODE: $("#project-level").val(),
-                CONTRACT_VALUE_MIN: String($("#contract-value-min").val()).replaceAll(",", ""),
-                CONTRACT_VALUE_MAX: String($("#contract-value-max").val()).replaceAll(",", ""),
-                PURCHASE_TYPE_CODE: $("#purchase-type").val(),
-                AUTHORITY: $("#authority").val(),
-            };
             var workflowStep = [];
             $('.single-step-workflow > tr').each(function (index, tr) {
                 row = $(this);
                 workflowStep.push({
                     ID: row.find(".step-workflow-id").val(),
-                    NAME: row.find(".step-workflow-name").val(),
-                    PROJECT_ROLE_CODE: row.find("#step-workflow-project-role").val(),
                     USER_ACTION: row.find("#step-workflow-username").val(),
-                    NUMBER_DAYS: row.find(".step-workflow-day").val(),
-                    ACTION: String(row.find("#step-workflow-action").val()),
-                    C_ORDER: index
-                })
-            });
-
-            var workflowFile = [];
-            $('.single-file-workflow > tr').each(function (index, tr) {
-                row = $(this);
-                workflowFile.push({
-                    ID: row.find(".file-workflow-id").val(),
-                    NAME: row.find(".file-workflow-name").val(),
-                    C_ORDER: index
                 })
             });
 
@@ -351,9 +326,7 @@
                 url: '@Url.Action("Update")',
                 type: "POST",
                 data: {
-                    workflow: workflow,
                     workflowStep: workflowStep,
-                    workflowFile: workflowFile
                 },
                 dataType: 'json',
                 success: function (response) {
@@ -363,19 +336,33 @@
             Forms.Ajax(ajaxParams)
         }
 
-        function ToggleActive(id) {
-            var ajaxParams = {
-                url: '@Url.Action("ToggleActive")',
-                type: "POST",
-                data: {
-                    id: id,
-                },
-                dataType: 'json',
-                success: function (response) {
-                    Message.execute(response);
+        function ToggleActive(id, type) {
+            var text = type == '01' ? 'Inactive' : 'Active'
+            Swal.fire({
+                title: `${text} quy trình?`,
+                text: `Bạn có chắc chắn ${text} quy trình này?`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Xác nhận",
+                cancelButtonText: "Huỷ",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var ajaxParams = {
+                        url: '@Url.Action("ToggleActive")',
+                        type: "POST",
+                        data: {
+                            id: id,
+                        },
+                        dataType: 'json',
+                        success: function (response) {
+                            Message.execute(response);
+                        }
+                    };
+                    Forms.Ajax(ajaxParams)
                 }
-            };
-            Forms.Ajax(ajaxParams)
+            });
         }
     </script>
 </div>

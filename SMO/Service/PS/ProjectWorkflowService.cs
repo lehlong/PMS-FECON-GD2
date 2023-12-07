@@ -1,8 +1,10 @@
 ﻿using NHibernate.Linq;
+using NHibernate.Util;
 using SMO.Core.Entities.PS;
 using SMO.Repository.Implement.MD;
 using SMO.Repository.Implement.PS;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SMO.Service.PS
@@ -49,6 +51,8 @@ namespace SMO.Service.PS
 
                     foreach (var step in wf.ListSteps)
                     {
+                        var resource = UnitOfWork.Repository<ProjectResourceRepo>().Queryable().Where(x => x.PROJECT_ID == projectId);
+                        
                         UnitOfWork.Repository<ProjectWorkflowStepRepo>().Create(new T_PS_PROJECT_WORKFLOW_STEP
                         {
                             ID = step.ID,
@@ -56,7 +60,7 @@ namespace SMO.Service.PS
                             NAME = step.NAME,
                             ACTIVE = step.ACTIVE,
                             PROJECT_ROLE_CODE = step.PROJECT_ROLE_CODE,
-                            USER_ACTION = step.USER_ACTION,
+                            USER_ACTION = string.IsNullOrEmpty(step.PROJECT_ROLE_CODE) ? step.USER_ACTION : resource.FirstOrDefault(x => x.PROJECT_ROLE_ID == step.PROJECT_ROLE_CODE)?.USER_NAME,
                             NUMBER_DAYS = step.NUMBER_DAYS,
                             ACTION = step.ACTION,
                             PROJECT_ID = projectId,
@@ -76,6 +80,39 @@ namespace SMO.Service.PS
                             C_ORDER = file.C_ORDER,
                         });
                     }
+                }
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+
+        public void UpdateStep(IList<T_PS_PROJECT_WORKFLOW_STEP> workflowStep)
+        {
+            try
+            {
+                UnitOfWork.BeginTransaction();
+                foreach(var step in workflowStep)
+                {
+                    if (string.IsNullOrEmpty(step.USER_ACTION))
+                    {
+                        this.State = false;
+                        this.ErrorMessage = "Vui lòng nhập đầy đủ thông tin người xử lý của các bước!";
+                        return;
+                    }
+                    var item = UnitOfWork.Repository<ProjectWorkflowStepRepo>().Queryable().First(x => x.ID == step.ID);
+                    if (item == null)
+                    {
+                        this.State = false;
+                        this.ErrorMessage = "Đã có lỗi xảy ra! Vui lòng liên hệ với quản trị hệ thống để xử lý";
+                        return;
+                    }
+                    item.USER_ACTION = step.USER_ACTION;
+                    UnitOfWork.Repository<ProjectWorkflowStepRepo>().Update(item);
                 }
                 UnitOfWork.Commit();
             }

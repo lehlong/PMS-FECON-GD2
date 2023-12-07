@@ -1022,5 +1022,22 @@ namespace SMO
             };
             return new SelectList(lstData, "Value", "Text");
         }
+
+        public static SelectList GetCurrency(bool isAddBlank = true, string selected = "")
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+            var lstAll = UnitOfWork.Repository<CurrencyRepo>().GetAll();
+            foreach (var obj in lstAll)
+            {
+                lstData.Add(new Data { Value = obj.CODE, Text = obj.NAME });
+            }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
     }
 }

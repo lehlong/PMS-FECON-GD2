@@ -486,6 +486,7 @@
     <Compile Include="Areas\MD\MDAreaRegistration.cs" />
     <Compile Include="Areas\PS\Controllers\ContractController.cs" />
     <Compile Include="Areas\PS\Controllers\ContractPaymentController.cs" />
+    <Compile Include="Areas\PS\Controllers\ContractRequestPaymentController.cs" />
     <Compile Include="Areas\PS\Controllers\PlanCostController.cs" />
     <Compile Include="Areas\PS\Controllers\PlanProgressController.cs" />
     <Compile Include="Areas\PS\Controllers\PlanQuantityController.cs" />
@@ -611,6 +612,7 @@
     <Compile Include="Service\MD\VendorVehicleService.cs" />
     <Compile Include="Service\MD\WorkflowService.cs" />
     <Compile Include="Service\PS\ContractPaymentService.cs" />
+    <Compile Include="Service\PS\ContractRequestPaymentService.cs" />
     <Compile Include="Service\PS\ContractService.cs" />
     <Compile Include="Service\PS\Models\AcceptTimesModel.cs" />
     <Compile Include="Service\PS\Models\AcceptTimesRowDataModel.cs" />
@@ -1378,6 +1380,10 @@
     <Content Include="Areas\PS\Views\ProjectWorkflow\Index.cshtml" />
     <Content Include="Areas\PS\Views\ProjectWorkflow\List.cshtml" />
     <Content Include="Areas\PS\Views\ProjectWorkflow\Edit.cshtml" />
+    <Content Include="Areas\PS\Views\ContractRequestPayment\Index.cshtml" />
+    <Content Include="Areas\PS\Views\ContractRequestPayment\List.cshtml" />
+    <Content Include="Areas\PS\Views\ContractRequestPayment\Create.cshtml" />
+    <Content Include="Areas\PS\Views\ContractRequestPayment\Edit.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
