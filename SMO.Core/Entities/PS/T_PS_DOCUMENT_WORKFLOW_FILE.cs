@@ -7,6 +7,7 @@ namespace SMO.Core.Entities.PS
     {
         public virtual Guid ID { get; set; }
         public virtual string WORKFLOW_CODE { get; set; }
+        public virtual Guid WORKFLOW_ID { get; set; }
         public virtual string NAME { get; set; }
         public virtual int C_ORDER { get; set; }
         public virtual Guid DOCUMENT_ID { get; set; }

@@ -6,7 +6,7 @@ namespace SMO.Repository.Mapping.PS
     {
         public T_PS_CONTRACT_REQUEST_PAYMENT_Map()
         {
-            Id(x => x.ID);
+            Id(x => x.ID).GeneratedBy.Assigned(); ;
             Map(x => x.CONTRACT_ID);
             Map(x => x.AMOUNT);
             Map(x => x.AMOUNT_ADVANCE);
@@ -20,7 +20,10 @@ namespace SMO.Repository.Mapping.PS
             Map(x => x.WORKFLOW_ID);
             Map(x => x.REQUEST_TYPE_CODE);
             Map(x => x.EXCHANGE_RATE);
+            Map(x => x.CURRENCY_CODE);
             References(x => x.PaymentStatus).Columns("STATUS").Not.Insert().Not.Update().LazyLoad();
+            References(x => x.RequestType).Columns("REQUEST_TYPE_CODE").Not.Insert().Not.Update().LazyLoad();
+            References(x => x.Workflow).Columns("WORKFLOW_ID").Not.Insert().Not.Update().LazyLoad();
         }
     }
 }

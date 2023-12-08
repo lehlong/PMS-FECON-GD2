@@ -24,5 +24,53 @@ namespace SMO.Core.Entities.PS
         public virtual decimal EXCHANGE_RATE { get; set; }
 
         public virtual T_MD_PAYMENT_STATUS PaymentStatus { get; set; }
+
+        private T_MD_REQUEST_TYPE _RequestType;
+        public virtual T_MD_REQUEST_TYPE RequestType
+        {
+            get
+            {
+                try
+                {
+                    if (this._RequestType != null)
+                    {
+                        var text = this._RequestType.NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._RequestType;
+            }
+            set
+            {
+                this._RequestType = value;
+            }
+        }
+
+        private T_PS_DOCUMENT_WORKFLOW _Workflow;
+        public virtual T_PS_DOCUMENT_WORKFLOW Workflow
+        {
+            get
+            {
+                try
+                {
+                    if (this._Workflow != null)
+                    {
+                        var text = this._Workflow.NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._Workflow;
+            }
+            set
+            {
+                this._Workflow = value;
+            }
+        }
     }
 }

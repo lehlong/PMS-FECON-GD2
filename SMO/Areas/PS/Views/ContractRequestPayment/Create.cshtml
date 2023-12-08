@@ -9,6 +9,9 @@
     .card-shadow {
         box-shadow: 0 3px 10px rgb(0 0 0 / 0.2);
     }
+    .col-md-2, .col-md-1, .col-md-5 {
+        margin-bottom: 4px !important;
+    }
 </style>
 <div id='@Model.ViewId' class="container-fluid child-content">
     <div class="card">
@@ -24,12 +27,12 @@
                         @Html.MyButton("cmdSave", "Tạo mới đề nghị", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
                     </div>
                 </div>
-                <div class="col-md-12 card-shadow" style="padding-top: 22px;">
+                <div class="col-md-12 card-shadow" style="padding-top: 22px; cursor: no-drop;">
                     <div class="row">
                         <div class="col-md-1">
                             <label>Số hợp đồng</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="@(contract.CONTRACT_NUMBER)" disabled />
@@ -39,7 +42,7 @@
                         <div class="col-md-1">
                             <label>Nhà thầu</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="@(contract.Vendor?.NAME)" disabled />
@@ -50,7 +53,7 @@
                         <div class="col-md-1">
                             <label>Số tài khoản</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="Số tài khoản" disabled />
@@ -60,7 +63,7 @@
                         <div class="col-md-1">
                             <label>Tên ngân hàng</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="Tên ngân hàng" disabled />
@@ -71,7 +74,7 @@
                         <div class="col-md-1">
                             <label>Giá trị HĐ</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="@contract.CONTRACT_VALUE_VAT.ToStringVN()" disabled />
@@ -81,7 +84,7 @@
                         <div class="col-md-1">
                             <label>Giá trị HĐ (VND)</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="@contract.CONTRACT_VALUE_VAT.ToStringVN()" disabled />
@@ -91,7 +94,7 @@
                         <div class="col-md-1">
                             <label>Điều kiện tạm ứng</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="" disabled />
@@ -102,7 +105,7 @@
                         <div class="col-md-1">
                             <label>Tỷ lệ tạm ứng (%)</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="" disabled />
@@ -112,7 +115,7 @@
                         <div class="col-md-1">
                             <label>Số tiền tạm ứng</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="" disabled />
@@ -123,7 +126,7 @@
                         <div class="col-md-1">
                             <label>Tiền tạm ứng (VND)</label>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="" disabled />
@@ -196,7 +199,6 @@
                                     <div class="form-line">
                                         @Html.MyDropDownListFor(m => m.ObjDetail.CURRENCY_CODE, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                     </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.CURRENCY_CODE)
                                 </div>
                             </div>
 
@@ -280,9 +282,8 @@
                             <div class="col-md-11">
                                 <div class="form-group">
                                     <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.CONTENTS)
+                                        @Html.MyDropDownListFor(m => m.WORKFLOW_CODE, SelectListUtilities.GetWorkflowInProject(contract.PROJECT_ID, false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                     </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.CONTENTS)
                                 </div>
                             </div>
                         </div>
@@ -394,6 +395,7 @@
             if (!isNaN(totalPayment)) {
                 $("#ObjDetail_AMOUNT_ADVANCE").val(totalPayment);
             }
-        }</script>
+        }
+    </script>
 </div>
 
