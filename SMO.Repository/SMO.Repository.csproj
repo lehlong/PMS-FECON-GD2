@@ -198,6 +198,7 @@
     <Compile Include="Implement\PS\ProjectStructRepo.cs" />
     <Compile Include="Implement\PS\ProjectStructVersionRepo.cs" />
     <Compile Include="Implement\PS\ProjectTimeRepo.cs" />
+    <Compile Include="Implement\PS\ProjectWorkflowCommentRepo.cs" />
     <Compile Include="Implement\PS\ProjectWorkflowFileRepo.cs" />
     <Compile Include="Implement\PS\ProjectWorkflowRepo.cs" />
     <Compile Include="Implement\PS\ProjectWorkflowStepRepo.cs" />
@@ -329,6 +330,7 @@
     <Compile Include="Interface\PS\IProjectStructRepo.cs" />
     <Compile Include="Interface\PS\IProjectStructVersionRepo.cs" />
     <Compile Include="Interface\PS\IProjectTimeRepo.cs" />
+    <Compile Include="Interface\PS\IProjectWorkflowCommentRepo.cs" />
     <Compile Include="Interface\PS\IProjectWorkflowFileRepo.cs" />
     <Compile Include="Interface\PS\IProjectWorkflowRepo.cs" />
     <Compile Include="Interface\PS\IProjectWorkflowStepRepo.cs" />
@@ -465,6 +467,7 @@
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_SAP_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_VERSION_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_USER_RIGHT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_WORKFLOW_COMMENT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_WORKFLOW_FILE_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_WORKFLOW_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_WORKFLOW_STEP_Map.cs" />

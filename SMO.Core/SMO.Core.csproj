@@ -180,6 +180,7 @@
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_VERSION.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_USER_RIGHT.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_WORKFLOW.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_WORKFLOW_COMMENT.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_WORKFLOW_FILE.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_WORKFLOW_STEP.cs" />
     <Compile Include="Entities\PS\T_PS_REFERENCE.cs" />
