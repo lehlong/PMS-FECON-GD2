@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SMO.Core.Entities.MD;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SMO.Core.Entities.PS
@@ -17,7 +18,80 @@ namespace SMO.Core.Entities.PS
         public virtual string ACTION { get; set; }
         public virtual int C_ORDER { get; set; }
         public virtual bool IS_DONE { get; set; }
+        public virtual bool IS_PROCESS { get; set; }
+        public virtual string SOLVED { get; set; }
         public virtual Guid DOCUMENT_ID { get; set; }
         public virtual Guid PROJECT_ID { get; set; }
+
+        private T_MD_PROJECT_ROLE _ProjectRole;
+        public virtual T_MD_PROJECT_ROLE ProjectRole
+        {
+            get
+            {
+                try
+                {
+                    if (this._ProjectRole != null)
+                    {
+                        var text = this._ProjectRole.NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._ProjectRole;
+            }
+            set
+            {
+                this._ProjectRole = value;
+            }
+        }
+        private T_AD_USER _UserAction;
+        public virtual T_AD_USER UserAction
+        {
+            get
+            {
+                try
+                {
+                    if (this._UserAction != null)
+                    {
+                        var text = this._UserAction.FULL_NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._UserAction;
+            }
+            set
+            {
+                this._UserAction = value;
+            }
+        }
+
+        private T_MD_ACTION_WORKFLOW _Solved;
+        public virtual T_MD_ACTION_WORKFLOW Solved
+        {
+            get
+            {
+                try
+                {
+                    if (this._Solved != null)
+                    {
+                        var text = this._Solved.NAME;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                return this._Solved;
+            }
+            set
+            {
+                this._Solved = value;
+            }
+        }
     }
 }

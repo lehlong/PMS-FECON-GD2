@@ -17,9 +17,13 @@ namespace SMO.Repository.Mapping.PS
             Map(x => x.ACTION);
             Map(x => x.C_ORDER);
             Map(x => x.IS_DONE);
+            Map(x => x.IS_PROCESS);
+            Map(x => x.SOLVED);
             Map(x => x.PROJECT_ID);
             Map(x => x.DOCUMENT_ID);
-
+            References(x => x.ProjectRole).Columns("PROJECT_ROLE_CODE").Not.Insert().Not.Update().LazyLoad().NotFound.Ignore();
+            References(x => x.UserAction).Columns("USER_ACTION").Not.Insert().Not.Update().LazyLoad().NotFound.Ignore();
+            References(x => x.Solved).Columns("SOLVED").Not.Insert().Not.Update().LazyLoad().NotFound.Ignore();
         }
     }
 }

@@ -12,6 +12,7 @@ namespace SMO.Core.Entities.PS
         public virtual int C_ORDER { get; set; }
         public virtual Guid DOCUMENT_ID { get; set; }
         public virtual Guid PROJECT_ID { get; set; }
+        public virtual Guid REFERENCE_FILE_ID { get; set; }
 
     }
 }

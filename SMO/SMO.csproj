@@ -1384,6 +1384,7 @@
     <Content Include="Areas\PS\Views\ContractRequestPayment\List.cshtml" />
     <Content Include="Areas\PS\Views\ContractRequestPayment\Create.cshtml" />
     <Content Include="Areas\PS\Views\ContractRequestPayment\Edit.cshtml" />
+    <Content Include="Areas\PS\Views\ContractRequestPayment\DetailStep.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

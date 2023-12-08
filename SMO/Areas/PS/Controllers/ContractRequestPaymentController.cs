@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web.Mvc;
+using SMO.Repository.Implement.PS;
 using SMO.Service.MD;
 using SMO.Service.PS;
 
@@ -64,6 +65,12 @@ namespace SMO.Areas.PS.Controllers
         {
             _service.Get(id);
             return PartialView(_service);
+        }
+
+        public ActionResult DetailStep(Guid id)
+        {
+            var item = _service.GetStep(id);
+            return PartialView(item);
         }
 
         [HttpPost]

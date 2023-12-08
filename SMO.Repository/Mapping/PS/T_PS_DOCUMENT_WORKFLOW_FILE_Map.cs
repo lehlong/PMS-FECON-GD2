@@ -13,6 +13,7 @@ namespace SMO.Repository.Mapping.PS_DOCUMENT
             Map(x => x.C_ORDER);
             Map(x => x.DOCUMENT_ID);
             Map(x => x.PROJECT_ID);
+            Map(x => x.REFERENCE_FILE_ID).Not.Update();
         }
     }
 }

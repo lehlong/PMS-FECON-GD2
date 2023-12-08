@@ -83,6 +83,7 @@ namespace SMO.Service.PS
                         C_ORDER = step.C_ORDER,
                         DOCUMENT_ID = documentId,
                         PROJECT_ID = step.PROJECT_ID,
+                        REFERENCE_FILE_ID = Guid.NewGuid(),
                         ACTIVE = true,
                     });
                 }
@@ -147,6 +148,21 @@ namespace SMO.Service.PS
                 UnitOfWork.Rollback();
                 this.State = false;
                 this.Exception = ex;
+            }
+        }
+
+        public T_PS_DOCUMENT_WORKFLOW_STEP GetStep(Guid id)
+        {
+            try
+            {
+                return UnitOfWork.Repository<DocumentWorkflowStepRepo>().Queryable().First(x => x.ID == id);
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+                return null;
             }
         }
     }

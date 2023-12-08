@@ -6,7 +6,8 @@
     var contract = Model.UnitOfWork.GetSession().Query<SMO.Core.Entities.PS.T_PS_CONTRACT>().FirstOrDefault(x => x.ID == Model.ObjDetail.CONTRACT_ID);
     var project = SMOUtilities.GetProject(contract.PROJECT_ID);
     var statusProjectEditable = (contract.IS_SIGN_WITH_CUSTOMER || project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue()) && (project.STATUS != "04");
-
+    var topline = 154;
+    var stepProcessing = Model.ObjDetail.Workflow.ListSteps.First(x => x.IS_PROCESS);
 }
 <style>
     .card-shadow {
@@ -15,6 +16,40 @@
 
     .col-md-2, .col-md-1, .col-md-5, .col-md-4 {
         margin-bottom: 4px !important;
+    }
+
+    hr {
+        margin-top: 12px;
+        margin-bottom: 12px;
+    }
+
+    .dot-step {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+    }
+
+    .line-step {
+        height: 188px;
+        left: 22px;
+        width: 2px;
+        position: absolute;
+    }
+
+    .content-step {
+        width: 100%;
+        background: #eeeeee;
+        cursor: pointer;
+    }
+
+    .header-content-step {
+        width: 100%;
+        height: 28px;
+        padding: 4px 12px;
+    }
+
+    .detail-content-step {
+        padding: 8px;
     }
 </style>
 <div id='@Model.ViewId' class="container-fluid child-content">
@@ -30,10 +65,27 @@
                         @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
 
                         @Html.MyButton("cmdSave", "Lưu thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
-
+                        @if (stepProcessing.ACTION.Contains("03") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
+                        {
+                            @Html.MyButton("cmdBack", "Trình duyệt", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
+                        }
+                        @if (stepProcessing.ACTION.Contains("04") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
+                        {
+                            @Html.MyButton("cmdBack", "Yêu cầu chỉnh sửa", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
+                        }
+                        @if (stepProcessing.ACTION.Contains("05") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
+                        {
+                            @Html.MyButton("cmdBack", "Phê duyệt", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
+                        }
+                        @if (stepProcessing.ACTION.Contains("06") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
+                        {
+                            @Html.MyButton("cmdBack", "Từ chối", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
+                        }
                     </div>
                 </div>
-                <div class="col-md-12 card-shadow" style="padding-top: 22px; cursor: no-drop;">
+                <div class="col-md-12 card-shadow" style="padding-top: 14px; cursor: no-drop;">
+                    <h5 style="margin: 0 0 0 14px; display: flex; align-items: center;"><i class="material-icons">work</i>  THÔNG TIN HỢP ĐỒNG GỐC</h5>
+                    <hr />
                     <div class="row">
                         <div class="col-md-1">
                             <label>Số hợp đồng</label>
@@ -141,167 +193,257 @@
                         </div>
                     </div>
                 </div>
-
-                @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
-                {
-                    @Html.AntiForgeryToken()
-                    @Html.HiddenFor(m => m.ObjDetail.CONTRACT_ID)
-                    @Html.HiddenFor(m => m.ViewId)
-                    @Html.HiddenFor(m => m.ObjDetail.REFERENCE_FILE_ID)
-                    <div class="col-md-9 card-shadow" style="padding-top: 22px; width: 74%; margin-right: 12px;">
-                        <div class="row">
-                            <div class="col-md-2">
-                                <label>Loại đề nghị</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyDropDownListFor(m => m.ObjDetail.REQUEST_TYPE_CODE, SelectListUtilities.GetRequestType(false), new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                <div class="col-md-9" style="padding-left:0">
+                    <div class="row">
+                        @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.ObjDetail.CONTRACT_ID)
+                            @Html.HiddenFor(m => m.ViewId)
+                            @Html.HiddenFor(m => m.ObjDetail.REFERENCE_FILE_ID)
+                            <div class="col-md-12 card-shadow" style="padding-top: 14px; margin-right: 12px;">
+                                <h5 style="margin: 0 0 0 14px; display: flex; align-items: center;"><i class="material-icons">info</i>  THÔNG TIN ĐỀ NGHỊ</h5>
+                                <hr />
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <label>Loại đề nghị</label>
                                     </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.REQUEST_TYPE_CODE)
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyDropDownListFor(m => m.ObjDetail.REQUEST_TYPE_CODE, SelectListUtilities.GetRequestType(false), new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.REQUEST_TYPE_CODE)
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label>Trạng thái</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                <input type="text" class="form-control" value="Khởi tạo" disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Diễn giải</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.EXPLAIN, new { @maxlength = 50, @placeholder = "Không quá 50 ký tự" })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.EXPLAIN)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Số hoá đơn</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.BILL_NUMBER)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.BILL_NUMBER)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Loại tiền</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyDropDownListFor(m => m.ObjDetail.CURRENCY_CODE, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Tỷ giá</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.EXCHANGE_RATE, new
+                                                {
+                                                    onkeyup = "CalValueEdit();",
+                                                    @class = "mask-number",
+                                                    @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                                })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.EXCHANGE_RATE)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Số tiền đề nghị</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT, new
+                                                {
+                                                    onkeyup = "CalValueEdit();",
+                                                    @class = "mask-number",
+                                                    @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                                })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Số tiền đề nghị (VND)</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT_ADVANCE, new
+                                                {
+                                                    @disabled = "disabled",
+                                                    @class = "mask-number",
+                                                    @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
+                                                })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT_ADVANCE)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Ngày</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.PAYMENT_DATE, new { @class = "datepicker", @autocomplete = "off" })
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.PAYMENT_DATE)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Nội dung</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.CONTENTS)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.CONTENTS)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <label>Trạng thái</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        <input type="text" class="form-control" value="Khởi tạo" disabled />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label>Diễn giải</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.EXPLAIN, new { @maxlength = 50, @placeholder = "Không quá 50 ký tự" })
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.EXPLAIN)
-                                </div>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label>Số hoá đơn</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.BILL_NUMBER)
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.BILL_NUMBER)
-                                </div>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label>Loại tiền</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyDropDownListFor(m => m.ObjDetail.CURRENCY_CODE, SelectListUtilities.GetCurrency(false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label>Tỷ giá</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.EXCHANGE_RATE, new
+                        }
+                        <div class="col-md-12 card-shadow" style="padding-top: 14px; margin-right: 12px;">
+                            <h5 style="margin: 0 0 0 14px; display: flex; align-items: center;"><i class="material-icons">attach_file</i>  DANH SÁCH FILE ĐÍNH KÈM</h5>
+                            <hr />
+                            <div class="table-responsive">
+                                <table class="table table-condensed table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th class="align-center" style="width: 32px;">STT</th>
+                                            <th class="align-center" style="width:40%">Tên đầu mục</th>
+                                            <th class="align-center">Danh sách file</th>
+                                            <th class="align-center" style=" width: 128px;">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.ObjDetail.Workflow.ListFiles)
                                         {
-                                            onkeyup = "CalValueEdit();",
-                                            @class = "mask-number",
-                                            @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
-                                        })
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.EXCHANGE_RATE)
+                                            <tr>
+                                                <td>@(item.C_ORDER + 1)</td>
+                                                <td>@item.NAME</td>
+                                                <td>
+                                                    @if (item.REFERENCE_FILE_ID != null)
+                                                    {
+                                                        Html.RenderAction("ListFiles", "ReferenceFile", new { @area = "CM", referenceId = item.REFERENCE_FILE_ID });
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <span class="waves-effect btn-default btn btn-border" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new { @area = "CM", referenceId = item.REFERENCE_FILE_ID }))"
+                                                          style="width: 100%; padding: 4px 0px 6px 0px !important;">
+                                                        <i class="material-icons col-orange" style="font-size: 18px; top: 4px;">cloud_upload</i><span>Thêm file</span>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 card-shadow" style="padding-top: 14px; padding-bottom:14px">
+                    <h5 style="margin: 0 0 0 14px; display: flex; align-items: center;"><i class="material-icons">list</i>  QUY TRÌNH PHÊ DUYỆT</h5>
+                    <hr />
+                    <div class="form-group">
+                        <div class="form-line">
+                            @Html.MyDropDownListFor(m => m.WORKFLOW_CODE, SelectListUtilities.GetWorkflowInProject(contract.PROJECT_ID, false), new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                        </div>
+                    </div>
+                    @foreach (var step in Model.ObjDetail.Workflow.ListSteps.OrderBy(x => x.C_ORDER))
+                    {
+                        var background = step.IS_DONE ? "#339933" : step.IS_PROCESS ? "#CC9900" : "#AAAAAA";
+                        var color = step.IS_DONE ? "white" : "white";
+                        <div style="display:flex; flex-flow: row; gap: 10px; align-items: center;margin-bottom:8px">
+                            <div style="flex:1;z-index:2">
+                                <div class="dot-step" style="background: @background;">
                                 </div>
                             </div>
 
-                            <div class="col-md-2">
-                                <label>Số tiền đề nghị</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT, new
+                            @if (Model.ObjDetail.Workflow.ListSteps.Count() - 1 != step.C_ORDER)
+                            {
+                                <div class="line-step" style="background: #eee;top: @(topline.ToString() + "px") "></div>
+                            }
+
+                            <div style="flex:10">
+                                <div class="content-step" onclick="ShowComment('@step.ID')">
+                                    <div class="header-content-step" style="background: @background; color: @color">
+                                        <div style="font-weight: bold;text-transform:uppercase">@step.NAME</div>
+                                    </div>
+                                    <div class="detail-content-step">
+                                        @if (step.IS_DONE)
                                         {
-                                            onkeyup = "CalValueEdit();",
-                                            @class = "mask-number",
-                                            @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
-                                        })
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT)
-                                </div>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label>Số tiền đề nghị (VND)</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.AMOUNT_ADVANCE, new
+                                            <div style="font-size: 10px; font-style: italic; display: flex; align-items: center; margin: 0px 0px 4px 2px;">
+                                                <i class="material-icons" style="font-size:14px">alarm</i>
+                                                <span>Ngày xử lý: @(step.UPDATE_DATE?.ToString("dd/MM/yyyy hh:mm"))</span>
+                                            </div>
+                                        }
+                                        else if (step.IS_DONE == false && step.IS_PROCESS == true)
                                         {
-                                            @disabled = "disabled",
-                                            @class = "mask-number",
-                                            @data_inputmask = "'alias': 'decimal', 'groupSeparator': ',', 'digits': 0, 'autoGroup': true",
-                                        })
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.AMOUNT_ADVANCE)
-                                </div>
-                            </div>
+                                            <div style="font-size: 10px; font-style: italic; display: flex; align-items: center; margin: 0px 0px 4px 2px;">
+                                                <i class="material-icons" style="font-size:14px">alarm</i>
+                                                <span>Hạn xử lý: @(Model.ObjDetail.Workflow.ListSteps.First(x => x.C_ORDER == step.C_ORDER -1)?.UPDATE_DATE.Value.AddDays(step.NUMBER_DAYS).ToString("dd/MM/yyyy hh:mm"))</span>
+                                            </div>
+                                        }
 
-                            <div class="col-md-2">
-                                <label>Ngày</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.PAYMENT_DATE, new { @class = "datepicker", @autocomplete = "off" })
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.PAYMENT_DATE)
-                                </div>
-                            </div>
 
-                            <div class="col-md-2">
-                                <label>Nội dung</label>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyTextBoxFor(m => m.ObjDetail.CONTENTS)
-                                    </div>
-                                    @Html.ValidationMessageFor(m => m.ObjDetail.CONTENTS)
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <label>Quy trình</label>
-                            </div>
-                            <div class="col-md-10">
-                                <div class="form-group">
-                                    <div class="form-line">
-                                        @Html.MyDropDownListFor(m => m.WORKFLOW_CODE, SelectListUtilities.GetWorkflowInProject(contract.PROJECT_ID, false), new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                                        <div style="font-size: 12px; display: flex; align-items: center; margin: 0px 0px 4px 2px; ">
+                                            <i class="material-icons" style="font-size:14px">person</i>
+                                            <span><span style="color: #207ce5 ">@(step.UserAction?.FULL_NAME)</span> @(step.ProjectRole != null ? $" - {step.ProjectRole?.NAME}" : "") </span>
+                                        </div>
+
+                                        <div style="font-size: 12px;display:flex;align-items:center">
+                                            <i class="material-icons" style="font-size:14px">edit</i>
+                                            <span>Trạng thái: <span style="text-transform:uppercase;font-weight:bold">@(step.IS_PROCESS ? "Đang xử lý" : (step.IS_PROCESS == false && step.IS_DONE == false) ? "Chưa bắt đầu" : step.Solved?.NAME)</span></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
-                <div class="col-md-3 card-shadow" style="padding-top: 22px;">
-
+                        topline += 90;
+                    }
                 </div>
 
             </div>
         </div>
         <script type="text/javascript">
-    $(function () {
+            $(function () {
                 $(".mask-number").inputmask({ "removeMaskOnSubmit": true });
                 Forms.CompleteUI();
             });
@@ -312,6 +454,13 @@
                 if (!isNaN(totalPayment)) {
                     $("#ObjDetail_AMOUNT_ADVANCE").val(totalPayment);
                 }
+            }
+            function ShowComment(id) {
+                var ajaxParams = {
+                    url: "@Url.Action("DetailStep")",
+                    data: { id: id }
+                };
+                Forms.LoadAjaxRight(ajaxParams);
             }
         </script>
     </div>
