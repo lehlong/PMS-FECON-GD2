@@ -35,6 +35,18 @@ namespace SMO.Service.PS
                 UnitOfWork.Repository<ProjectWorkflowFileRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).Delete();
                 foreach (var wf in lstTemplateWorkflow)
                 {
+                    if (wf.ListSteps == null)
+                    {
+                        this.State = false;
+                        this.ErrorMessage = $"TEMPLATE WORKFLOW : {wf.CODE} chưa cấu hình các bước quy trình! Vui lòng kiểm tra lại!";
+                        return;
+                    }
+                    if (wf.ListFiles == null)
+                    {
+                        this.State = false;
+                        this.ErrorMessage = $"TEMPLATE WORKFLOW : {wf.CODE} chưa cấu hình các đầu mục file! Vui lòng kiểm tra lại!";
+                        return;
+                    }
                     UnitOfWork.Repository<ProjectWorkflowRepo>().Create(new T_PS_PROJECT_WORKFLOW
                     {
                         CODE = wf.CODE,

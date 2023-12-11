@@ -112,5 +112,103 @@ namespace SMO.Areas.PS.Controllers
             }
             return result.ToJsonResult();
         }
+
+        [HttpPost]
+        public ActionResult SaveComment(Guid stepId, string comment)
+        {
+            var result = new TransferObject();
+            result.Type = TransferType.AlertSuccessAndJsCommand;
+            _service.SaveComment(stepId, comment);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "SubmitIndexContractRequestPayment();";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        #region Workflow
+        [HttpPost]
+        public ActionResult DocumentTrinhDuyet(Guid documentId)
+        {
+            var result = new TransferObject();
+            result.Type = TransferType.AlertSuccessAndJsCommand;
+            _service.DocumentTrinhDuyet(documentId);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "SubmitIndexContractRequestPayment();";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        [HttpPost]
+        public ActionResult DocumentYeuCauChinhSua(Guid documentId)
+        {
+            var result = new TransferObject();
+            result.Type = TransferType.AlertSuccessAndJsCommand;
+            _service.DocumentYeuCauChinhSua(documentId);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "SubmitIndexContractRequestPayment();";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        [HttpPost]
+        public ActionResult DocumentPheDuyet(Guid documentId)
+        {
+            var result = new TransferObject();
+            result.Type = TransferType.AlertSuccessAndJsCommand;
+            _service.DocumentPheDuyet(documentId);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "SubmitIndexContractRequestPayment();";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        [HttpPost]
+        public ActionResult DocumentTuChoi(Guid documentId)
+        {
+            var result = new TransferObject();
+            result.Type = TransferType.AlertSuccessAndJsCommand;
+            _service.DocumentTuChoi(documentId);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "SubmitIndexContractRequestPayment();";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+        #endregion
+
     }
 }

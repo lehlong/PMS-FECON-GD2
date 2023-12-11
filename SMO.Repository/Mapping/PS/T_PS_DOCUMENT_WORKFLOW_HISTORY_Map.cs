@@ -2,9 +2,9 @@
 
 namespace SMO.Repository.Mapping.PS
 {
-    public class T_PS_DOCUMENT_WORKFLOW_STEP_Map : BaseMapping<T_PS_DOCUMENT_WORKFLOW_STEP>
+    public class T_PS_DOCUMENT_WORKFLOW_HISTORY_Map : BaseMapping<T_PS_DOCUMENT_WORKFLOW_HISTORY>
     {
-        public T_PS_DOCUMENT_WORKFLOW_STEP_Map()
+        public T_PS_DOCUMENT_WORKFLOW_HISTORY_Map()
         {
             Id(x => x.ID).GeneratedBy.Assigned();
             Map(x => x.WORKFLOW_CODE);

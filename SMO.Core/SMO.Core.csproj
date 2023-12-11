@@ -165,7 +165,9 @@
     <Compile Include="Entities\PS\T_PS_CONTRACT_PAYMENT.cs" />
     <Compile Include="Entities\PS\T_PS_CONTRACT_REQUEST_PAYMENT.cs" />
     <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW.cs" />
+    <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW_COMMENT.cs" />
     <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW_FILE.cs" />
+    <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW_HISTORY.cs" />
     <Compile Include="Entities\PS\T_PS_DOCUMENT_WORKFLOW_STEP.cs" />
     <Compile Include="Entities\PS\T_PS_GEN_CODE_HISTORY.cs" />
     <Compile Include="Entities\PS\T_PS_PLAN_COST.cs" />

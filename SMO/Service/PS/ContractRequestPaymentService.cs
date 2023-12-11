@@ -31,7 +31,7 @@ namespace SMO.Service.PS
 
                 this.ObjDetail.ID = documentId;
                 this.ObjDetail.WORKFLOW_ID = documentWorkflowId;
-                this.ObjDetail.STATUS = "01";
+                this.ObjDetail.STATUS = DocumentWorkflowStatus.KHOI_TAO.GetValue();
                 this.ObjDetail.AMOUNT_ADVANCE = this.ObjDetail.AMOUNT * this.ObjDetail.EXCHANGE_RATE;
                 this.ObjDetail.UPDATE_DATE = DateTime.Now;
                 this.ObjDetail.UPDATE_BY = ProfileUtilities.User?.USER_NAME;
@@ -52,11 +52,11 @@ namespace SMO.Service.PS
                     DOCUMENT_ID = documentId,
                 });
 
-                foreach(var step in workflow.ListSteps)
+                foreach (var step in workflow.ListSteps)
                 {
                     UnitOfWork.Repository<DocumentWorkflowStepRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_STEP
                     {
-                        ID= Guid.NewGuid(),
+                        ID = Guid.NewGuid(),
                         WORKFLOW_CODE = step.WORKFLOW_CODE,
                         WORKFLOW_ID = documentWorkflowId,
                         NAME = step.NAME,
@@ -64,11 +64,12 @@ namespace SMO.Service.PS
                         USER_ACTION = step.USER_ACTION,
                         NUMBER_DAYS = step.NUMBER_DAYS,
                         ACTION = step.ACTION,
-                        C_ORDER =step.C_ORDER,
+                        C_ORDER = step.C_ORDER,
                         IS_DONE = false,
                         DOCUMENT_ID = documentId,
                         PROJECT_ID = step.PROJECT_ID,
                         ACTIVE = true,
+                        IS_PROCESS = step.C_ORDER == 0 ? true : false,
                     });
                 }
 
@@ -165,5 +166,300 @@ namespace SMO.Service.PS
                 return null;
             }
         }
+
+        public void SaveComment(Guid stepId, string comment)
+        {
+            try
+            {
+                UnitOfWork.BeginTransaction();
+                UnitOfWork.Repository<DocumentWorkflowCommentRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_COMMENT
+                {
+                    ID = Guid.NewGuid(),
+                    STEP_ID = stepId,
+                    COMMENT = comment,
+                    CREATE_BY = ProfileUtilities.User.USER_NAME,
+                    CREATE_DATE = DateTime.Now,
+                });
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+
+        #region Workflow
+
+        public void DocumentTrinhDuyet(Guid documentId)
+        {
+            try
+            {
+                var document = UnitOfWork.Repository<ContractRequestPaymentRepo>().Queryable().First(x => x.ID == documentId);
+                if (document == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                UnitOfWork.BeginTransaction();
+
+                //Cập nhật trạng thái đề nghị
+                document.STATUS = DocumentWorkflowStatus.CHO_PHE_DUYET.GetValue();
+                document.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                document.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<ContractRequestPaymentRepo>().Update(document);
+
+                //Cập nhật trạng thái bước hiện tại
+                var taskProcessing = document.Workflow.ListSteps.First(x => x.IS_PROCESS);
+                if (taskProcessing == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                taskProcessing.SOLVED = "01";
+                taskProcessing.IS_DONE = true;
+                taskProcessing.IS_PROCESS = false;
+                taskProcessing.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                taskProcessing.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(taskProcessing);
+
+                //Cập nhật bước tiếp theo nếu không phải bước cuối
+                if(taskProcessing.C_ORDER + 1 != document.Workflow.ListSteps.Count())
+                {
+                    var nextProcessing = document.Workflow.ListSteps.First(x => x.C_ORDER == taskProcessing.C_ORDER + 1);
+                    if (nextProcessing == null)
+                    {
+                        ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                        State = false;
+                        return;
+                    }
+                    nextProcessing.IS_PROCESS = true;
+                    nextProcessing.IS_DONE = false;
+                    UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(nextProcessing);
+                }
+
+                //Lưu lịch sử quy trình
+                UnitOfWork.Repository<DocumentWorkflowHistoryRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_HISTORY
+                {
+                    ID = Guid.NewGuid(),
+                    WORKFLOW_CODE = taskProcessing.WORKFLOW_CODE,
+                    WORKFLOW_ID = taskProcessing.WORKFLOW_ID,
+                    NAME = taskProcessing.NAME,
+                    PROJECT_ROLE_CODE = taskProcessing.PROJECT_ROLE_CODE,
+                    USER_ACTION = taskProcessing.USER_ACTION,
+                    NUMBER_DAYS = taskProcessing.NUMBER_DAYS,
+                    ACTION = taskProcessing.ACTION,
+                    C_ORDER = taskProcessing.C_ORDER,
+                    IS_DONE = taskProcessing.IS_DONE,
+                    IS_PROCESS = taskProcessing.IS_PROCESS,
+                    ACTIVE = taskProcessing.ACTIVE,
+                    SOLVED = "01",
+                    DOCUMENT_ID = taskProcessing.DOCUMENT_ID,
+                    PROJECT_ID = taskProcessing.PROJECT_ID,
+                    CREATE_BY = ProfileUtilities.User.USER_NAME,
+                    CREATE_DATE = DateTime.Now,
+                });
+
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+
+        public void DocumentPheDuyet(Guid documentId)
+        {
+            try
+            {
+                var document = UnitOfWork.Repository<ContractRequestPaymentRepo>().Queryable().First(x => x.ID == documentId);
+                if (document == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                UnitOfWork.BeginTransaction();
+
+                //Cập nhật trạng thái đề nghị
+                document.STATUS = DocumentWorkflowStatus.DA_PHE_DUYET.GetValue();
+                document.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                document.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<ContractRequestPaymentRepo>().Update(document);
+
+                //Cập nhật trạng thái bước hiện tại
+                var taskProcessing = document.Workflow.ListSteps.First(x => x.IS_PROCESS);
+                if (taskProcessing == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                taskProcessing.SOLVED = DocumentWorkflowStatus.DA_PHE_DUYET.GetValue();
+                taskProcessing.IS_DONE = true;
+                taskProcessing.IS_PROCESS = false;
+                taskProcessing.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                taskProcessing.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(taskProcessing);
+
+                //Cập nhật bước tiếp theo nếu không phải bước cuối
+                if (taskProcessing.C_ORDER + 1 != document.Workflow.ListSteps.Count())
+                {
+                    var nextProcessing = document.Workflow.ListSteps.First(x => x.C_ORDER == taskProcessing.C_ORDER + 1);
+                    if (nextProcessing == null)
+                    {
+                        ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                        State = false;
+                        return;
+                    }
+                    nextProcessing.IS_PROCESS = true;
+                    nextProcessing.IS_DONE = false;
+                    UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(nextProcessing);
+                }
+
+                //Lưu lịch sử quy trình
+                UnitOfWork.Repository<DocumentWorkflowHistoryRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_HISTORY
+                {
+                    ID = Guid.NewGuid(),
+                    WORKFLOW_CODE = taskProcessing.WORKFLOW_CODE,
+                    WORKFLOW_ID = taskProcessing.WORKFLOW_ID,
+                    NAME = taskProcessing.NAME,
+                    PROJECT_ROLE_CODE = taskProcessing.PROJECT_ROLE_CODE,
+                    USER_ACTION = taskProcessing.USER_ACTION,
+                    NUMBER_DAYS = taskProcessing.NUMBER_DAYS,
+                    ACTION = taskProcessing.ACTION,
+                    C_ORDER = taskProcessing.C_ORDER,
+                    IS_DONE = taskProcessing.IS_DONE,
+                    IS_PROCESS = taskProcessing.IS_PROCESS,
+                    ACTIVE = taskProcessing.ACTIVE,
+                    SOLVED = "03",
+                    DOCUMENT_ID = taskProcessing.DOCUMENT_ID,
+                    PROJECT_ID = taskProcessing.PROJECT_ID,
+                    CREATE_BY = ProfileUtilities.User.USER_NAME,
+                    CREATE_DATE = DateTime.Now,
+                });
+
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+        public void DocumentYeuCauChinhSua(Guid documentId)
+        {
+            try
+            {
+                var document = UnitOfWork.Repository<ContractRequestPaymentRepo>().Queryable().First(x => x.ID == documentId);
+                if (document == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                UnitOfWork.BeginTransaction();
+
+                //Lưu lịch sử
+                var taskProcessing = document.Workflow.ListSteps.First(x => x.IS_PROCESS);
+                UnitOfWork.Repository<DocumentWorkflowHistoryRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_HISTORY
+                {
+                    ID = Guid.NewGuid(),
+                    WORKFLOW_CODE = taskProcessing.WORKFLOW_CODE,
+                    WORKFLOW_ID = taskProcessing.WORKFLOW_ID,
+                    NAME = taskProcessing.NAME,
+                    PROJECT_ROLE_CODE = taskProcessing.PROJECT_ROLE_CODE,
+                    USER_ACTION = taskProcessing.USER_ACTION,
+                    NUMBER_DAYS = taskProcessing.NUMBER_DAYS,
+                    ACTION = taskProcessing.ACTION,
+                    C_ORDER = taskProcessing.C_ORDER,
+                    IS_DONE = taskProcessing.IS_DONE,
+                    IS_PROCESS = taskProcessing.IS_PROCESS,
+                    ACTIVE = taskProcessing.ACTIVE,
+                    SOLVED = "02",
+                    DOCUMENT_ID = taskProcessing.DOCUMENT_ID,
+                    PROJECT_ID = taskProcessing.PROJECT_ID,
+                    CREATE_BY = ProfileUtilities.User.USER_NAME,
+                    CREATE_DATE = DateTime.Now,
+                });
+
+                //Reset quy trình
+                foreach (var step in document.Workflow.ListSteps)
+                {
+                    step.IS_DONE = false;
+                    step.SOLVED = null;
+                    step.IS_PROCESS = step.C_ORDER == 0 ? true : false;
+                    step.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                    step.UPDATE_DATE = DateTime.Now;
+                    UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(step);
+                }
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+
+        public void DocumentTuChoi(Guid documentId)
+        {
+            try
+            {
+                var document = UnitOfWork.Repository<ContractRequestPaymentRepo>().Queryable().First(x => x.ID == documentId);
+                if (document == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                UnitOfWork.BeginTransaction();
+
+                //Cập nhật trạng thái đề nghị
+                document.STATUS = DocumentWorkflowStatus.TU_CHOI.GetValue();
+                document.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                document.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<ContractRequestPaymentRepo>().Update(document);
+
+                var taskProcessing = document.Workflow.ListSteps.First(x => x.IS_PROCESS);
+                //Lưu lịch sử quy trình
+                UnitOfWork.Repository<DocumentWorkflowHistoryRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_HISTORY
+                {
+                    ID = Guid.NewGuid(),
+                    WORKFLOW_CODE = taskProcessing.WORKFLOW_CODE,
+                    WORKFLOW_ID = taskProcessing.WORKFLOW_ID,
+                    NAME = taskProcessing.NAME,
+                    PROJECT_ROLE_CODE = taskProcessing.PROJECT_ROLE_CODE,
+                    USER_ACTION = taskProcessing.USER_ACTION,
+                    NUMBER_DAYS = taskProcessing.NUMBER_DAYS,
+                    ACTION = taskProcessing.ACTION,
+                    C_ORDER = taskProcessing.C_ORDER,
+                    IS_DONE = taskProcessing.IS_DONE,
+                    IS_PROCESS = taskProcessing.IS_PROCESS,
+                    ACTIVE = taskProcessing.ACTIVE,
+                    SOLVED = "04",
+                    DOCUMENT_ID = taskProcessing.DOCUMENT_ID,
+                    PROJECT_ID = taskProcessing.PROJECT_ID,
+                    CREATE_BY = ProfileUtilities.User.USER_NAME,
+                    CREATE_DATE = DateTime.Now,
+                });
+
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+        #endregion
     }
 }

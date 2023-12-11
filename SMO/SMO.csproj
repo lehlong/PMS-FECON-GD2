@@ -904,6 +904,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\gantt-chart.css" />
     <Content Include="Content\icon.png" />
+    <Content Include="Content\Images\hoai.jpg" />
     <Content Include="Content\Images\icon_chrome.png" />
     <Content Include="Content\Images\icon_coccoc.png" />
     <Content Include="Content\Images\icon_edge.png" />

@@ -169,6 +169,22 @@
         [EnumName("Đã tạm dừng")]
         STOPPED
     }
+
+    public enum DocumentWorkflowStatus
+    {
+        [EnumValue("01")]
+        [EnumName("Khởi tạo")]
+        KHOI_TAO,
+        [EnumName("Chờ phê duyệt")]
+        [EnumValue("02")]
+        CHO_PHE_DUYET,
+        [EnumName("Đã phê duyệt")]
+        [EnumValue("03")]
+        DA_PHE_DUYET,
+        [EnumName("Từ chối")]
+        [EnumValue("04")]
+        TU_CHOI,
+    }
     public enum ProjectStructureType
     {
         COST,

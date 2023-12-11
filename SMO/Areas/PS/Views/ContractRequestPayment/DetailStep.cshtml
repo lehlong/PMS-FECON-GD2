@@ -1,1 +1,199 @@
-﻿
+﻿@model SMO.Core.Entities.PS.T_PS_DOCUMENT_WORKFLOW_STEP
+@{
+    var projectId = ViewBag.ProjectId;
+    var resource = ViewBag.Resource as List<SMO.Core.Entities.PS.T_PS_RESOURCE>;
+}
+<style>
+    .container-comment {
+        margin-bottom: 0 !important;
+        margin-top: 22px;
+    }
+
+    .list-function {
+        display: flex;
+        flex-flow: row;
+        gap: 10px;
+        align-items: center
+    }
+
+    .function-icon {
+        cursor: pointer;
+    }
+
+    .box-comment {
+        height: calc(100vh - 354px);
+        padding: 12px 0px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+    }
+
+    .message-other {
+        width: fit-content;
+        word-break: break-word;
+        background: gainsboro;
+        padding: 8px 16px;
+    }
+
+    .my-message {
+        background: aliceblue;
+        padding: 8px 16px;
+        width: fit-content;
+        word-break: break-word;
+    }
+
+    .no-padding {
+        padding: 0;
+    }
+
+    .font-bold {
+        font-weight: bold;
+    }
+</style>
+<input type="file" id="file-upload-comment" name="files" style="display:none;" onchange="uploadFileComment();">
+<div class="card">
+    <div class="body" style="padding-top: 0px;">
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active">
+                <a style="padding-left:0px"><i class="material-icons">comment</i> THÔNG TIN BƯỚC VÀ BÌNH LUẬN</a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="col-md-12 container-comment">
+                <div class="col-md-6">
+                    <p><span class="font-bold">Tên bước : </span>@Model.NAME</p>
+                </div>
+                <div class="col-md-6">
+                    <p><span class="font-bold">Vai trò dự án : </span>@(Model.ProjectRole?.NAME)</p>
+                </div>
+                <div class="col-md-6">
+                    <p><span class="font-bold">Người thực hiện : </span>@(Model.UserAction?.FULL_NAME)</p>
+                </div>
+                <div class="col-md-6">
+                    <p><span class="font-bold">Hạn xử lý (số ngày) : </span>@Model.NUMBER_DAYS</p>
+                </div>
+                <div class="col-md-6">
+                    <p><span class="font-bold">Trạng thái : </span>@(Model.IS_DONE && !Model.IS_PROCESS ? "Hoàn thành" : !Model.IS_DONE && Model.IS_PROCESS ? "Đang thực hiện" : "Chưa thực hiện")</p>
+                </div>
+                <div class="col-md-6">
+                    <p><span class="font-bold">Ngày cập nhật : </span>@(Model.UPDATE_DATE)</p>
+                </div>
+                <div class="col-md-12">
+                    <div class="border-grey box-comment">
+                        @foreach (var comment in Model.ListComments)
+                        {
+                            if (comment.CREATE_BY != ProfileUtilities.User.USER_NAME)
+                            {
+                                <div class="col-md-12" style="margin-bottom: 0 !important">
+                                    <div class="row">
+                                        <div class="col-md-10 no-padding">
+                                            <div class="message-other">
+                                                <i style="font-size:10px">@comment.CREATE_BY @(comment.CREATE_DATE?.ToString("dd/MM/yyyy, hh:mm:ss tt"))</i>
+                                                <div>@comment.COMMENT</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2"></div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-md-12" style="margin-bottom: 0 !important">
+                                    <div class="row">
+                                        <div class="col-md-2 no-padding"></div>
+                                        <div class="col-md-10" style="display: flex; justify-content: end; padding: 0;">
+                                            <div class="my-message">
+                                                <i style="font-size:10px">@comment.CREATE_BY @(comment.CREATE_DATE?.ToString("dd/MM/yyyy, hh:mm:ss tt"))</i>
+
+                                                <div>@comment.COMMENT</div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group list-function">
+                        <div style="flex: 10">
+                            <div class="form-line">
+                                <input class="form-control" id="comment-detail" onenter />
+                            </div>
+                        </div>
+                        <div style="flex: 2">
+                            <div class="form-line">
+                                <i class="material-icons function-icon" onclick="onClickSendComment()">send</i>
+                                <i class="material-icons function-icon" onclick="scrollToBottom();">expand_more</i>
+                                <i class="material-icons function-icon" onclick="Forms.CloseRightContent();">close</i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        setTimeout(scrollToBottom(), 1000);
+    });
+    function scrollToBottom() {
+        var element = document.querySelector('.box-comment');
+        element.scrollTop = element.scrollHeight;
+    }
+
+    $("#comment-detail").on("keypress", function (event) {
+        if (event.which == 13 && !event.shiftKey) {
+            event.preventDefault();
+            onClickSendComment();
+        }
+    });
+    function onClickSendComment() {
+        var comment = $("#comment-detail").val();
+        if (!comment) return;
+        var dateTimeNow = new Date();
+        var ajaxParams = {
+            url: '@Url.Action("SaveComment")',
+            type: "POST",
+            data: {
+                stepId: '@Model.ID',
+                comment: comment,
+            },
+            success: function () {
+                $(".box-comment").append(
+                `<div class="col-md-12" style="margin-bottom: 0 !important">
+                    <div class="row">
+                        <div class="col-md-2 no-padding"></div>
+                            <div class="col-md-10" style="display: flex; justify-content: end; padding: 0;">
+                                <div class="my-message">
+                                    <i style="font-size:10px">@ProfileUtilities.User.USER_NAME ${dateTimeNow.toLocaleString()}</i>
+                                    <div>${comment}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`);
+                $("#comment-detail").val("");
+                scrollToBottom();
+            }
+        }
+        Forms.AjaxWithoutLoading(ajaxParams);
+    }
+
+    $("#comment-detail").keydown(function (e) {
+        if (e.shiftKey == true && e.which == 50) {
+            $("#tag-name").show();
+        }
+        if (e.which == 8) {
+            $("#tag-name").hide();
+        }
+    });
+    function addUserToInput(username) {
+        $("#tag-name").hide();
+        $("#comment-detail").val($("#comment-detail").val() + username)
+    }
+
+</script>
+

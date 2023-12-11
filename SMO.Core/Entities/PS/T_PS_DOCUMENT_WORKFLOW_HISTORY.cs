@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SMO.Core.Entities.PS
 {
-    public class T_PS_DOCUMENT_WORKFLOW_STEP : BaseEntity
+    public class T_PS_DOCUMENT_WORKFLOW_HISTORY : BaseEntity
     {
         public virtual Guid ID { get; set; }
         public virtual string WORKFLOW_CODE { get; set; }
@@ -97,7 +97,7 @@ namespace SMO.Core.Entities.PS
             }
         }
 
-        public T_PS_DOCUMENT_WORKFLOW_STEP()
+        public T_PS_DOCUMENT_WORKFLOW_HISTORY()
         {
             ListComments = new HashSet<T_PS_DOCUMENT_WORKFLOW_COMMENT>(new List<T_PS_DOCUMENT_WORKFLOW_COMMENT>());
         }

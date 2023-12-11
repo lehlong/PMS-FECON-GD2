@@ -7,7 +7,7 @@
     var project = SMOUtilities.GetProject(contract.PROJECT_ID);
     var statusProjectEditable = (contract.IS_SIGN_WITH_CUSTOMER || project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue()) && (project.STATUS != "04");
     var topline = 154;
-    var stepProcessing = Model.ObjDetail.Workflow.ListSteps.First(x => x.IS_PROCESS);
+    var stepProcessing = Model.ObjDetail.Workflow.ListSteps?.First(x => x.IS_PROCESS);
 }
 <style>
     .card-shadow {
@@ -64,23 +64,33 @@
                     <div class="page-function-button m-r-20">
                         @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
 
-                        @Html.MyButton("cmdSave", "Lưu thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
-                        @if (stepProcessing.ACTION.Contains("03") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
+                        @if (Model.ObjDetail.STATUS != DocumentWorkflowStatus.TU_CHOI.GetValue())
                         {
-                            @Html.MyButton("cmdBack", "Trình duyệt", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
+                            @Html.MyButton("cmdSave", "Lưu thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
                         }
-                        @if (stepProcessing.ACTION.Contains("04") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
+
+                        @Html.MyButton("cmdSave", "Lịch sử quy trình", "ShowHistoryDocument();", "Alt+N", "history")
+
+                        @if (Model.ObjDetail.STATUS != DocumentWorkflowStatus.TU_CHOI.GetValue())
                         {
-                            @Html.MyButton("cmdBack", "Yêu cầu chỉnh sửa", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
+                            if ((stepProcessing.ACTION.Contains("01") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            {
+                                @Html.MyButton("cmdBack", "Trình duyệt", "DocumentTrinhDuyet();", "Alt+N", "send")
+                            }
+                            if ((stepProcessing.ACTION.Contains("02") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            {
+                                @Html.MyButton("cmdBack", "Yêu cầu chỉnh sửa", "DocumentYeuCauChinhSua();", "Alt+N", "sync")
+                            }
+                            if ((stepProcessing.ACTION.Contains("03") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            {
+                                @Html.MyButton("cmdBack", "Phê duyệt", "DocumentPheDuyet();", "Alt+N", "done_all")
+                            }
+                            if ((stepProcessing.ACTION.Contains("04") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            {
+                                @Html.MyButton("cmdBack", "Từ chối", "DocumentTuChoi();", "Alt+N", "close")
+                            }
                         }
-                        @if (stepProcessing.ACTION.Contains("05") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
-                        {
-                            @Html.MyButton("cmdBack", "Phê duyệt", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
-                        }
-                        @if (stepProcessing.ACTION.Contains("06") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME)
-                        {
-                            @Html.MyButton("cmdBack", "Từ chối", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "send")
-                        }
+
                     </div>
                 </div>
                 <div class="col-md-12 card-shadow" style="padding-top: 14px; cursor: no-drop;">
@@ -222,7 +232,7 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <div class="form-line">
-                                                <input type="text" class="form-control" value="Khởi tạo" disabled />
+                                                <input type="text" class="form-control" value="@(Model.ObjDetail.STATUS == "01" ? "Khởi tạo" : Model.ObjDetail.STATUS == "02" ? "Chờ phê duyệt" : Model.ObjDetail.STATUS == "03" ? "Đã phê duyệt" : "Từ chối")" disabled />
                                             </div>
                                         </div>
                                     </div>
@@ -336,6 +346,30 @@
                                             @Html.ValidationMessageFor(m => m.ObjDetail.CONTENTS)
                                         </div>
                                     </div>
+
+                                    <div class="col-md-2">
+                                        <label>Ngày cập nhật</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.UPDATE_DATE)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.UPDATE_DATE)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Người cập nhật</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.UPDATE_BY)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.UPDATE_BY)
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         }
@@ -388,7 +422,7 @@
                     </div>
                     @foreach (var step in Model.ObjDetail.Workflow.ListSteps.OrderBy(x => x.C_ORDER))
                     {
-                        var background = step.IS_DONE ? "#339933" : step.IS_PROCESS ? "#CC9900" : "#AAAAAA";
+                        var background = step.IS_DONE && Model.ObjDetail.STATUS != DocumentWorkflowStatus.TU_CHOI.GetValue() ? "#339933" : step.IS_PROCESS && Model.ObjDetail.STATUS != DocumentWorkflowStatus.TU_CHOI.GetValue() ? "#CC9900" : "#AAAAAA";
                         var color = step.IS_DONE ? "white" : "white";
                         <div style="display:flex; flex-flow: row; gap: 10px; align-items: center;margin-bottom:8px">
                             <div style="flex:1;z-index:2">
@@ -416,9 +450,10 @@
                                         }
                                         else if (step.IS_DONE == false && step.IS_PROCESS == true)
                                         {
+                                            var order = step.C_ORDER == 0 ? 0 : step.C_ORDER - 1;
                                             <div style="font-size: 10px; font-style: italic; display: flex; align-items: center; margin: 0px 0px 4px 2px;">
                                                 <i class="material-icons" style="font-size:14px">alarm</i>
-                                                <span>Hạn xử lý: @(Model.ObjDetail.Workflow.ListSteps.First(x => x.C_ORDER == step.C_ORDER -1)?.UPDATE_DATE.Value.AddDays(step.NUMBER_DAYS).ToString("dd/MM/yyyy hh:mm"))</span>
+                                                <span>Hạn xử lý: @(Model.ObjDetail.Workflow.ListSteps.First(x => x.C_ORDER == order)?.UPDATE_DATE.HasValue == true ? Model.ObjDetail.Workflow.ListSteps.First(x => x.C_ORDER == order)?.UPDATE_DATE.Value.AddDays(step.NUMBER_DAYS).ToString("dd/MM/yyyy hh:mm") : "")</span>
                                             </div>
                                         }
 
@@ -462,6 +497,145 @@
                 };
                 Forms.LoadAjaxRight(ajaxParams);
             }
+
+            //WORKFLOW
+            function DocumentTrinhDuyet() {
+                Swal.fire({
+                    title: "Trình duyệt?",
+                    text: "Bạn có chắc Trình duyệt dữ liệu này và chuyển đến bước tiếp theo?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Trình duyệt",
+                    cancelButtonText: "Huỷ",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var ajaxParams = {
+                            url: '@Url.Action("DocumentTrinhDuyet")',
+                            type: "POST",
+                            data: {
+                                documentId: '@Model.ObjDetail.ID'
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                Message.execute(response);
+                                Forms.LoadAjax({
+                                    url: '@Url.Action("Edit", new { id =  Model.ObjDetail.ID})',
+                                });
+                                setTimeout(function () {
+                                    Forms.Close('@Model.ViewId');
+                                }, 2000);
+                            }
+                        };
+                        Forms.Ajax(ajaxParams)
+                    }
+                });
+            }
+            function DocumentPheDuyet() {
+                Swal.fire({
+                    title: "Phê duyệt?",
+                    text: "Bạn có chắc Phê duyệt dữ liệu này và chuyển đến bước tiếp theo?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Phê duyệt",
+                    cancelButtonText: "Huỷ",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var ajaxParams = {
+                            url: '@Url.Action("DocumentPheDuyet")',
+                            type: "POST",
+                            data: {
+                                documentId: '@Model.ObjDetail.ID'
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                Message.execute(response);
+                                Forms.LoadAjax({
+                                    url: '@Url.Action("Edit", new { id =  Model.ObjDetail.ID})',
+                                });
+                                setTimeout(function () {
+                                    Forms.Close('@Model.ViewId');
+                                }, 2000);
+                            }
+                        };
+                        Forms.Ajax(ajaxParams)
+                    }
+                });
+            }
+            function DocumentYeuCauChinhSua() {
+                Swal.fire({
+                    title: "Yêu cầu chỉnh sửa?",
+                    text: "Bạn có chắc muốn Yêu cầu chỉnh sửa lại dữ liệu này? Hành động sẽ khiến luồng quy trình bắt đầu lại từ đầu!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Xác nhận",
+                    cancelButtonText: "Huỷ",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var ajaxParams = {
+                            url: '@Url.Action("DocumentYeuCauChinhSua")',
+                            type: "POST",
+                            data: {
+                                documentId : '@Model.ObjDetail.ID'
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                Message.execute(response);
+                                Forms.LoadAjax({
+                                    url: '@Url.Action("Edit", new { id =  Model.ObjDetail.ID})',
+                                });
+                                setTimeout(function () {
+                                    Forms.Close('@Model.ViewId');
+                                }, 2000);
+                            }
+                        };
+                        Forms.Ajax(ajaxParams)
+                    }
+                });
+            }
+            function DocumentTuChoi() {
+                Swal.fire({
+                    title: "Từ chối?",
+                    text: "Bạn có chắc Từ chối dữ liệu này? Hành động sẽ tắt toàn bộ quy trình!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Xác nhận",
+                    cancelButtonText: "Huỷ",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var ajaxParams = {
+                            url: '@Url.Action("DocumentTuChoi")',
+                            type: "POST",
+                            data: {
+                                documentId: '@Model.ObjDetail.ID'
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                Message.execute(response);
+                                Forms.LoadAjax({
+                                    url: '@Url.Action("Edit", new { id =  Model.ObjDetail.ID})',
+                                });
+                                setTimeout(function () {
+                                    Forms.Close('@Model.ViewId');
+                                }, 2000);
+                            }
+                        };
+                        Forms.Ajax(ajaxParams)
+                    }
+                });
+            }
+
+            function ShowHistoryDocument() {
+
+            }
+
         </script>
     </div>
 </div>
