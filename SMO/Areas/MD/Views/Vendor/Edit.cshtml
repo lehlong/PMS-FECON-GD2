@@ -94,6 +94,34 @@
 
                             <div class="row">
                                 <div class="col-md-2">
+                                    <label>Số tài khoản <br> ngân hàng</label>
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.ACCOUNT_NUMBER)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.ACCOUNT_NUMBER)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <label>Tên ngân hàng</label>
+                                </div>
+                                <div class="col-md-10">
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            @Html.MyTextBoxFor(m => m.ObjDetail.BANK_NAME)
+                                        </div>
+                                        @Html.ValidationMessageFor(m => m.ObjDetail.BANK_NAME)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-2">
                                     <label>Email</label>
                                 </div>
                                 <div class="col-md-10">

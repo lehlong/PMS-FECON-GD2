@@ -10,7 +10,7 @@ namespace SMO.Repository.Mapping.MD
             Id(x => x.CODE);
             Map(x => x.NAME);
             Map(x => x.ACTIVE).Not.Nullable().CustomType<YesNoType>(); ;
-            Map(x => x.VALUE);
+            Map(x => x.FULL_NAME);
         }
     }
 }

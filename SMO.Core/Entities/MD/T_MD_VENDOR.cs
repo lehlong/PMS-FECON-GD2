@@ -18,5 +18,8 @@ namespace SMO.Core.Entities.MD
         public virtual string EMAIL { get; set; }
         public virtual string PHONE { get; set; }
         public virtual string ADDRESS { get; set; }
+
+        public virtual string ACCOUNT_NUMBER { get; set; }
+        public virtual string BANK_NAME { get; set;}
     }
 }

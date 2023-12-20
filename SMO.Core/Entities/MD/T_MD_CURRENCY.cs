@@ -10,6 +10,6 @@ namespace SMO.Core.Entities.MD
         public virtual string CODE { get; set; }
         [Required(ErrorMessage = "Trường này bắt buộc nhập", AllowEmptyStrings = false)]
         public virtual string NAME { get; set; }
-        public virtual decimal VALUE { get; set; }
+        public virtual string FULL_NAME { get; set; }
     }
 }

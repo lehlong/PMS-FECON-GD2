@@ -13,6 +13,8 @@ namespace SMO.Repository.Mapping.MD
             Map(x => x.PHONE);
             Map(x => x.ADDRESS);
             Map(x => x.SHORT_NAME);
+            Map(x => x.ACCOUNT_NUMBER);
+            Map(x => x.BANK_NAME);
         }
     }
 }
