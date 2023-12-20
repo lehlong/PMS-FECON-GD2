@@ -20,6 +20,7 @@ namespace SMO.Service.PS
         {
             try
             {
+                UnitOfWork.Clear();
                 var project = UnitOfWork.Repository<ProjectRepo>().Queryable().FirstOrDefault(x => x.ID == projectId);
                 if (project == null)
                 {
@@ -28,11 +29,8 @@ namespace SMO.Service.PS
                     return;
                 }
                 var lstTemplateWorkflow = UnitOfWork.Repository<WorkflowRepo>().Queryable().Where(x => x.ACTIVE == true && x.PROJECT_LEVEL_CODE == project.PROJECT_LEVEL_CODE).ToList();
+                var resource = UnitOfWork.Repository<ProjectResourceRepo>().Queryable().Where(x => x.PROJECT_ID == projectId);
 
-                UnitOfWork.BeginTransaction();
-                UnitOfWork.Repository<ProjectWorkflowRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).Delete();
-                UnitOfWork.Repository<ProjectWorkflowStepRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).Delete();
-                UnitOfWork.Repository<ProjectWorkflowFileRepo>().Queryable().Where(x => x.PROJECT_ID == projectId).Delete();
                 foreach (var wf in lstTemplateWorkflow)
                 {
                     if (wf.ListSteps == null)
@@ -47,8 +45,28 @@ namespace SMO.Service.PS
                         this.ErrorMessage = $"TEMPLATE WORKFLOW : {wf.CODE} chưa cấu hình các đầu mục file! Vui lòng kiểm tra lại!";
                         return;
                     }
+
+                    foreach (var step in wf.ListSteps)
+                    {
+                        if (!string.IsNullOrEmpty(step.USER_ACTION) && resource.FirstOrDefault(x => x.USER_NAME == step.USER_ACTION) == null)
+                        {
+                            this.State = false;
+                            this.ErrorMessage = $"Vui lòng khai báo nhân sự {step.USER_ACTION} trong dự án hoặc sửa lại thông tin các bước trong template: {wf.CODE.ToUpper()}";
+                            return;
+                        }
+                    }
+                }
+
+                UnitOfWork.BeginTransaction();
+                UnitOfWork.Repository<ProjectWorkflowRepo>().Queryable().Where(x => x.PROJECT_ID == project.ID).Delete();
+                UnitOfWork.Repository<ProjectWorkflowStepRepo>().Queryable().Where(x => x.PROJECT_ID == project.ID).Delete();
+                UnitOfWork.Repository<ProjectWorkflowFileRepo>().Queryable().Where(x => x.PROJECT_ID == project.ID).Delete();
+                foreach (var wf in lstTemplateWorkflow)
+                {
+                    var projectWorkflowId = Guid.NewGuid();
                     UnitOfWork.Repository<ProjectWorkflowRepo>().Create(new T_PS_PROJECT_WORKFLOW
                     {
+                        ID = projectWorkflowId,
                         CODE = wf.CODE,
                         NAME = wf.NAME,
                         PROJECT_ID = projectId,
@@ -63,16 +81,15 @@ namespace SMO.Service.PS
 
                     foreach (var step in wf.ListSteps)
                     {
-                        var resource = UnitOfWork.Repository<ProjectResourceRepo>().Queryable().Where(x => x.PROJECT_ID == projectId);
-                        
                         UnitOfWork.Repository<ProjectWorkflowStepRepo>().Create(new T_PS_PROJECT_WORKFLOW_STEP
                         {
                             ID = step.ID,
+                            WORKFLOW_ID = projectWorkflowId,
                             WORKFLOW_CODE = step.WORKFLOW_CODE,
                             NAME = step.NAME,
                             ACTIVE = step.ACTIVE,
                             PROJECT_ROLE_CODE = step.PROJECT_ROLE_CODE,
-                            USER_ACTION = string.IsNullOrEmpty(step.PROJECT_ROLE_CODE) ? step.USER_ACTION : resource.FirstOrDefault(x => x.PROJECT_ROLE_ID == step.PROJECT_ROLE_CODE)?.USER_NAME,
+                            USER_ACTION = string.IsNullOrEmpty(step.PROJECT_ROLE_CODE) ? step.USER_ACTION : resource.FirstOrDefault(x => x.PROJECT_ROLE_ID.Contains(step.PROJECT_ROLE_CODE))?.USER_NAME,
                             NUMBER_DAYS = step.NUMBER_DAYS,
                             ACTION = step.ACTION,
                             PROJECT_ID = projectId,
@@ -85,6 +102,7 @@ namespace SMO.Service.PS
                         UnitOfWork.Repository<ProjectWorkflowFileRepo>().Create(new T_PS_PROJECT_WORKFLOW_FILE
                         {
                             ID = file.ID,
+                            WORKFLOW_ID = projectWorkflowId,
                             WORKFLOW_CODE = file.WORKFLOW_CODE,
                             NAME = file.NAME,
                             ACTIVE = file.ACTIVE,

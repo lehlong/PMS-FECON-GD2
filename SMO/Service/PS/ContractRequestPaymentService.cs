@@ -15,13 +15,14 @@ namespace SMO.Service.PS
     public class ContractRequestPaymentService : GenericService<T_PS_CONTRACT_REQUEST_PAYMENT, ContractRequestPaymentRepo>
     {
         public string WORKFLOW_CODE { get; set; }
+        public string WORKFLOW_ID { get; set; }
         public override void Create()
         {
             try
             {
                 var contract = UnitOfWork.Repository<ContractRepo>().Get(ObjDetail.CONTRACT_ID);
                 var project = UnitOfWork.Repository<ProjectRepo>().Get(contract.PROJECT_ID);
-                var workflow = UnitOfWork.Repository<ProjectWorkflowRepo>().Get(this.WORKFLOW_CODE);
+                var workflow = UnitOfWork.Repository<ProjectWorkflowRepo>().Get(Guid.Parse(this.WORKFLOW_ID));
 
                 var documentWorkflowId = Guid.NewGuid();
                 var documentId = Guid.NewGuid();
@@ -50,6 +51,10 @@ namespace SMO.Service.PS
                     PURCHASE_TYPE_CODE = workflow.PURCHASE_TYPE_CODE,
                     AUTHORITY = workflow.AUTHORITY,
                     DOCUMENT_ID = documentId,
+                    UPDATE_BY = ProfileUtilities.User?.USER_NAME,
+                    UPDATE_DATE = DateTime.Now,
+                    CREATE_BY = ProfileUtilities.User?.USER_NAME,
+                    CREATE_DATE = DateTime.Now,
                 });
 
                 foreach (var step in workflow.ListSteps)
@@ -70,6 +75,10 @@ namespace SMO.Service.PS
                         PROJECT_ID = step.PROJECT_ID,
                         ACTIVE = true,
                         IS_PROCESS = step.C_ORDER == 0 ? true : false,
+                        UPDATE_BY = ProfileUtilities.User?.USER_NAME,
+                        UPDATE_DATE = DateTime.Now,
+                        CREATE_BY = ProfileUtilities.User?.USER_NAME,
+                        CREATE_DATE = DateTime.Now,
                     });
                 }
 
@@ -86,6 +95,10 @@ namespace SMO.Service.PS
                         PROJECT_ID = step.PROJECT_ID,
                         REFERENCE_FILE_ID = Guid.NewGuid(),
                         ACTIVE = true,
+                        UPDATE_BY = ProfileUtilities.User?.USER_NAME,
+                        UPDATE_DATE = DateTime.Now,
+                        CREATE_BY = ProfileUtilities.User?.USER_NAME,
+                        CREATE_DATE = DateTime.Now,
                     });
                 }
 
@@ -120,28 +133,25 @@ namespace SMO.Service.PS
                 this.Exception = ex;
             }
         }
-        public override void Update()
+        public void UpdateRequestPayment(T_PS_CONTRACT_REQUEST_PAYMENT data)
         {
-            if (ObjDetail.AMOUNT == 0 && ObjDetail.AMOUNT_ADVANCE == 0 && ObjDetail.INVOICE_VALUE == 0)
-            {
-                ErrorMessage = "Chưa nhập số tiền.";
-                State = false;
-                return;
-            }
             try
             {
                 UnitOfWork.BeginTransaction();
+                var item = UnitOfWork.Repository<ContractRequestPaymentRepo>().Queryable().First(x => x.ID == data.ID);
+                item.EXPLAIN = data.EXPLAIN;
+                item.CONTENTS = data.CONTENTS;
+                item.BILL_NUMBER = data.BILL_NUMBER;
+                item.CURRENCY_CODE = data.CURRENCY_CODE;
+                item.EXCHANGE_RATE = data.EXCHANGE_RATE;
+                item.AMOUNT = data.AMOUNT;
+                item.AMOUNT_ADVANCE = data.EXCHANGE_RATE * data.AMOUNT;
+                item.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                item.UPDATE_DATE = DateTime.Now;
+                item.ACCOUNT_NUMBER = data.ACCOUNT_NUMBER;
+                item.BANK_NAME = data.BANK_NAME;
 
-                if (ProfileUtilities.User != null)
-                {
-                    this.ObjDetail.UPDATE_BY = ProfileUtilities.User.USER_NAME;
-                    //this.ObjDetail.UPDATE_DATE = this.CurrentRepository.GetDateDatabase();
-                }
-
-                this.ObjDetail = this.CurrentRepository.Update(this.ObjDetail);
-                var contract = UnitOfWork.Repository<ContractRepo>().Get(ObjDetail.CONTRACT_ID);
-                var currentUser = ProfileUtilities.User?.USER_NAME;
-
+                UnitOfWork.Repository<ContractRequestPaymentRepo>().Update(item);
                 UnitOfWork.Commit();
             }
             catch (Exception ex)
@@ -157,6 +167,21 @@ namespace SMO.Service.PS
             try
             {
                 return UnitOfWork.Repository<DocumentWorkflowStepRepo>().Queryable().First(x => x.ID == id);
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+                return null;
+            }
+        }
+
+        public T_PS_CONTRACT_REQUEST_PAYMENT GetRequestPayment(Guid id)
+        {
+            try
+            {
+                return UnitOfWork.Repository<ContractRequestPaymentRepo>().Queryable().First(x => x.ID == id);
             }
             catch (Exception ex)
             {
@@ -227,7 +252,7 @@ namespace SMO.Service.PS
                 UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(taskProcessing);
 
                 //Cập nhật bước tiếp theo nếu không phải bước cuối
-                if(taskProcessing.C_ORDER + 1 != document.Workflow.ListSteps.Count())
+                if (taskProcessing.C_ORDER + 1 != document.Workflow.ListSteps.Count())
                 {
                     var nextProcessing = document.Workflow.ListSteps.First(x => x.C_ORDER == taskProcessing.C_ORDER + 1);
                     if (nextProcessing == null)
@@ -366,6 +391,12 @@ namespace SMO.Service.PS
                 }
                 UnitOfWork.BeginTransaction();
 
+                //Cập nhật trạng thái đề nghị
+                document.STATUS = DocumentWorkflowStatus.KHOI_TAO.GetValue();
+                document.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                document.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<ContractRequestPaymentRepo>().Update(document);
+
                 //Lưu lịch sử
                 var taskProcessing = document.Workflow.ListSteps.First(x => x.IS_PROCESS);
                 UnitOfWork.Repository<DocumentWorkflowHistoryRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_HISTORY
@@ -399,6 +430,87 @@ namespace SMO.Service.PS
                     step.UPDATE_DATE = DateTime.Now;
                     UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(step);
                 }
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                this.Exception = ex;
+            }
+        }
+
+        public void DocumentXacNhan(Guid documentId)
+        {
+            try
+            {
+                var document = UnitOfWork.Repository<ContractRequestPaymentRepo>().Queryable().First(x => x.ID == documentId);
+                if (document == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                UnitOfWork.BeginTransaction();
+
+                //Cập nhật trạng thái đề nghị
+                document.STATUS = DocumentWorkflowStatus.DA_XAC_NHAN.GetValue();
+                document.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                document.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<ContractRequestPaymentRepo>().Update(document);
+
+                //Cập nhật trạng thái bước hiện tại
+                var taskProcessing = document.Workflow.ListSteps.First(x => x.IS_PROCESS);
+                if (taskProcessing == null)
+                {
+                    ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                    State = false;
+                    return;
+                }
+                taskProcessing.SOLVED = DocumentWorkflowStatus.DA_XAC_NHAN.GetValue();
+                taskProcessing.IS_DONE = true;
+                taskProcessing.IS_PROCESS = false;
+                taskProcessing.UPDATE_BY = ProfileUtilities.User.USER_NAME;
+                taskProcessing.UPDATE_DATE = DateTime.Now;
+                UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(taskProcessing);
+
+                //Cập nhật bước tiếp theo nếu không phải bước cuối
+                if (taskProcessing.C_ORDER + 1 != document.Workflow.ListSteps.Count())
+                {
+                    var nextProcessing = document.Workflow.ListSteps.First(x => x.C_ORDER == taskProcessing.C_ORDER + 1);
+                    if (nextProcessing == null)
+                    {
+                        ErrorMessage = "Lỗi không thể thực hiện được thao tác này! Vui lòng liên hệ với quản trị viên hệ thống!";
+                        State = false;
+                        return;
+                    }
+                    nextProcessing.IS_PROCESS = true;
+                    nextProcessing.IS_DONE = false;
+                    UnitOfWork.Repository<DocumentWorkflowStepRepo>().Update(nextProcessing);
+                }
+
+                //Lưu lịch sử quy trình
+                UnitOfWork.Repository<DocumentWorkflowHistoryRepo>().Create(new T_PS_DOCUMENT_WORKFLOW_HISTORY
+                {
+                    ID = Guid.NewGuid(),
+                    WORKFLOW_CODE = taskProcessing.WORKFLOW_CODE,
+                    WORKFLOW_ID = taskProcessing.WORKFLOW_ID,
+                    NAME = taskProcessing.NAME,
+                    PROJECT_ROLE_CODE = taskProcessing.PROJECT_ROLE_CODE,
+                    USER_ACTION = taskProcessing.USER_ACTION,
+                    NUMBER_DAYS = taskProcessing.NUMBER_DAYS,
+                    ACTION = taskProcessing.ACTION,
+                    C_ORDER = taskProcessing.C_ORDER,
+                    IS_DONE = taskProcessing.IS_DONE,
+                    IS_PROCESS = taskProcessing.IS_PROCESS,
+                    ACTIVE = taskProcessing.ACTIVE,
+                    SOLVED = "05",
+                    DOCUMENT_ID = taskProcessing.DOCUMENT_ID,
+                    PROJECT_ID = taskProcessing.PROJECT_ID,
+                    CREATE_BY = ProfileUtilities.User.USER_NAME,
+                    CREATE_DATE = DateTime.Now,
+                });
+
                 UnitOfWork.Commit();
             }
             catch (Exception ex)

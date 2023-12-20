@@ -1,5 +1,6 @@
 ﻿using SMO.Core.Entities.MD;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace SMO.Core.Entities.PS
@@ -21,8 +22,10 @@ namespace SMO.Core.Entities.PS
         public virtual Guid REFERENCE_FILE_ID { get; set; }
         public virtual Guid WORKFLOW_ID { get; set; }
         public virtual string REQUEST_TYPE_CODE { get; set; }
+        public virtual string ACCOUNT_NUMBER { get; set; }
+        public virtual string BANK_NAME { get; set; }
         public virtual decimal EXCHANGE_RATE { get; set; }
-
+        public virtual ISet<T_PS_DOCUMENT_WORKFLOW_HISTORY> ListHistorys { get; set; }
         public virtual T_MD_PAYMENT_STATUS PaymentStatus { get; set; }
 
         private T_MD_REQUEST_TYPE _RequestType;
@@ -71,6 +74,11 @@ namespace SMO.Core.Entities.PS
             {
                 this._Workflow = value;
             }
+        }
+
+        public T_PS_CONTRACT_REQUEST_PAYMENT()
+        {
+            ListHistorys = new HashSet<T_PS_DOCUMENT_WORKFLOW_HISTORY>(new List<T_PS_DOCUMENT_WORKFLOW_HISTORY>());
         }
     }
 }

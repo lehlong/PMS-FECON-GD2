@@ -48,11 +48,11 @@
                         @Html.MyButton("cmdSave", "Lưu lại", "Update();", "Alt+N", "done_all")
                         @if (Model.ObjDetail.ACTIVE)
                         {
-                            @Html.MyButton("cmdSave", "Inactive", $"ToggleActive('{Model.ObjDetail.CODE}', '01');", "Alt+N", "lock")
+                            @Html.MyButton("cmdSave", "Inactive", $"ToggleActive('{Model.ObjDetail.ID}', '01');", "Alt+N", "lock")
                         }
                         else
                         {
-                            @Html.MyButton("cmdSave", "Active", $"ToggleActive('{Model.ObjDetail.CODE}', '02');", "Alt+N", "lock_open")
+                            @Html.MyButton("cmdSave", "Active", $"ToggleActive('{Model.ObjDetail.ID}', '02');", "Alt+N", "lock_open")
                         }
                     </div>
                 </div>
@@ -254,7 +254,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td><label>Hành động</label></td>
+                                    @*<td><label>Hành động</label></td>
                                     <td style="width:220px;">
                                         <div class="form-group">
                                             <div class="form-line">
@@ -271,7 +271,7 @@
                                                 </select>
                                             </div>
                                         </div>
-                                    </td>
+                                    </td>*@
                                 </tr>
                             }
 
@@ -358,6 +358,12 @@
                         dataType: 'json',
                         success: function (response) {
                             Message.execute(response);
+                            Forms.LoadAjax({
+                                url: '@Url.Action("Edit", new { id =  Model.ObjDetail.ID})',
+                            });
+                            setTimeout(function () {
+                                Forms.Close('@Model.ViewId');
+                            }, 2000);
                         }
                     };
                     Forms.Ajax(ajaxParams)

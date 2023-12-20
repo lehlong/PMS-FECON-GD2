@@ -51,27 +51,6 @@
                         </div>
 
                         <div class="col-md-1">
-                            <label>Số tài khoản</label>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <div class="form-line">
-                                    <input type="text" class="form-control" value="Số tài khoản" disabled />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-1">
-                            <label>Tên ngân hàng</label>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <div class="form-line">
-                                    <input type="text" class="form-control" value="Tên ngân hàng" disabled />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-1">
                             <label>Giá trị HĐ</label>
                         </div>
                         <div class="col-md-2">
@@ -254,6 +233,30 @@
                             </div>
 
                             <div class="col-md-1">
+                                <label>Số tài khoản</label>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.ACCOUNT_NUMBER)
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.ACCOUNT_NUMBER)
+                                </div>
+                            </div>
+
+                            <div class="col-md-1">
+                                <label>Tên ngân hàng</label>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        @Html.MyTextBoxFor(m => m.ObjDetail.BANK_NAME)
+                                    </div>
+                                    @Html.ValidationMessageFor(m => m.ObjDetail.BANK_NAME)
+                                </div>
+                            </div>
+
+                            <div class="col-md-1">
                                 <label>Ngày</label>
                             </div>
                             <div class="col-md-5">
@@ -282,7 +285,7 @@
                             <div class="col-md-11">
                                 <div class="form-group">
                                     <div class="form-line">
-                                        @Html.MyDropDownListFor(m => m.WORKFLOW_CODE, SelectListUtilities.GetWorkflowInProject(contract.PROJECT_ID, false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
+                                        @Html.MyDropDownListFor(m => m.WORKFLOW_ID, SelectListUtilities.GetWorkflowInProject(contract.PROJECT_ID, false), new { @data_live_search = "true", @class = "selectpicker show-tick" })
                                     </div>
                                 </div>
                             </div>

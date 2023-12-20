@@ -994,7 +994,7 @@ namespace SMO
                 .ToList();
             foreach (var obj in lstAll)
             {
-                lstData.Add(new Data { Value = obj.CODE, Text = obj.CODE + " - " + obj.NAME });
+                lstData.Add(new Data { Value = obj.ID.ToString(), Text = obj.CODE + " - " + obj.NAME });
             }
             return new SelectList(lstData, "Value", "Text", selected);
         }

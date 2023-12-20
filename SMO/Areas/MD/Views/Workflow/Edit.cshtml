@@ -535,6 +535,12 @@
                 dataType: 'json',
                 success: function (response) {
                     Message.execute(response);
+                    Forms.LoadAjax({
+                        url: '@Url.Action("Edit", new { id =  Model.ObjDetail.CODE})',
+                    });
+                    setTimeout(function () {
+                        Forms.Close('@Model.ViewId');
+                    }, 2000);
                 }
             };
             Forms.Ajax(ajaxParams)

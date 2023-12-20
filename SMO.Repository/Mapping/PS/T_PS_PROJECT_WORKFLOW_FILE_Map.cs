@@ -9,6 +9,7 @@ namespace SMO.Repository.Mapping.PS_PROJECT
             Id(x => x.ID);
             Map(x => x.NAME);
             Map(x => x.WORKFLOW_CODE);
+            Map(x => x.WORKFLOW_ID);
             Map(x => x.C_ORDER);
             Map(x => x.PROJECT_ID);
         }

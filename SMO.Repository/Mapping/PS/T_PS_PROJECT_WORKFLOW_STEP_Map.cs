@@ -8,6 +8,7 @@ namespace SMO.Repository.Mapping.PS
         {
             Id(x => x.ID);
             Map(x => x.WORKFLOW_CODE);
+            Map(x => x.WORKFLOW_ID);
             Map(x => x.NAME);
             Map(x => x.ACTIVE);
             Map(x => x.PROJECT_ROLE_CODE);

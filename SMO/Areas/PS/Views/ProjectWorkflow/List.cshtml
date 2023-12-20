@@ -35,7 +35,7 @@
                 var vdbclickAction = "";
                 if (AuthorizeUtilities.CheckUserRight("R2.8.2"))
                 {
-                    vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.CODE }));
+                    vdbclickAction = string.Format("Forms.LoadAjax('{0}', this);", Url.Action("Edit", new { id = item.ID }));
                 }
                 <tr>
                     <td>

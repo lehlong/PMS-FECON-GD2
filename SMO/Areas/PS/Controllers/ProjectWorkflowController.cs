@@ -82,7 +82,7 @@ namespace SMO.Areas.PS.Controllers
         {
             if (!string.IsNullOrWhiteSpace(id))
             {
-                _service.Get(id);
+                _service.Get(Guid.Parse(id));
             }
             return PartialView(_service);
         }
@@ -132,7 +132,7 @@ namespace SMO.Areas.PS.Controllers
         {
             var result = new TransferObject();
             result.Type = TransferType.AlertSuccessAndJsCommand;
-            _service.ToggleActive(id);
+            _service.ToggleActive(Guid.Parse(id));
             if (_service.State)
             {
                 SMOUtilities.GetMessage("1002", _service, result);

@@ -7,7 +7,7 @@
     var project = SMOUtilities.GetProject(contract.PROJECT_ID);
     var statusProjectEditable = (contract.IS_SIGN_WITH_CUSTOMER || project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue()) && (project.STATUS != "04");
     var topline = 154;
-    var stepProcessing = Model.ObjDetail.Workflow.ListSteps?.First(x => x.IS_PROCESS);
+    var stepProcessing = Model.ObjDetail?.Workflow?.ListSteps?.First(x => x.IS_PROCESS);
 }
 <style>
     .card-shadow {
@@ -64,7 +64,7 @@
                     <div class="page-function-button m-r-20">
                         @Html.MyButton("cmdBack", "Quay lại", string.Format("Forms.Close('{0}');", @Model.ViewId), "Alt+N", "arrow_back")
 
-                        @if (Model.ObjDetail.STATUS != DocumentWorkflowStatus.TU_CHOI.GetValue())
+                        @if (Model.ObjDetail.STATUS == DocumentWorkflowStatus.KHOI_TAO.GetValue())
                         {
                             @Html.MyButton("cmdSave", "Lưu thông tin", string.Format("Forms.SubmitForm('{0}');", @Model.FormId), "Alt+N", "done_all")
                         }
@@ -73,21 +73,25 @@
 
                         @if (Model.ObjDetail.STATUS != DocumentWorkflowStatus.TU_CHOI.GetValue())
                         {
-                            if ((stepProcessing.ACTION.Contains("01") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            if ((stepProcessing.ACTION.Contains("01") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R0"))
                             {
                                 @Html.MyButton("cmdBack", "Trình duyệt", "DocumentTrinhDuyet();", "Alt+N", "send")
                             }
-                            if ((stepProcessing.ACTION.Contains("02") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            if ((stepProcessing.ACTION.Contains("02") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R0"))
                             {
                                 @Html.MyButton("cmdBack", "Yêu cầu chỉnh sửa", "DocumentYeuCauChinhSua();", "Alt+N", "sync")
                             }
-                            if ((stepProcessing.ACTION.Contains("03") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            if ((stepProcessing.ACTION.Contains("03") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R0"))
                             {
                                 @Html.MyButton("cmdBack", "Phê duyệt", "DocumentPheDuyet();", "Alt+N", "done_all")
                             }
-                            if ((stepProcessing.ACTION.Contains("04") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R00"))
+                            if ((stepProcessing.ACTION.Contains("04") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R0"))
                             {
                                 @Html.MyButton("cmdBack", "Từ chối", "DocumentTuChoi();", "Alt+N", "close")
+                            }
+                            if ((stepProcessing.ACTION.Contains("05") && stepProcessing.USER_ACTION == ProfileUtilities.User.USER_NAME) || AuthorizeUtilities.CheckUserRight("R0"))
+                            {
+                                @Html.MyButton("cmdBack", "Xác nhận", "DocumentXacNhan();", "Alt+N", "done_all")
                             }
                         }
 
@@ -114,27 +118,6 @@
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="text" class="form-control" value="@(contract.Vendor?.NAME)" disabled />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-1">
-                            <label>Số tài khoản</label>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <div class="form-line">
-                                    <input type="text" class="form-control" value="Số tài khoản" disabled />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-1">
-                            <label>Tên ngân hàng</label>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <div class="form-line">
-                                    <input type="text" class="form-control" value="Tên ngân hàng" disabled />
                                 </div>
                             </div>
                         </div>
@@ -208,6 +191,8 @@
                         @using (Ajax.BeginForm("Update", null, FormDataUtils.GetAjaxOptions(Model.ViewId), new { @id = Model.FormId }))
                         {
                             @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.ObjDetail.ID)
+                            @Html.HiddenFor(m => m.ObjDetail.WORKFLOW_ID)
                             @Html.HiddenFor(m => m.ObjDetail.CONTRACT_ID)
                             @Html.HiddenFor(m => m.ViewId)
                             @Html.HiddenFor(m => m.ObjDetail.REFERENCE_FILE_ID)
@@ -232,7 +217,7 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <div class="form-line">
-                                                <input type="text" class="form-control" value="@(Model.ObjDetail.STATUS == "01" ? "Khởi tạo" : Model.ObjDetail.STATUS == "02" ? "Chờ phê duyệt" : Model.ObjDetail.STATUS == "03" ? "Đã phê duyệt" : "Từ chối")" disabled />
+                                                <input type="text" class="form-control" value="@(Model.ObjDetail.STATUS == "01" ? "Khởi tạo" : Model.ObjDetail.STATUS == "02" ? "Chờ phê duyệt" : Model.ObjDetail.STATUS == "03" ? "Đã phê duyệt" : Model.ObjDetail.STATUS == "04" ? "Từ chối" : "Đã xác nhận")" disabled />
                                             </div>
                                         </div>
                                     </div>
@@ -324,6 +309,30 @@
                                     </div>
 
                                     <div class="col-md-2">
+                                        <label>Số tài khoản</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.ACCOUNT_NUMBER)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.ACCOUNT_NUMBER)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label>Tên ngân hàng</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <div class="form-line">
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.BANK_NAME)
+                                            </div>
+                                            @Html.ValidationMessageFor(m => m.ObjDetail.BANK_NAME)
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
                                         <label>Ngày</label>
                                     </div>
                                     <div class="col-md-4">
@@ -353,9 +362,8 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <div class="form-line">
-                                                @Html.MyTextBoxFor(m => m.ObjDetail.UPDATE_DATE)
+                                                <input class="form-control" value="@Model.ObjDetail.UPDATE_DATE" disabled>
                                             </div>
-                                            @Html.ValidationMessageFor(m => m.ObjDetail.UPDATE_DATE)
                                         </div>
                                     </div>
 
@@ -365,7 +373,7 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <div class="form-line">
-                                                @Html.MyTextBoxFor(m => m.ObjDetail.UPDATE_BY)
+                                                @Html.MyTextBoxFor(m => m.ObjDetail.UPDATE_BY, new {@disabled="disabled"})
                                             </div>
                                             @Html.ValidationMessageFor(m => m.ObjDetail.UPDATE_BY)
                                         </div>
@@ -383,7 +391,11 @@
                                             <th class="align-center" style="width: 32px;">STT</th>
                                             <th class="align-center" style="width:40%">Tên đầu mục</th>
                                             <th class="align-center">Danh sách file</th>
-                                            <th class="align-center" style=" width: 128px;">Hành động</th>
+                                            @if (Model.ObjDetail.STATUS == DocumentWorkflowStatus.KHOI_TAO.GetValue())
+                                            {
+                                                <th class="align-center" style=" width: 128px;">Hành động</th>
+                                            }
+
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -398,12 +410,15 @@
                                                         Html.RenderAction("ListFiles", "ReferenceFile", new { @area = "CM", referenceId = item.REFERENCE_FILE_ID });
                                                     }
                                                 </td>
-                                                <td>
-                                                    <span class="waves-effect btn-default btn btn-border" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new { @area = "CM", referenceId = item.REFERENCE_FILE_ID }))"
-                                                          style="width: 100%; padding: 4px 0px 6px 0px !important;">
-                                                        <i class="material-icons col-orange" style="font-size: 18px; top: 4px;">cloud_upload</i><span>Thêm file</span>
-                                                    </span>
-                                                </td>
+                                                @if (Model.ObjDetail.STATUS == DocumentWorkflowStatus.KHOI_TAO.GetValue())
+                                                {
+                                                    <td>
+                                                        <span class="waves-effect btn-default btn btn-border" onclick="@string.Format("Forms.LoadAjaxModal('{0}');", @Url.Action("Index", "ReferenceFile", new { @area = "CM", referenceId = item.REFERENCE_FILE_ID }))"
+                                                              style="width: 100%; padding: 4px 0px 6px 0px !important;">
+                                                            <i class="material-icons col-orange" style="font-size: 18px; top: 4px;">cloud_upload</i><span>Thêm file</span>
+                                                        </span>
+                                                    </td>
+                                                }
                                             </tr>
                                         }
                                     </tbody>
@@ -417,7 +432,7 @@
                     <hr />
                     <div class="form-group">
                         <div class="form-line">
-                            @Html.MyDropDownListFor(m => m.WORKFLOW_CODE, SelectListUtilities.GetWorkflowInProject(contract.PROJECT_ID, false), new { @data_live_search = "true", @class = "selectpicker show-tick", @disabled = "disabled" })
+                            <input class="form-control" value="@Model.ObjDetail.Workflow.CODE - @Model.ObjDetail.Workflow.NAME" disabled readonly />
                         </div>
                     </div>
                     @foreach (var step in Model.ObjDetail.Workflow.ListSteps.OrderBy(x => x.C_ORDER))
@@ -532,6 +547,39 @@
                     }
                 });
             }
+            function DocumentHuyTrinhDuyet() {
+                Swal.fire({
+                    title: "Trình duyệt?",
+                    text: "Bạn có chắc Huỷ trình duyệt dữ liệu này?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Trình duyệt",
+                    cancelButtonText: "Huỷ",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var ajaxParams = {
+                            url: '@Url.Action("DocumentHuyTrinhDuyet")',
+                            type: "POST",
+                            data: {
+                                documentId: '@Model.ObjDetail.ID'
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                Message.execute(response);
+                                Forms.LoadAjax({
+                                    url: '@Url.Action("Edit", new { id =  Model.ObjDetail.ID})',
+                                });
+                                setTimeout(function () {
+                                    Forms.Close('@Model.ViewId');
+                                }, 2000);
+                            }
+                        };
+                        Forms.Ajax(ajaxParams)
+                    }
+                });
+}
             function DocumentPheDuyet() {
                 Swal.fire({
                     title: "Phê duyệt?",
@@ -546,6 +594,40 @@
                     if (result.isConfirmed) {
                         var ajaxParams = {
                             url: '@Url.Action("DocumentPheDuyet")',
+                            type: "POST",
+                            data: {
+                                documentId: '@Model.ObjDetail.ID'
+                            },
+                            dataType: 'json',
+                            success: function (response) {
+                                Message.execute(response);
+                                Forms.LoadAjax({
+                                    url: '@Url.Action("Edit", new { id =  Model.ObjDetail.ID})',
+                                });
+                                setTimeout(function () {
+                                    Forms.Close('@Model.ViewId');
+                                }, 2000);
+                            }
+                        };
+                        Forms.Ajax(ajaxParams)
+                    }
+                });
+            }
+
+            function DocumentXacNhan() {
+                Swal.fire({
+                    title: "Phê duyệt?",
+                    text: "Bạn có chắc Xác nhận dữ liệu này và chuyển đến bước tiếp theo?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Phê duyệt",
+                    cancelButtonText: "Huỷ",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var ajaxParams = {
+                            url: '@Url.Action("DocumentXacNhan")',
                             type: "POST",
                             data: {
                                 documentId: '@Model.ObjDetail.ID'
@@ -633,7 +715,13 @@
             }
 
             function ShowHistoryDocument() {
-
+                var ajaxParams = {
+                    url: '@Url.Action("DetailHistoryStep")',
+                    data: {
+                        documentId: '@Model.ObjDetail.ID'
+                    },
+                };
+                Forms.LoadAjaxModal(ajaxParams)
             }
 
         </script>

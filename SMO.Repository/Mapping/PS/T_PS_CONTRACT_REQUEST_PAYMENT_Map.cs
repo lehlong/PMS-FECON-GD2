@@ -21,9 +21,12 @@ namespace SMO.Repository.Mapping.PS
             Map(x => x.REQUEST_TYPE_CODE);
             Map(x => x.EXCHANGE_RATE);
             Map(x => x.CURRENCY_CODE);
+            Map(x => x.ACCOUNT_NUMBER);
+            Map(x => x.BANK_NAME);
             References(x => x.PaymentStatus).Columns("STATUS").Not.Insert().Not.Update().LazyLoad();
             References(x => x.RequestType).Columns("REQUEST_TYPE_CODE").Not.Insert().Not.Update().LazyLoad();
             References(x => x.Workflow).Columns("WORKFLOW_ID").Not.Insert().Not.Update().LazyLoad();
+            HasMany(x => x.ListHistorys).KeyColumn("DOCUMENT_ID").LazyLoad().Inverse().Cascade.Delete();
         }
     }
 }

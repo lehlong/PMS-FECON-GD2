@@ -184,6 +184,9 @@
         [EnumName("Từ chối")]
         [EnumValue("04")]
         TU_CHOI,
+        [EnumName("Đã xác nhận")]
+        [EnumValue("05")]
+        DA_XAC_NHAN,
     }
     public enum ProjectStructureType
     {

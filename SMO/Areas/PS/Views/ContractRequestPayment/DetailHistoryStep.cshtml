@@ -1,0 +1,61 @@
+﻿@model SMO.Core.Entities.PS.T_PS_CONTRACT_REQUEST_PAYMENT
+@{
+    var viewId = Guid.NewGuid().ToString();
+    var stt = 1;
+}
+
+<div id='@viewId' class="container-fluid child-content"> 
+    <div class="card">
+        <i class="material-icons" style="position:absolute; right: 10px; top:10px; cursor:pointer;" data-dismiss="modal">close</i>
+        <div class="body" style="padding-top: 0px;">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a style="padding-left:0px"><i class="material-icons">clear_all</i> LỊCH SỬA CẬP NHẬP QUY TRÌNH</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="page-function p-t-10 p-b-10">
+
+                </div>
+                <div id="divResult">
+                    <div class="table-responsive">
+                        <table class="table table-condensed table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Bước quy trình</th>
+                                    <th>Tên bước</th>
+                                    <th>Hành động</th>
+                                    <th>Người thực hiện</th>
+                                    <th>Ngày thực hiện</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ListHistorys)
+                                {
+
+                                    <tr>
+                                        <td>@stt</td>
+                                        <td>Bước @(item.C_ORDER + 1)</td>
+                                        <td>@(item.NAME)</td>
+                                        <td>@(item.Solved?.NAME)</td>
+                                        <td>@(item.UserAction?.FULL_NAME)</td>
+                                        <td>@(item.CREATE_DATE)</td>
+                                    </tr>
+                                    stt++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+    <script type="text/javascript">
+        $(function () {
+            Forms.CompleteUI();
+        });
+    </script>
+</div>

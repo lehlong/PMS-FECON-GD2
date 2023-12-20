@@ -73,22 +73,28 @@ namespace SMO.Areas.PS.Controllers
             return PartialView(item);
         }
 
+        public ActionResult DetailHistoryStep(Guid documentId)
+        {
+            var item = _service.GetRequestPayment(documentId);
+            return PartialView(item);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Update(ContractRequestPaymentService service)
         {
             var result = new TransferObject();
             result.Type = TransferType.AlertSuccessAndJsCommand;
-            service.Update();
-            if (service.State)
+            _service.UpdateRequestPayment(service.ObjDetail);
+            if (_service.State)
             {
-                SMOUtilities.GetMessage("1002", service, result);
+                SMOUtilities.GetMessage("1002", _service, result);
                 result.ExtData = "SubmitIndexContractRequestPayment();";
             }
             else
             {
                 result.Type = TransferType.AlertDanger;
-                SMOUtilities.GetMessage("1005", service, result);
+                SMOUtilities.GetMessage("1005", _service, result);
             }
             return result.ToJsonResult();
         }
@@ -139,6 +145,25 @@ namespace SMO.Areas.PS.Controllers
             var result = new TransferObject();
             result.Type = TransferType.AlertSuccessAndJsCommand;
             _service.DocumentTrinhDuyet(documentId);
+            if (_service.State)
+            {
+                SMOUtilities.GetMessage("1002", _service, result);
+                result.ExtData = "SubmitIndexContractRequestPayment();";
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", _service, result);
+            }
+            return result.ToJsonResult();
+        }
+
+        [HttpPost]
+        public ActionResult DocumentXacNhan(Guid documentId)
+        {
+            var result = new TransferObject();
+            result.Type = TransferType.AlertSuccessAndJsCommand;
+            _service.DocumentXacNhan(documentId);
             if (_service.State)
             {
                 SMOUtilities.GetMessage("1002", _service, result);
