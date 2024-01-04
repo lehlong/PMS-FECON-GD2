@@ -31,6 +31,8 @@ namespace SMO.AppCode.GanttChart
         public string Code { get; set; }
         public string ContractCode { get; set; }
         public string VendorName { get; set; }
+        public string Currency { get; set; }
+        public decimal? ExchangeRate {  get; set; }
 
         public static implicit operator T_PS_PROJECT_STRUCT(TaskDto taskDto)
         {
@@ -102,6 +104,84 @@ namespace SMO.AppCode.GanttChart
                 Code = projectStruct.GEN_CODE,
                 ReferenceBoqId = referenceBoqId,
                 Status = projectStruct.STATUS,
+            };
+        }
+
+        public static implicit operator T_PS_PROJECT_STRUCT_DRAFT(TaskDto taskDto)
+        {
+            var createNewTask = taskDto.Id == Guid.Empty;
+            Guid? wbsId = null;
+            Guid? boqId = null;
+            if (createNewTask)
+            {
+                if (taskDto.Type == ProjectEnum.WBS.ToString())
+                {
+                    wbsId = Guid.NewGuid();
+                }
+                else if (taskDto.Type == ProjectEnum.ACTIVITY.ToString())
+                {
+                    wbsId = taskDto.Parent;
+                }
+                else if (taskDto.Type == ProjectEnum.BOQ.ToString())
+                {
+                    boqId = Guid.NewGuid();
+                }
+            }
+            else
+            {
+                if (taskDto.Type == ProjectEnum.WBS.ToString() || taskDto.Type == ProjectEnum.ACTIVITY.ToString())
+                {
+                    wbsId = taskDto.Parent;
+                }
+                else if (taskDto.Type == ProjectEnum.BOQ.ToString())
+                {
+                    boqId = taskDto.Parent;
+                }
+            }
+            return new T_PS_PROJECT_STRUCT_DRAFT
+            {
+                ID = taskDto.Id,
+                TYPE = taskDto.Type,
+                START_DATE = taskDto.Start_date,
+                FINISH_DATE = taskDto.End_date,
+                PARENT_ID = taskDto.Parent,
+                TEXT = taskDto.Text,
+                WBS_ID = wbsId,
+                BOQ_ID = boqId,
+                PROJECT_ID = taskDto.ProjectId,
+                UNIT_CODE = taskDto.UnitCode,
+                QUANTITY = taskDto.Quantity,
+                PRICE = taskDto.Price,
+                C_ORDER = taskDto.Order,
+                GEN_CODE = taskDto.Code,
+                STATUS = taskDto.Status,
+                EXCHANGE_RATE = taskDto.ExchangeRate,
+                CURRENCY = taskDto.Currency,
+            };
+        }
+
+        public static explicit operator TaskDto(T_PS_PROJECT_STRUCT_DRAFT projectStruct)
+        {
+            var referenceBoqId = projectStruct.TYPE == ProjectEnum.WBS.ToString() ?
+                projectStruct.Wbs?.BOQ_REFRENCE_ID : projectStruct.Activity?.BOQ_REFRENCE_ID;
+            return new TaskDto
+            {
+                Id = projectStruct.ID,
+                Text = projectStruct.TEXT,
+                Start_date = projectStruct.START_DATE,
+                End_date = projectStruct.FINISH_DATE,
+                ProjectId = projectStruct.PROJECT_ID,
+                Parent = projectStruct.PARENT_ID,
+                Order = projectStruct.C_ORDER,
+                Type = projectStruct.TYPE,
+                UnitCode = projectStruct.UNIT_CODE,
+                Quantity = projectStruct.QUANTITY,
+                Price = projectStruct.PRICE,
+                Code = projectStruct.GEN_CODE,
+                ReferenceBoqId = referenceBoqId,
+                Status = projectStruct.STATUS,
+                Currency = projectStruct.CURRENCY,
+                ExchangeRate = projectStruct.EXCHANGE_RATE,
             };
         }
 

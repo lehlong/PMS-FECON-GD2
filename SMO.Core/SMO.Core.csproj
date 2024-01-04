@@ -178,6 +178,7 @@
     <Compile Include="Entities\PS\T_PS_PROGRESS_HISTORY.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT.cs" />
+    <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_DRAFT.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_SAP.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_STRUCT_VERSION.cs" />
     <Compile Include="Entities\PS\T_PS_PROJECT_USER_RIGHT.cs" />

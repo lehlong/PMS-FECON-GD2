@@ -1826,6 +1826,114 @@ namespace SMO.Service.PS
             }
         }
 
+        internal void ExportExcelDataStructDraft(ref MemoryStream outFileStream,
+                                        string path, Guid projectId)
+        {
+            try
+            {
+                FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
+                IWorkbook templateWorkbook;
+                templateWorkbook = new XSSFWorkbook(fs);
+                fs.Close();
+                ISheet sheet = templateWorkbook.GetSheetAt(0);
+                var styleCellNumber = GetCellStyleNumber(templateWorkbook);
+                var styleCellNumberDecimal = GetCellStyleNumberDecimal(templateWorkbook);
+
+                var data = UnitOfWork.Repository<ProjectStructDraftRepo>().Queryable().Where(x => x.PROJECT_ID == projectId && x.TYPE != "BOQ").OrderBy(x => x.C_ORDER).ToList();
+
+                if (data.Count <= 1)
+                {
+                    this.State = false;
+                    this.ErrorMessage = string.Format("<p style='font-size:24px;'>Cây cấu trúc đang không có dữ liệu! Vui lòng thêm dữ liệu trước khi xuất excel hoặc có thể chọn tải Template Import cây cấu trúc!</p>");
+                    return;
+                }
+
+                var startRow = 7;
+
+                for (int i = 0; i < data.Count(); i++)
+                {
+                    var dataRow = data[i];
+                    IRow rowCur = ReportUtilities.CreateRow(ref sheet, startRow++, 13);
+                    rowCur.Cells[0].SetCellValue(data[i]?.TYPE);
+                    rowCur.Cells[1].SetCellValue(data[i]?.GEN_CODE);
+                    rowCur.Cells[2].SetCellValue(data[i]?.TEXT);
+                    rowCur.Cells[3].SetCellValue(data[i]?.UNIT_CODE);
+                    
+                    if (data[i].TYPE == "PROJECT" || data[i]?.QUANTITY == null || (decimal?)data[i]?.QUANTITY == 0)
+                    {
+                        rowCur.Cells[4].SetCellValue("");
+                    }
+                    else
+                    {
+                        rowCur.Cells[4].CellStyle = styleCellNumberDecimal;
+                        rowCur.Cells[4].SetCellValue(data[i]?.UNIT_CODE == "%" ? (double)data[i]?.QUANTITY * 100 : (double)data[i]?.QUANTITY);
+                    }
+
+                    if (data[i].TYPE == "PROJECT" || data[i]?.PRICE == null || (decimal?)data[i]?.PRICE == 0)
+                    {
+                        rowCur.Cells[5].SetCellValue("");
+                    }
+                    else
+                    {
+                        rowCur.Cells[5].CellStyle = styleCellNumber;
+                        rowCur.Cells[5].SetCellValue((double)data[i]?.PRICE);
+                    }
+
+                    if (data[i].TOTAL == 0 || data[i].TOTAL == null)
+                    {
+                        rowCur.Cells[6].SetCellValue("");
+                    }
+                    else
+                    {
+                        rowCur.Cells[6].CellStyle = styleCellNumber;
+                        rowCur.Cells[6].SetCellValue((double)data[i].TOTAL);
+                    }
+
+                    rowCur.Cells[7].SetCellValue(data[i]?.CURRENCY);
+
+                    if (data[i].TYPE == "PROJECT" || data[i]?.EXCHANGE_RATE == null || (decimal?)data[i]?.EXCHANGE_RATE == 0)
+                    {
+                        rowCur.Cells[8].SetCellValue("");
+                    }
+                    else
+                    {
+                        rowCur.Cells[8].CellStyle = styleCellNumber;
+                        rowCur.Cells[8].SetCellValue((double)data[i]?.EXCHANGE_RATE);
+                    }
+
+                    if (data[i].TOTAL == 0 || data[i].TOTAL == null || data[i].EXCHANGE_RATE == 0 || data[i].EXCHANGE_RATE == null)
+                    {
+                        rowCur.Cells[9].SetCellValue("");
+                    }
+                    else
+                    {
+                        rowCur.Cells[9].CellStyle = styleCellNumber;
+                        rowCur.Cells[9].SetCellValue((double)data[i].TOTAL * (double)data[i].EXCHANGE_RATE);
+                    }
+                }
+
+                ISheet sheetDVT = templateWorkbook.GetSheetAt(1);
+
+                var dataDVT = UnitOfWork.Repository<UnitRepo>().GetAll().ToList();
+                var startRowDVT = 2;
+
+                for (int i = 0; i < dataDVT.Count(); i++)
+                {
+                    IRow rowCur = ReportUtilities.CreateRow(ref sheetDVT, startRowDVT++, 2);
+                    rowCur.Cells[0].SetCellValue(dataDVT[i].CODE);
+                    rowCur.Cells[1].SetCellValue(dataDVT[i].NAME);
+                }
+
+                templateWorkbook.Write(outFileStream);
+            }
+            catch (Exception ex)
+            {
+                this.State = false;
+                this.ErrorMessage = "Có lỗi xẩy ra trong quá trình tạo file excel!";
+                this.Exception = ex;
+            }
+        }
+
         internal void ExportExcelTemplateStruct(ref MemoryStream outFileStream, string path)
         {
             try

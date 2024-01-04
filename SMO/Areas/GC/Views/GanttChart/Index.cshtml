@@ -208,31 +208,11 @@
                     <span class="material-icons">arrow_back</span>
                 </a>
             </li>
-
         </ul>
     </div>
     <div>
         <div id="gantt-chart" style="width: 100%; height: calc(100vh - 200px);"></div>
     </div>
-
-    @*<datalist id="dataListUnit">
-            @foreach (var item in units)
-            {
-                <option value="@item.Value - @item.Text"></option>
-            }
-        </datalist>
-        <datalist id="dataListStatus">
-            @foreach (var item in statuses)
-            {
-                <option value="@item.Text"></option>
-            }
-        </datalist>
-        <datalist id="dataListBoq">
-            @foreach (var item in boqs)
-            {
-                <option value="@item.Text"></option>
-            }
-        </datalist>*@
 
     <script type="text/template" id="tmplUnit">
         <select class="selectUnit">
@@ -284,14 +264,12 @@
     }
     refreshGC()
 
-
     $('.masked-input-date').inputmask('dd/mm/yyyy', { placeholder: '__/__/____' });
-    //autosize
+
     autosize($('.autosize'));
-    // initiating data loading
+
     gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=true");
-    // initializing gantt
-    // attach event handler to update filters object and refresh data (so filters will be applied)
+
     $('#@viewId ul.gantt-controls .showTimeline').on('change', function () {
         if (this.value === 'showTimeline') {
             gantt.config.show_chart = !gantt.config.show_chart;
@@ -302,36 +280,13 @@
     $('#@viewId input#structure-name').on('change', function () {
         gantt.render()
     })
-    // prevent moving to another type:
-    //    gantt.attachEvent("onBeforeTaskMove", function (id) {
-    //        const task = gantt.getTask(id);
-    //        const parent = task.parent
-    //        if (parent === 0) {
-    //            return false;
-    //        }
-    //        const parentTask = gantt.getTask(parent);
-    //        if (_.isNil(task) || _.isNil(parentTask)) {
-    //            return false;
-    //        }
-    //        const parentType = parentTask.type;
-    //        if (task.type === "BOQ") {
-    //            return parentType === "BOQ" || parentType === "PROJECT";
-    //        }
-    //        if (task.type === "WBS") {
-    //            return parentType === "WBS" || parentType === "PROJECT";
-    //        }
-    //        if (task.type === "ACTIVITY") {
-    //            return parentType === "WBS";
-    //        }
-    //        return false;
-    //});
-    //or
-        gantt.attachEvent("onBeforeRowDragEnd", function (id) {
-            const task = gantt.getTask(id);
-            const parent = task.parent
-            if (parent === 0) {
-                return false;
-            }
+    
+    gantt.attachEvent("onBeforeRowDragEnd", function (id) {
+        const task = gantt.getTask(id);
+        const parent = task.parent
+        if (parent === 0) {
+            return false;
+        }
         const parentTask = gantt.getTask(parent);
         if (_.isNil(task) || _.isNil(parentTask)) {
             return false;
@@ -354,7 +309,6 @@
     gantt.config.order_branch = true;
     gantt.config.order_branch_free = true;
     gantt.config.keyboard_navigation_cells = true;
-    //gantt.config.order_branch = "marker";
 
     const units = @Html.Raw(JsonConvert.SerializeObject(units));
     const boqs = @Html.Raw(JsonConvert.SerializeObject(boqs));
@@ -574,6 +528,7 @@
         gantt.render();
         updateTaskTotalInDb(taskId)
     }
+
     function updateTaskTotalInDb(taskId) {
         const currentTask = gantt.getTask(taskId)
         const data = [{ id: taskId, total: currentTask?.total }]
@@ -592,6 +547,7 @@
         }
         Forms.AjaxWithoutLoading(ajaxParams)
     }
+
     function updateTasksTotal() {
         const ganttData = _.reverse(gantt.json.serialize().data);
         gantt.batchUpdate(() => {
@@ -639,6 +595,7 @@
             }
         });
     }
+
     function UpdateProjectSAPandClose() {
         Forms.Ajax({
             url: 'PS/Project/UpdateProjectSAP',
@@ -651,46 +608,7 @@
             }
         });
     }
-
-    function Alert() {
-        Swal.fire({
-            title: 'Lưu ý!',
-            text: "Bạn có thay đổi cấu trúc cây dự án, hãy nhấn nút Đồng bộ để cập nhật thay đổi lên phần mềm ERP tương ứng",
-            icon: 'warning',
-            showCancelButton: true,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            confirmButtonColor: '#207ce5',
-            confirmButtonText: 'Đồng bộ',
-            cancelButtonText: 'Để sau',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                UpdateProjectSAP();
-            }
-        })
-        return false;
-    }
-
-    function closeTree() {
-        Swal.fire({
-            title: 'Lưu ý!',
-            text: "Bạn có thay đổi cấu trúc cây dự án, hãy nhấn nút Đồng bộ để cập nhật thay đổi lên phần mềm ERP tương ứng",
-            icon: 'warning',
-            showCancelButton: false,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            confirmButtonColor: '#207ce5',
-            confirmButtonText: 'Đồng bộ',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                UpdateProjectSAPandClose();
-            }
-        })
-        return false;
-    }
-    //var timeInterval = setInterval(function () { Alert(); },300000);
-    //clearInterval(timeInterval);
-
+    
     function changeDate() {
        var selectedTasks = gantt.getTaskBy("selected", true) || [];
         if (selectedTasks.length === 0) {
@@ -785,34 +703,25 @@
     }
 
     function onChangeVersion(value) {
-        try {
-            gantt.clearAll();
-            if (value == 0) {
-                refreshGC();
-            } else {
-                gantt.load(`/api/Data/GetGanttChartDataVersion?projectId=@projectId&isCostStructure=true&version=${value}`)
-            }
-        }
-        catch (ex) {
-            console.log(ex)
+        gantt.clearAll();
+        if (value == 0) {
+            refreshGC();
+        } else {
+            gantt.load(`/api/Data/GetGanttChartDataVersion?projectId=@projectId&isCostStructure=true&version=${value}`)
         }
     }
+
+    function enableEdit() {
+        $("#disable-edit").show();
+        $("#enable-edit").hide();
+        gantt.config.readonly = false;
+    }
+
+    function disableEdit() {
+        $("#disable-edit").hide();
+        $("#enable-edit").show();
+        gantt.config.readonly = true;
+    }
 </script>
-    <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
-    <script>
-        function enableEdit() {
-            $("#disable-edit").show();
-            $("#enable-edit").hide();
-            gantt.config.readonly = false;
-            var item = gantt.config.columns.find(x => x.name == "quantity")
-            item.hideReadonly = true
-            console.log(gantt.config.columns)
-        }
-        function disableEdit() {
-            $("#disable-edit").hide();
-            $("#enable-edit").show();
-            gantt.config.readonly = true;
-        }
-        //gantt.config.columns = gantt.config.columns.filter(x => x.name != "quantity" && x.name != "price" && x.name != "total")
-    </script>
+    <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>  
 </div>

@@ -197,6 +197,7 @@
     <Compile Include="Implement\PS\ProjectResourceOtherRepo.cs" />
     <Compile Include="Implement\PS\ProjectResourceRepo.cs" />
     <Compile Include="Implement\PS\ProjectSlDtRepo.cs" />
+    <Compile Include="Implement\PS\ProjectStructDraftRepo.cs" />
     <Compile Include="Implement\PS\ProjectStructRepo.cs" />
     <Compile Include="Implement\PS\ProjectStructVersionRepo.cs" />
     <Compile Include="Implement\PS\ProjectTimeRepo.cs" />
@@ -331,6 +332,7 @@
     <Compile Include="Interface\PS\IProjectResourceOtherRepo.cs" />
     <Compile Include="Interface\PS\IProjectResourceRepo.cs" />
     <Compile Include="Interface\PS\IProjectSlDtRepo.cs" />
+    <Compile Include="Interface\PS\IProjectStructDraftRepo.cs" />
     <Compile Include="Interface\PS\IProjectStructRepo.cs" />
     <Compile Include="Interface\PS\IProjectStructVersionRepo.cs" />
     <Compile Include="Interface\PS\IProjectTimeRepo.cs" />
@@ -469,6 +471,7 @@
     <Compile Include="Mapping\PS\T_PS_PLAN_VOLUME_DESIGN_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROGRESS_HISTORY_Mapping.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_Map.cs" />
+    <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_DRAFT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_SAP_Map.cs" />
     <Compile Include="Mapping\PS\T_PS_PROJECT_STRUCT_VERSION_Map.cs" />

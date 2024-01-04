@@ -772,7 +772,24 @@ namespace SMO
             }
             return new SelectList(lstData, "Value", "Text", selected);
         }
-        
+
+        public static SelectList GetPsCurrencys(bool isAddBlank = true, string selected = "")
+        {
+            IUnitOfWork UnitOfWork = new NHUnitOfWork();
+            var lstData = new List<Data>();
+
+            if (isAddBlank)
+            {
+                lstData.Add(new Data() { Value = "", Text = " - " });
+            }
+            var lstAll = UnitOfWork.Repository<CurrencyRepo>().GetAllOrdered("NAME");
+            foreach (var obj in lstAll)
+            {
+                lstData.Add(new Data { Value = obj.CODE, Text = obj.NAME + " - " + obj.FULL_NAME });
+            }
+            return new SelectList(lstData, "Value", "Text", selected);
+        }
+
         public static SelectList GetPsRoles(bool isAddBlank = true, string selected = "")
         {
             IUnitOfWork UnitOfWork = new NHUnitOfWork();

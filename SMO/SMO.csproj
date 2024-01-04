@@ -439,8 +439,10 @@
     <Compile Include="Areas\CM\Controllers\SmsNotifyController.cs" />
     <Compile Include="Areas\CM\Controllers\SmsOTPController.cs" />
     <Compile Include="Areas\GC\API\DataController.cs" />
+    <Compile Include="Areas\GC\API\DataDraftController.cs" />
     <Compile Include="Areas\GC\API\LinkController.cs" />
     <Compile Include="Areas\GC\API\TaskController.cs" />
+    <Compile Include="Areas\GC\API\TaskDraftController.cs" />
     <Compile Include="Areas\GC\Controllers\GanttChartController.cs" />
     <Compile Include="Areas\GC\GCAreaRegistration.cs" />
     <Compile Include="Areas\MD\Controllers\ActionWorkflowController.cs" />
@@ -672,6 +674,7 @@
     <Compile Include="Service\PS\ProjectResourceService.cs" />
     <Compile Include="Service\PS\ProjectService.cs" />
     <Compile Include="Service\PS\ProjectSlDtService.cs" />
+    <Compile Include="Service\PS\ProjectStructDraftService.cs" />
     <Compile Include="Service\PS\ProjectStructService.cs" />
     <Compile Include="Service\PS\ProjectStructVersionService.cs" />
     <Compile Include="Service\PS\ProjectTimeService.cs" />
@@ -1387,6 +1390,7 @@
     <Content Include="Areas\PS\Views\ContractRequestPayment\Edit.cshtml" />
     <Content Include="Areas\PS\Views\ContractRequestPayment\DetailStep.cshtml" />
     <Content Include="Areas\PS\Views\ContractRequestPayment\DetailHistoryStep.cshtml" />
+    <Content Include="Areas\PS\Views\Project\ViewUploadDataDraft.cshtml" />
     <None Include="Properties\PublishProfiles\SMOV4.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -1394,6 +1398,7 @@
     </None>
     <Content Include="Scripts\D2SCoreJS\DragDropColumn.js" />
     <Content Include="Scripts\GanttChart\config_gantt_chart.js" />
+    <Content Include="Scripts\GanttChart\config_gantt_chart_draft.js" />
     <Content Include="Scripts\GanttChart\dhtmlxgantt.js" />
     <Content Include="Scripts\GanttChart\nav_menu.js" />
     <Content Include="Scripts\GanttChart\zoom.js" />
@@ -5420,6 +5425,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Areas\GC\Views\DataDraft\" />
+    <Folder Include="Areas\GC\Views\TaskDraft\" />
     <Folder Include="Content\ImageUpload\" />
     <Folder Include="FileUpload\" />
     <Folder Include="Logs\" />

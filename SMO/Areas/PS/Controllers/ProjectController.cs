@@ -611,6 +611,13 @@ namespace SMO.Areas.PS.Controllers
             return PartialView($"_StructureProgressButtons", projectId);
         }
 
+        public ActionResult ViewUploadDataDraft(Guid projectId)
+        {
+            _service.ObjDetail.ID = projectId;
+            _service.Search();
+            return PartialView(_service);
+        }
+
         public ActionResult ExportExcelDataBOQ(Guid projectId)
         {
             _service.Get(projectId);
@@ -659,6 +666,19 @@ namespace SMO.Areas.PS.Controllers
                 return Content(_service.ErrorMessage);
             }
             return File(outFileStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "PMS_Template_Cay_du_an_CHIPHI.xlsx");
+        }
+
+        public ActionResult ExportExcelDataStructDraft(Guid projectId)
+        {
+            _service.Get(projectId);
+            MemoryStream outFileStream = new MemoryStream();
+            var path = Server.MapPath("~/TemplateExcel/Export_Data_Struct_Draft.xlsx");
+            _service.ExportExcelDataStructDraft(ref outFileStream, path, projectId);
+            if (!_service.State)
+            {
+                return Content(_service.ErrorMessage);
+            }
+            return File(outFileStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", _service.ObjDetail.CODE + "_CAY_CAU_TRUC_CHI_PHI.xlsx");
         }
 
         public ActionResult DownloadTemplate(ProjectStructureType type)

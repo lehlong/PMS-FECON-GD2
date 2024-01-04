@@ -14,19 +14,18 @@ using System.Web.Http;
 namespace SMO.Areas.GC.API
 {
     [GanttAPIExceptionFilter]
-    public class TaskController : ApiController
+    public class TaskDraftController : ApiController
     {
-        private readonly ProjectStructService _service;
-        private readonly ProjectStructDraftService _serviceDraft;
+        private readonly ProjectStructDraftService _service;
         private readonly ProjectStructVersionService _serviceVersion;
 
-        public TaskController()
+        public TaskDraftController()
         {
-            _service = new ProjectStructService();
+            _service = new ProjectStructDraftService();
             _serviceVersion = new ProjectStructVersionService();
         }
         // GET api/Task
-        public IEnumerable<TaskDto> Get(Guid projectId, bool isCostStructure)
+        public IEnumerable<TaskDto> Get(Guid projectId)
         {
             if (projectId == Guid.Empty)
             {
@@ -34,28 +33,17 @@ namespace SMO.Areas.GC.API
             }
             _service.ObjDetail.PROJECT_ID = projectId;
 
-            if (isCostStructure)
-            {
-                _service.ObjDetail.TYPE = string.Join(",", new List<string>()
+             _service.ObjDetail.TYPE = string.Join(",", new List<string>()
                                             {
                                                 ProjectEnum.PROJECT.ToString(),
-                                                ProjectEnum.ACTIVITY.ToString(),
-                                                ProjectEnum.WBS.ToString()
+                                                ProjectEnum.WBS.ToString(),
                                             });
-            }
-            else
-            {
-                _service.ObjDetail.TYPE = string.Join(",", new List<string>()
-                                            {
-                                                ProjectEnum.PROJECT.ToString(),
-                                                ProjectEnum.BOQ.ToString(),
-                                            });
-            }
+            
             _service.Search();
 
             var taskDtos = _service.ObjList.Where(x => x.ACTIVE == true).Select(t => (TaskDto)t).ToList();
 
-            _service.InitContractCode(taskDtos, isCostStructure);
+            _service.InitContractCode(taskDtos, false);
             return taskDtos;
         }
 
@@ -95,7 +83,7 @@ namespace SMO.Areas.GC.API
 
         // GET api/Task/5
         [HttpGet]
-        [Route("api/task/GetTaskById")]
+        [Route("api/taskDraft/GetTaskById")]
         public IHttpActionResult GetTaskById(Guid id)
         {
             _service.Get(id);
@@ -132,7 +120,7 @@ namespace SMO.Areas.GC.API
         [HttpPost]
         public IHttpActionResult EditTask(Guid id, TaskDto taskDto)
         {
-            var updatedTask = (T_PS_PROJECT_STRUCT)taskDto;
+            var updatedTask = (T_PS_PROJECT_STRUCT_DRAFT)taskDto;
             updatedTask.UPDATE_BY = taskDto.User;
             _service.ObjDetail = updatedTask;
 
@@ -158,10 +146,10 @@ namespace SMO.Areas.GC.API
         }
 
         [HttpPost]
-        [Route("api/task/CreateTask")]
+        [Route("api/taskDraft/CreateTask")]
         public IHttpActionResult CreateTask(TaskDto taskDto)
         {
-            var newTask = (T_PS_PROJECT_STRUCT)taskDto;
+            var newTask = (T_PS_PROJECT_STRUCT_DRAFT)taskDto;
             newTask.CREATE_BY = taskDto.User;
             var id = Guid.NewGuid();
             newTask.ID = id;
@@ -195,7 +183,7 @@ namespace SMO.Areas.GC.API
             }
         }
         [HttpPost]
-        [Route("api/task/UpdateOrder")]
+        [Route("api/taskDraft/UpdateOrder")]
         public IHttpActionResult UpdateOrder(UpdateTasksOrderDto tasksOrderDto)
         {
             _service.UpdateTasksOrder(tasksOrderDto);
@@ -214,10 +202,10 @@ namespace SMO.Areas.GC.API
             }
         }
         [HttpPost]
-        [Route("api/task/UpdateTasksTotal")]
-        public IHttpActionResult UpdateTasksTotal(bool isCustomer, IEnumerable<UpdateTasksTotalDto> data)
+        [Route("api/taskDraft/UpdateTasksTotal")]
+        public IHttpActionResult UpdateTasksTotal(IEnumerable<UpdateTasksTotalDto> data)
         {
-            _service.UpdateTasksTotal(isCustomer, data);
+            _service.UpdateTasksTotalDraft(data);
             if (_service.State)
             {
                 return Ok();

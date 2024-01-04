@@ -6,6 +6,7 @@
     var currentUser = ViewBag.CurrentUser;
 
     var units = SelectListUtilities.GetPsUnits();
+    var currencys = SelectListUtilities.GetPsCurrencys();
     var boqs = SelectListUtilities.GetBoqInProject(projectId, isAddBlank: false);
     var activity_wbs = SelectListUtilities.GetActivityWbsInProject(projectId);
     var boqCodes = SelectListUtilities.GetBoqCodeInProject(projectId);
@@ -34,7 +35,6 @@
         from {
             opacity: 0;
         }
-
         to {
             opacity: 1
         }
@@ -136,41 +136,36 @@
             <li class="gantt-menu-item gantt-menu-item-right">
                 <a data-action="fullscreen" title="Toàn màn hình">
                     <span class="material-icons">zoom_out_map</span>
-
                 </a>
             </li>
 
-            <li class="gantt-menu-item gantt-menu-item-right p-r-10">
-                <label class="checked_label">
-                    <input type="checkbox" name="showTimeline" value="showTimeline" class="showTimeline" />
-                    <i class="material-icons icon_color">check_box_outline_blank</i>Show Timeline
-                </label>
-            </li>
-
-            <li class="dropdown gantt-menu-item gantt-menu-item-right">
-                <a title="Menu"><span class="material-icons">menu</span></a>
-                <div class="dropdown-content">
-                    <a style="float:left" title="Đồng bộ lên SAP" onclick="UpdateProjectSAP()">
-                        <span class="material-icons">sync</span> Đồng bộ lên SAP
-                    </a>
-                    @if (editable)
-                    {
-                        <a style="float:left" title="Upload cây cấu trúc từ file excel" data-action="importFile" data-project-id="@projectId" data-structure-type="@((int)ProjectStructureType.COST)" data-disabled="@(project.STATUS_STRUCT_PLAN == ProjectStructureProgressStatus.PHE_DUYET.GetValue())">
-                            <span class="material-icons">publish</span>Upload dữ liệu
-                        </a>
-                    }
-                    <a style="float:left" title="Tải file cấu trúc mẫu" href="@Url.Action("ExportExcelTemplateCHIPHI", "Project", new {@area="PS"})" target="_blank">
-                        <span class="material-icons">file_download</span>Tải template
-                    </a>
-                    <a style="float:left" title="Xuất dữ liệu cây cấu trúc" href="@Url.Action("ExportExcelDataCHIPHI", "Project", new {@area="PS", projectId=projectId})" target="_blank">
-                        <img src="Theme/images/excel.png" height="22" width="22" /><span style="padding:0 11px">Xuất Excel</span>
-                    </a>
-                </div>
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a style="float:left" title="Xuất dữ liệu cây cấu trúc" href="@Url.Action("ExportExcelDataStructDraft", "Project", new {@area="PS", projectId=projectId})" target="_blank">
+                    <img src="Theme/images/excel.png" height="22" width="22" />
+                </a>
             </li>
 
             <li class="gantt-menu-item gantt-menu-item-right">
-                <a title="Lưu version" onclick="SaveVersion()">
-                    <span class="material-icons">save</span> Lưu version
+                <a style="float:left" title="Upload cây cấu trúc từ file excel" onclick="UploadDataDraft();">
+                    <span class="material-icons">publish</span>
+                </a>
+            </li>
+
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a title="Lưu version" onclick="ChangeStatusDraft('01')">
+                    <span class="material-icons">send</span> Trình duyệt
+                </a>
+            </li>
+
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a title="Lưu version" onclick="ChangeStatusDraft('03')">
+                    <span class="material-icons">close</span> Từ chối
+                </a>
+            </li>
+
+            <li class="gantt-menu-item gantt-menu-item-right">
+                <a title="Lưu version" onclick="ChangeStatusDraft('02')">
+                    <span class="material-icons">done_all</span> Xác nhận
                 </a>
             </li>
 
@@ -204,31 +199,11 @@
                     <span class="material-icons">arrow_back</span>
                 </a>
             </li>
-
         </ul>
     </div>
     <div>
         <div id="gantt-chart" style="width: 100%; height: calc(100vh - 200px);"></div>
     </div>
-
-    @*<datalist id="dataListUnit">
-            @foreach (var item in units)
-            {
-                <option value="@item.Value - @item.Text"></option>
-            }
-        </datalist>
-        <datalist id="dataListStatus">
-            @foreach (var item in statuses)
-            {
-                <option value="@item.Text"></option>
-            }
-        </datalist>
-        <datalist id="dataListBoq">
-            @foreach (var item in boqs)
-            {
-                <option value="@item.Text"></option>
-            }
-        </datalist>*@
 
     <script type="text/template" id="tmplUnit">
         <select class="selectUnit">
@@ -239,349 +214,46 @@
         </select>
     </script>
 
-    <script type="text/template" id="tmplStatus">
-        <select class="selectStatus">
-            @foreach (var item in statuses)
+    <script type="text/template" id="tmplCurrency">
+        <select class="selectCurrency">
+            @foreach (var item in currencys)
             {
-                <option value="@item.Value">@item.Text</option>
+                <option value="@item.Value">@item.Value - @item.Text</option>
             }
         </select>
     </script>
 
-    <script type="text/template" id="tmplBoq">
-        <select class="selectBoq">
-            @foreach (var item in boqs)
-            {
-                <option value="@item.Value">@item.Text</option>
-            }
-        </select>
-    </script>
     @{
         Html.RenderPartial("~/Areas/GC/Views/Shared/CustomForm.cshtml");
     }
 
-    <script>
-    var structType = "COST";
+<script>
+    /* Functions */
     function refreshData(taskId) {
-        gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=true", function () { //specifying the callback function
+        gantt.load("/api/DataDraft/GetGanttChartData?projectId=@projectId", function () {
             if (taskId) {
                 updateTaskTotalInDb(taskId)
             }
         });
-    }
+    };
 
-    const activity_wbs = @Html.Raw(JsonConvert.SerializeObject(activity_wbs));
-    function refreshGC() {
-        gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=true", function () { //specifying the callback function
-            for (i = 0; i < activity_wbs.length; i++) {
-                updateTaskTotalInDb(activity_wbs[i].ID)
-            }
-        });
-    }
-    refreshGC()
-
-
-    $('.masked-input-date').inputmask('dd/mm/yyyy', { placeholder: '__/__/____' });
-    //autosize
-    autosize($('.autosize'));
-    // initiating data loading
-    gantt.load("/api/Data/GetGanttChartData?projectId=@projectId&isCostStructure=true");
-    // initializing gantt
-    // attach event handler to update filters object and refresh data (so filters will be applied)
-    $('#@viewId ul.gantt-controls .showTimeline').on('change', function () {
-        if (this.value === 'showTimeline') {
-            gantt.config.show_chart = !gantt.config.show_chart;
-            gantt.render()
-        }
-        updIcon(this);
-    })
-    $('#@viewId input#structure-name').on('change', function () {
-        gantt.render()
-    })
-    // prevent moving to another type:
-    //    gantt.attachEvent("onBeforeTaskMove", function (id) {
-    //        const task = gantt.getTask(id);
-    //        const parent = task.parent
-    //        if (parent === 0) {
-    //            return false;
-    //        }
-    //        const parentTask = gantt.getTask(parent);
-    //        if (_.isNil(task) || _.isNil(parentTask)) {
-    //            return false;
-    //        }
-    //        const parentType = parentTask.type;
-    //        if (task.type === "BOQ") {
-    //            return parentType === "BOQ" || parentType === "PROJECT";
-    //        }
-    //        if (task.type === "WBS") {
-    //            return parentType === "WBS" || parentType === "PROJECT";
-    //        }
-    //        if (task.type === "ACTIVITY") {
-    //            return parentType === "WBS";
-    //        }
-    //        return false;
-    //});
-    //or
-        gantt.attachEvent("onBeforeRowDragEnd", function (id) {
-            const task = gantt.getTask(id);
-            const parent = task.parent
-            if (parent === 0) {
-                return false;
-            }
-        const parentTask = gantt.getTask(parent);
-        if (_.isNil(task) || _.isNil(parentTask)) {
-            return false;
-        }
-        const parentType = parentTask.type;
-        if (task.type === "BOQ") {
-            return parentType === "BOQ" || parentType === "PROJECT";
-        }
-        if (task.type === "WBS") {
-            return parentType === "WBS" || parentType === "PROJECT";
-        }
-        if (task.type === "ACTIVITY") {
-            return parentType === "WBS";
-        }
-        return false;
-    });
-
-    gantt.config.show_chart = false;
-    gantt.config.drag_links = false;
-    gantt.config.order_branch = true;
-    gantt.config.order_branch_free = true;
-    gantt.config.keyboard_navigation_cells = true;
-    //gantt.config.order_branch = "marker";
-
-    const units = @Html.Raw(JsonConvert.SerializeObject(units));
-    const boqs = @Html.Raw(JsonConvert.SerializeObject(boqs));
-    const boqCodes = @Html.Raw(JsonConvert.SerializeObject(boqCodes));
-    const statuses = @Html.Raw(JsonConvert.SerializeObject(statuses));
-    gantt.serverList("unit", _.map(units, ({ Value, Text }) => ({ key: Value, label: Text })));
-    gantt.serverList("boq", _.map(boqs, ({ Value, Text }) => ({ key: Value, label: Text })));
-    gantt.serverList("boqCode", _.map(boqCodes, ({ Value, Text }) => ({ key: Value, label: Text })));
-    gantt.serverList("statuses", _.map(statuses, ({ Value, Text }) => ({ key: Value, label: Text })));
-
-    gantt.attachEvent("onBeforeTaskDisplay", function (id, task) {
-        const filterStructureNameValue = $('#@viewId #structure-name').val();
-        if (filterStructureNameValue) {
-            return task.text.toLowerCase().includes(filterStructureNameValue.toLowerCase())
-        }
-        return true;
-    })
     function updIcon(el) {
-        //el.parentElement.classList.toggle("checked_label");
-
         var iconEl = el.parentElement.querySelector("i"),
             checked = "check_box",
             unchecked = "check_box_outline_blank",
             className = "icon_color";
-
         iconEl.textContent = iconEl.textContent == checked ? unchecked : checked;
         iconEl.classList.toggle(className);
-    }
-    gantt.plugins({
-        tooltip: false,
-        fullscreen: true,
-        marker: true,
-        undo: true
-    });
-    const formatFunc = gantt.date.date_to_str("%d/%m/%Y");
-
-    const id = gantt.addMarker({
-        start_date: new Date(),
-        text: "Today",
-        title: formatFunc(new Date())
-    });
-    setInterval(function () {
-        const today = gantt.getMarker(id);
-        if (today) {
-
-            today.start_date = new Date();
-            today.title = formatFunc(today.start_date);
-            gantt.updateMarker(id);
-        }
-    }, 1000 * 60);
-    gantt.plugins({
-        keyboard_navigation: true
-    });
-    gantt.config.keyboard_navigation = true;
-    gantt.config.keyboard_navigation_cells = true;
-
-    gantt.config.readonly = true;
-
-    function enableEdit() {
-        $("#disable-edit").show();
-        $("#enable-edit").hide();
-        gantt.config.readonly = false;
-        timeInterval = setInterval(function () { Alert(); }, 300000);
-    }
-    function disableEdit() {
-        $("#disable-edit").hide();
-        $("#enable-edit").show();
-        gantt.config.readonly = true;
-        clearInterval(timeInterval);
-    }
-
-    gantt.init("gantt-chart");
-
-    gantt.projectId = "@projectId";
-    gantt.projectCode = "@project.CODE";
-    gantt.user = '@(ProfileUtilities.User?.USER_NAME)';
-    gantt.structType = structType
-
-    const router = function (entity, action, data, id) {
-        // entity: task / link
-        // action: create, update, delete,
-        // id: task id
-        // data:
-        data.projectId = '@projectId';
-        data.user = '@(ProfileUtilities.User?.USER_NAME)';
-        const server = "api";
-        switch (action) {
-            case "create":
-                if (entity === 'task') {
-                    return gantt.ajax.post(
-                        server + '/' + entity,
-                        data
-                    ).then(function (response) {
-                        var res = JSON.parse(response.responseText);
-                        if (res && res.status === 'success') {
-                            // response is ok
-                            gantt.changeTaskId(data.id, res.tid);
-                            //setSavedCheckList();
-                            showMessage('infor', `Create new ${entity} successful!`);
-                            if (res.executeMethod) {
-                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
-                            }
-                            updateTasksTotalSilent(id);
-                        } else if (res && res.status === 'error') {
-                            showMessage('error', 'Something went wrong! ' + res.message);
-                            gantt.deleteTask(data.id);
-                        } else {
-                            showMessage('error', 'Something went wrong!');
-                            gantt.deleteTask(data.id);
-                        }
-                    });
-
-                }
-                else {
-                    data.SourceTaskId = data.source;
-                    data.TargetTaskId = data.target;
-                    data.Type = data.type;
-                    data.CREATE_BY = data.user;
-                    // create link
-                    return gantt.ajax.post(
-                        server + '/' + entity + '/CreateLink',
-                        data
-                    ).then(function (response) {
-                        var res = JSON.parse(response.responseText);
-                        if (res && res.status === 'success') {
-                            // response is ok
-                            gantt.changeLinkId(data.id, res.tid);
-                            showMessage('infor', `Create new ${entity} successful!`);
-                            if (res.executeMethod) {
-                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
-                            }
-                            updateTasksTotalSilent(id);
-                        } else if (res && res.status === 'error') {
-                            showMessage('error', 'Something went wrong! ' + res.message);
-                            gantt.deleteTask(data.id);
-                        } else {
-                            showMessage('error', 'Something went wrong!');
-                            gantt.deleteTask(data.id);
-                        }
-                    });
-                }
-                break;
-            case "update":
-                if (entity === 'link') {
-                    showMessage('warning', 'Cannot update link');
-                }
-                if (!isNaN(id)) {
-                    return;
-                }
-                return gantt.ajax.post(
-                    server + '/' + entity + '/' + id,
-                    data
-                ).then(function (response) {
-                    var res = JSON.parse(response.responseText);
-                    if (res && res.status === 'success') {
-                        // response is ok
-                        showMessage('infor', `Update ${entity} successful!`);
-                        if (res.executeMethod) {
-                            Message.func.ExecuteFunctionByName(res.executeMethod, window);
-                        }
-                        updateTasksTotalSilent(id);
-                    } else if (res && res.status === 'error') {
-                        alert(res.message);
-                    } else {
-                        alert('error', 'Something went wrong!');
-                    }
-                });
-
-                break;
-            case "delete":
-                if (!id.toString().includes("-")) {
-                    return;
-                }
-                if (entity === 'task') {
-                    return gantt.ajax.del(
-                        server + '/' + entity + '/' + id
-                    ).then(function (response) {
-                        var res = JSON.parse(response.responseText);
-                        if (res && res.status === 'success') {
-                            // response is ok
-                            showMessage('infor', `Delete ${entity} successfully!`);
-                            if (res.executeMethod) {
-                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
-                            }
-                            updateTasksTotalSilent(id);
-                        } else if (res && res.status === 'error') {
-                            alert(res.message);
-                            refreshData()
-                        } else if (!ress || res.status !== 'ok') {
-                            alert('error', 'Something went wrong!');
-                        }
-                    });
-                } else {
-                    return gantt.ajax.del(
-                        server + '/' + entity + `/${id}`
-                    ).then(function (response) {
-                        var res = JSON.parse(response.responseText);
-                        if (res && res.status === 'success') {
-                            // response is ok
-                            showMessage('infor', `Delete ${entity} successfully!`);
-                            if (res.executeMethod) {
-                                Message.func.ExecuteFunctionByName(res.executeMethod, window);
-                            }
-                            updateTasksTotalSilent(id);
-                        } else if (res && res.status === 'error') {
-                            alert(res.message);
-                            refreshData()
-                        } else if (!ress || res.status !== 'ok') {
-                            showMessage('error', 'Something went wrong!');
-                        }
-                    });
-                }
-                break;
-        }
     };
-    const dp = gantt.createDataProcessor(router);
 
-    gantt.attachEvent("onBeforeGanttRender", function () {
-        gantt.silent(() => {
-            updateTasksTotal();
-        });
-    });
-    dp.init(gantt);
-    ganttModules.menu.setup();
     function updateTasksTotalSilent(taskId) {
         gantt.silent(() => {
             updateTasksTotal();
         });
         gantt.render();
         updateTaskTotalInDb(taskId)
-    }
+    };
+
     function updateTaskTotalInDb(taskId) {
         const currentTask = gantt.getTask(taskId)
         const data = [{ id: taskId, total: currentTask?.total }]
@@ -592,14 +264,15 @@
             parentId = parentTask?.parent
         }
         const server = "api";
-        const entity = "task";
+        const entity = "taskDraft";
         const ajaxParams = {
-            url: `${server}/${entity}/UpdateTasksTotal?isCustomer=false`,
+            url: `${server}/${entity}/UpdateTasksTotal`,
             type: "POST",
             data
         }
         Forms.AjaxWithoutLoading(ajaxParams)
     }
+
     function updateTasksTotal() {
         const ganttData = _.reverse(gantt.json.serialize().data);
         gantt.batchUpdate(() => {
@@ -622,11 +295,10 @@
         }, true);
     }
 
-
     function updateTasksOrder() {
         const taskIds = _.map(gantt.json.serialize().data, "id");
         const server = "api";
-        const entity = "task";
+        const entity = "taskDraft";
         const data = { "taskIds": taskIds, projectId: gantt.projectId }
         const ajaxParams = {
             url: `${server}/${entity}/UpdateOrder`,
@@ -647,6 +319,7 @@
             }
         });
     }
+
     function UpdateProjectSAPandClose() {
         Forms.Ajax({
             url: 'PS/Project/UpdateProjectSAP',
@@ -660,47 +333,8 @@
         });
     }
 
-    function Alert() {
-        Swal.fire({
-            title: 'Lưu ý!',
-            text: "Bạn có thay đổi cấu trúc cây dự án, hãy nhấn nút Đồng bộ để cập nhật thay đổi lên phần mềm ERP tương ứng",
-            icon: 'warning',
-            showCancelButton: true,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            confirmButtonColor: '#207ce5',
-            confirmButtonText: 'Đồng bộ',
-            cancelButtonText: 'Để sau',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                UpdateProjectSAP();
-            }
-        })
-        return false;
-    }
-
-    function closeTree() {
-        Swal.fire({
-            title: 'Lưu ý!',
-            text: "Bạn có thay đổi cấu trúc cây dự án, hãy nhấn nút Đồng bộ để cập nhật thay đổi lên phần mềm ERP tương ứng",
-            icon: 'warning',
-            showCancelButton: false,
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            confirmButtonColor: '#207ce5',
-            confirmButtonText: 'Đồng bộ',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                UpdateProjectSAPandClose();
-            }
-        })
-        return false;
-    }
-    //var timeInterval = setInterval(function () { Alert(); },300000);
-    //clearInterval(timeInterval);
-
     function changeDate() {
-       var selectedTasks = gantt.getTaskBy("selected", true) || [];
+        var selectedTasks = gantt.getTaskBy("selected", true) || [];
         if (selectedTasks.length === 0) {
             return Swal.fire(
                 'Chưa chọn hạng mục?',
@@ -793,21 +427,194 @@
     }
 
     function onChangeVersion(value) {
-        try {
-            gantt.clearAll();
-            if (value == 0) {
-                refreshGC();
-            } else {
-                gantt.load(`/api/Data/GetGanttChartDataVersion?projectId=@projectId&isCostStructure=true&version=${value}`)
-            }
-        }
-        catch (ex) {
-            console.log(ex)
+        gantt.clearAll();
+        if (value == 0) {
+            refreshGC();
+        } else {
+            gantt.load(`/api/Data/GetGanttChartDataVersion?projectId=@projectId&isCostStructure=true&version=${value}`)
         }
     }
-    </script>
-    <script src="~/Scripts/GanttChart/config_gantt_chart.js?v=4" type="text/javascript"></script>
-    <script>
-        //gantt.config.columns = gantt.config.columns.filter(x => x.name != "selected" && x.name != "button" && x.name != "start_date" && x.name != "end_date" && x.name != "unitCode" && x.name != "status")
-    </script>
+
+    function enableEdit() {
+        $("#disable-edit").show();
+        $("#enable-edit").hide();
+        gantt.config.readonly = false;
+    }
+
+    function disableEdit() {
+        $("#disable-edit").hide();
+        $("#enable-edit").show();
+        gantt.config.readonly = true;
+    }
+
+    function ChangeStatusDraft(status) {
+        Swal.fire({
+            title: status == '01' ? "Trình duyệt?" : status == '02' ? "Xác nhận?" : "Từ chối?",
+            text: status == '01' ? "Bạn có chắc chắn muốn trình duyệt dữ liệu này?" : status == '02' ? "Bạn có chắc chắn muốn xác nhận dữ liệu này?" : "Bạn có chắc chắn muốn từ chối dữ liệu này?",
+            icon: "question",
+            input: 'text',
+            inputPlaceholder: 'Ý kiến',
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Xác nhận",
+            cancelButtonText: "Huỷ"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                console.log(result.value)
+                onClickTree2();
+            }
+        });
+    }
+
+    function UploadDataDraft() {
+        var ajaxParams = {
+            url: 'PS/Project/ViewUploadDataDraft',
+            type: "POST",
+            data: { projectId: '@projectId' },
+        };
+        Forms.LoadAjaxModal(ajaxParams);
+    }
+
+    /* Config Gantt */
+
+    $('.masked-input-date').inputmask('dd/mm/yyyy', { placeholder: '__/__/____' });
+
+    autosize($('.autosize'));
+
+    gantt.load("/api/DataDraft/GetGanttChartData?projectId=@projectId");
+
+    $('#@viewId ul.gantt-controls .showTimeline').on('change', function () {
+        if (this.value === 'showTimeline') {
+            gantt.config.show_chart = !gantt.config.show_chart;
+            gantt.render()
+        }
+        updIcon(this);
+    })
+    $('#@viewId input#structure-name').on('change', function () {
+        gantt.render()
+    })
+
+    gantt.attachEvent("onBeforeRowDragEnd", function (id) {
+        const task = gantt.getTask(id);
+        const parent = task.parent
+        if (parent === 0) {
+            return false;
+        }
+        const parentTask = gantt.getTask(parent);
+        if (_.isNil(task) || _.isNil(parentTask)) {
+            return false;
+        }
+        const parentType = parentTask.type;
+        if (task.type === "BOQ") {
+            return parentType === "BOQ" || parentType === "PROJECT";
+        }
+        if (task.type === "WBS") {
+            return parentType === "WBS" || parentType === "PROJECT";
+        }
+        if (task.type === "ACTIVITY") {
+            return parentType === "WBS";
+        }
+        return false;
+    });
+
+    gantt.config.show_chart = false;
+    gantt.config.drag_links = false;
+    gantt.config.order_branch = true;
+    gantt.config.order_branch_free = true;
+    gantt.config.keyboard_navigation_cells = true;
+
+    const units = @Html.Raw(JsonConvert.SerializeObject(units));
+    const currencys = @Html.Raw(JsonConvert.SerializeObject(currencys));
+
+    gantt.serverList("unit", _.map(units, ({ Value, Text }) => ({ key: Value, label: Text })));
+    gantt.serverList("currency", _.map(currencys, ({ Value, Text }) => ({ key: Value, label: Text })));
+
+    gantt.attachEvent("onBeforeTaskDisplay", function (id, task) {
+        const filterStructureNameValue = $('#@viewId #structure-name').val();
+        if (filterStructureNameValue) {
+            return task.text.toLowerCase().includes(filterStructureNameValue.toLowerCase())
+        }
+        return true;
+    })
+
+    gantt.plugins({
+        tooltip: false,
+        fullscreen: true,
+        marker: true,
+        undo: true
+    });
+    const formatFunc = gantt.date.date_to_str("%d/%m/%Y");
+
+    const id = gantt.addMarker({
+        start_date: new Date(),
+        text: "Today",
+        title: formatFunc(new Date())
+    });
+    setInterval(function () {
+        const today = gantt.getMarker(id);
+        if (today) {
+
+            today.start_date = new Date();
+            today.title = formatFunc(today.start_date);
+            gantt.updateMarker(id);
+        }
+    }, 1000 * 60);
+    gantt.plugins({
+        keyboard_navigation: true
+    });
+    gantt.config.keyboard_navigation = true;
+    gantt.config.keyboard_navigation_cells = true;
+
+    gantt.config.readonly = true;
+
+    gantt.init("gantt-chart");
+
+    gantt.projectId = "@projectId";
+    gantt.projectCode = "@project.CODE";
+    gantt.user = '@(ProfileUtilities.User?.USER_NAME)';
+
+        gantt.structType = "COST";
+
+    const router = function (entity, action, data, id) {
+        data.projectId = '@projectId';
+        data.user = '@(ProfileUtilities.User?.USER_NAME)';
+        const server = "api";
+        if (entity === 'link') {
+            showMessage('warning', 'Cannot update link');
+        }
+        if (!isNaN(id)) {
+            return;
+        }
+        return gantt.ajax.post(
+            server + '/' + "taskDraft" + '/' + id,
+            data
+        ).then(function (response) {
+            var res = JSON.parse(response.responseText);
+            if (res && res.status === 'success') {
+                // response is ok
+                showMessage('infor', `Update ${entity} successful!`);
+                if (res.executeMethod) {
+                    Message.func.ExecuteFunctionByName(res.executeMethod, window);
+                }
+                updateTasksTotalSilent(id);
+            } else if (res && res.status === 'error') {
+                alert(res.message);
+            } else {
+                alert('error', 'Something went wrong!');
+            }
+        });
+    };
+    const dp = gantt.createDataProcessor(router);
+
+    gantt.attachEvent("onBeforeGanttRender", function () {
+        gantt.silent(() => {
+            updateTasksTotal();
+        });
+    });
+    dp.init(gantt);
+    ganttModules.menu.setup();
+
+</script>
+    <script src="~/Scripts/GanttChart/config_gantt_chart_draft.js?v=4" type="text/javascript"></script>
 </div>
