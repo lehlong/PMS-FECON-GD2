@@ -643,6 +643,7 @@ namespace SMO.Areas.PS.Controllers
             if (service.State)
             {
                 SMOUtilities.GetMessage("1002", service, result);
+                result.ExtData = "onClickTree2();$('.modal').modal('hide');";
             }
             else
             {

@@ -812,6 +812,7 @@ namespace SMO.Service.PS
                                 UnitOfWork.GetSession().Query<T_PS_PROJECT_STRUCT_SAP>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
                             }
                             UnitOfWork.GetSession().Query<T_PS_PROJECT_STRUCT>().Where(x => x.ID == item.ID).Delete();
+                            UnitOfWork.GetSession().Query<T_PS_PROJECT_STRUCT_DRAFT>().Where(x => x.ID == item.ID).Delete();
                             UnitOfWork.GetSession().Query<T_PS_CONTRACT_DETAIL>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
                             // delete plan cost
                             UnitOfWork.GetSession().Query<T_PS_PLAN_COST>().Where(x => x.PROJECT_STRUCT_ID == item.ID).Delete();
