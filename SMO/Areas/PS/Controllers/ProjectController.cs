@@ -618,6 +618,40 @@ namespace SMO.Areas.PS.Controllers
             return PartialView(_service);
         }
 
+        [HttpPost]
+        public ActionResult ImportFile(ProjectService service)
+        {
+            var result = new TransferObject
+            {
+                Type = TransferType.AlertSuccessAndJsCommand
+            };
+            if (Request.Files.Count == 0)
+            {
+                service.State = false;
+                service.ErrorMessage = "Hãy chọn file excel!";
+            }
+            else if (Request.Files.Count > 1)
+            {
+                service.State = false;
+                service.ErrorMessage = "Chỉ được phép chọn 1 file excel!";
+            }
+            else
+            {
+                service.ImportStructDraft(Request);
+            }
+
+            if (service.State)
+            {
+                SMOUtilities.GetMessage("1002", service, result);
+            }
+            else
+            {
+                result.Type = TransferType.AlertDanger;
+                SMOUtilities.GetMessage("1005", service, result);
+            }
+            return result.ToJsonResult();
+        }
+
         public ActionResult ExportExcelDataBOQ(Guid projectId)
         {
             _service.Get(projectId);

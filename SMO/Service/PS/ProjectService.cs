@@ -9,6 +9,7 @@ using SharpSapRfc;
 using SharpSapRfc.Plain;
 
 using SMO.AppCode.Class;
+using SMO.AppCode.Utilities;
 using SMO.Core.Entities;
 using SMO.Core.Entities.MD;
 using SMO.Core.Entities.PS;
@@ -38,12 +39,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.UI.WebControls;
 using static SMO.SAPINT.Functions.FunctionPS;
 
@@ -65,6 +68,51 @@ namespace SMO.Service.PS
             {
                 this.State = false;
                 this.Exception = ex;
+            }
+        }
+
+        public void ImportStructDraft(HttpRequestBase request)
+        {
+            try
+            {
+                var now = DateTime.Now;
+                var fileName = Guid.NewGuid().ToString("N");
+                var pathSaveFile = Path.Combine(WebConfigurationManager.AppSettings["ImportProjectPath"], now.Year.ToString(), now.Month.ToString(), now.Day.ToString());
+                if (!new DirectoryInfo(pathSaveFile).Exists)
+                {
+                    Directory.CreateDirectory(pathSaveFile);
+                }
+                var pathFile = Path.Combine(pathSaveFile, $"{fileName}.xlsx");
+                request.Files[0].SaveAs(pathFile);
+
+                var tableData = ExcelDataExchange.ReadData(pathFile);
+
+                UnitOfWork.BeginTransaction();
+                for (var i = 8; i < tableData.Rows.Count; i++)
+                {
+                    var item = UnitOfWork.Repository<ProjectStructDraftRepo>().Queryable().FirstOrDefault(x => x.PROJECT_ID == ObjDetail.ID && x.GEN_CODE == tableData.Rows[i][1].ToString() && x.TYPE == ProjectEnum.WBS.ToString());
+                    if (item == null)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        item.UNIT_CODE = tableData.Rows[i][3].ToString();
+                        item.QUANTITY = tableData.Rows[i][4] as decimal? ?? 0;
+                        item.PRICE = tableData.Rows[i][5] as decimal? ?? 0;
+                        item.CURRENCY = tableData.Rows[i][7].ToString();
+                        item.EXCHANGE_RATE = tableData.Rows[i][8] as decimal? ?? 0;
+                        UnitOfWork.Repository<ProjectStructDraftRepo>().Update(item);
+                    }
+
+                }
+                UnitOfWork.Commit();
+            }
+            catch (Exception ex)
+            {
+                UnitOfWork.Rollback();
+                this.State = false;
+                Exception = ex;
             }
         }
         internal void PostDataToSAP(Guid id)
