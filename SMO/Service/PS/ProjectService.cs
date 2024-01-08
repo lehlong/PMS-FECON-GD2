@@ -1,5 +1,6 @@
 ﻿using Glimpse.Core.Resource;
 using NHibernate.Linq;
+using NHibernate.Linq.Functions;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
@@ -98,10 +99,10 @@ namespace SMO.Service.PS
                     else
                     {
                         item.UNIT_CODE = tableData.Rows[i][3].ToString();
-                        item.QUANTITY = tableData.Rows[i][4] as decimal? ?? 0;
-                        item.PRICE = tableData.Rows[i][5] as decimal? ?? 0;
+                        item.QUANTITY = string.IsNullOrEmpty(tableData.Rows[i][4].ToString()) ? 0 : Convert.ToDecimal(tableData.Rows[i][4].ToString());
+                        item.PRICE = string.IsNullOrEmpty(tableData.Rows[i][5].ToString()) ? 0 : Convert.ToDecimal(tableData.Rows[i][5].ToString()); 
                         item.CURRENCY = tableData.Rows[i][7].ToString();
-                        item.EXCHANGE_RATE = tableData.Rows[i][8] as decimal? ?? 0;
+                        item.EXCHANGE_RATE = string.IsNullOrEmpty(tableData.Rows[i][8].ToString()) ? 0 : Convert.ToDecimal(tableData.Rows[i][8].ToString());
                         UnitOfWork.Repository<ProjectStructDraftRepo>().Update(item);
                     }
 
@@ -346,7 +347,7 @@ namespace SMO.Service.PS
                                                                      IList<T_PS_PROJECT_STRUCT> projectStructs,
                                                                      IList<T_MD_UNIT> allUnits,
                                                                      IEnumerable<T_PS_PLAN_COST> inPeriodPlanCostData,
-                                                                    IEnumerable<T_PS_PLAN_COST> beforePlanCostData,
+                                                                     IEnumerable<T_PS_PLAN_COST> beforePlanCostData,
                                                                      IEnumerable<T_PS_VOLUME_ACCEPT_DETAIL> inPeriodAcceptData,
                                                                      IEnumerable<T_PS_VOLUME_ACCEPT_DETAIL> beforePeriodAcceptData,
                                                                      IEnumerable<T_PS_VOLUME_WORK_DETAIL> inPeriodVolumeData,
